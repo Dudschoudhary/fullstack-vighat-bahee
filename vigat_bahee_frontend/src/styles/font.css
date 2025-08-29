@@ -1,0 +1,17 @@
+@font-face {
+    font-family: "TiroDevanagariSanskrit-Italic";
+    src: url(../../src/assets/fonts/Tiro_Devanagari_Sanskrit/TiroDevanagariSanskrit-Regular.ttf);
+}
+
+@font-face {
+    font-family: "RozhaOne-Regular";
+    src: url(../../src/assets/fonts/Rozha_One/RozhaOne-Regular.ttf);
+}
+
+.tiroDevanagariSanskrit-Italic {
+    font-family: "TiroDevanagariSanskrit-Italic";
+}
+
+.rozhaOne-Regular {
+    font-family: "RozhaOne-Regular";
+}
