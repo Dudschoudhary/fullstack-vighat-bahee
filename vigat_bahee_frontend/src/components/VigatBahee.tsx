@@ -1,9 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import VigatBaheeLayout from '../common/CustomVigatBaheeLogo';
+import UserProfile from '../components/UserProfile';
+import PasswordChangeModal from '../components/PasswordChangeModal';
 
 interface BaheeDetails {
-  id: string; // `${baheeType}::${name}`
+  id: string;
   baheeType: string;
   baheeTypeName: string;
   name: string;
@@ -27,15 +29,35 @@ const getBaheeTypeName = (value: string) => {
 
 const VigatBahee = () => {
   const [firstSelectValue, setFirstSelectValue] = useState('');
-  const [secondSelectValue, setSecondSelectValue] = useState(''); // will be an id `${type}::${name}`
+  const [secondSelectValue, setSecondSelectValue] = useState('');
   const [thirdSelectValue, setThirdSelectValue] = useState('');
   const [savedHeaders, setSavedHeaders] = useState<BaheeDetails[]>([]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Check authentication
+    const token = localStorage.getItem('token');
+    const user = localStorage.getItem('user');
+    
+    if (!token || !user) {
+      navigate('/login');
+      return;
+    }
+
+    // Check for temporary password requirement
+    const isTemporaryPassword = localStorage.getItem('isTemporaryPassword') === 'true';
+    const urlParams = new URLSearchParams(window.location.search);
+    const changePasswordParam = urlParams.get('changePassword') === 'true';
+    
+    if (isTemporaryPassword || changePasswordParam) {
+      setShowPasswordModal(true);
+    }
+
+    // Load saved headers
     const saved = JSON.parse(localStorage.getItem(BAHEE_DETAIL_KEY) || '[]') as BaheeDetails[];
     setSavedHeaders(saved);
-  }, []);
+  }, [navigate]);
 
   const handleFirstSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     setFirstSelectValue(e.target.value);
@@ -68,7 +90,6 @@ const VigatBahee = () => {
   };
 
   const handleSubmit = () => {
-    // 1) नई बही: user wants to create a new header for a type
     if (firstSelectValue !== '') {
       navigate('/new-entries', {
         state: {
@@ -78,7 +99,7 @@ const VigatBahee = () => {
       });
       return;
     }
-    // 2) मौजूदा बही चुनें: pick from headers list (type+name pair)
+    
     if (secondSelectValue !== '') {
       const existing = savedHeaders.find(h => h.id === secondSelectValue);
       if (existing) {
@@ -92,9 +113,8 @@ const VigatBahee = () => {
       }
       return;
     }
-    // 3) आपकी सेव की गई बही (optional separate route if needed)
+    
     if (thirdSelectValue !== '') {
-      // If this third dropdown represents the same as second, reuse:
       const existing = savedHeaders.find(h => h.baheeType === thirdSelectValue);
       if (existing) {
         navigate('/new-entries', {
@@ -105,7 +125,6 @@ const VigatBahee = () => {
           }
         });
       } else {
-        // Or simply navigate to type-only (like firstSelectValue)
         navigate('/new-entries', {
           state: {
             baheeType: thirdSelectValue,
@@ -119,8 +138,6 @@ const VigatBahee = () => {
 
   const isAnySelected = firstSelectValue !== '' || secondSelectValue !== '' || thirdSelectValue !== '';
 
-  // Build grouped options for “मौजूदा बही चुनें”: show “type + name”
-  // Example label: “विवाह की विगत — दुदाराम”
   const groupedByType: Record<string, BaheeDetails[]> = savedHeaders.reduce((acc, cur) => {
     acc[cur.baheeType] = acc[cur.baheeType] || [];
     acc[cur.baheeType].push(cur);
@@ -132,7 +149,12 @@ const VigatBahee = () => {
   return (
     <div className="w-full min-h-screen bg-gray-50">
       <div className="max-w-6xl mx-auto p-4 sm:p-6 lg:p-8">
-        <VigatBaheeLayout />
+        {/* Header with Profile */}
+        <div className="flex justify-between items-center mb-6">
+          <VigatBaheeLayout />
+          <UserProfile />
+        </div>
+
         <div className="bg-white rounded-xl shadow-lg p-6 lg:p-8">
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8">
             {/* First Select - नई बही */}
@@ -165,7 +187,7 @@ const VigatBahee = () => {
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
             </div>
 
-            {/* Second Select - मौजूदा बही चुनें (from saved headers) */}
+            {/* Second Select */}
             <div className="w-full lg:w-80">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 मौजूदा बही चुनें
@@ -199,7 +221,7 @@ const VigatBahee = () => {
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
             </div>
 
-            {/* Third Select - आपकी सेव की गई बही (optional type quick-pick) */}
+            {/* Third Select */}
             <div className="w-full lg:w-80">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 आपके द्वारा डाली गई बही
@@ -249,6 +271,13 @@ const VigatBahee = () => {
           </div>
         </div>
       </div>
+
+      {/* Password Change Modal */}
+      <PasswordChangeModal 
+        isOpen={showPasswordModal}
+        onClose={() => setShowPasswordModal(false)}
+        isMandatory={localStorage.getItem('isTemporaryPassword') === 'true'}
+      />
     </div>
   );
 };

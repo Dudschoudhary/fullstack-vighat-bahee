@@ -1,4 +1,6 @@
 import mongoose, { Schema } from "mongoose";
+import jwt from "jsonwebtoken";
+import bcrypt from "bcryptjs";
 
 const userSchema = new Schema(
   {
@@ -37,25 +39,55 @@ const userSchema = new Schema(
       trim: true,
       match: /^[0-9]{10,15}$/,
     },
+    isTemporaryPassword: {
+      type: Boolean,
+      default: false,
+    },
   },
   {
     timestamps: true,
   }
 );
 
-userSchema.methods.generateAccessToken = function(){
-  return jwt.sign(
+// Password hash करने के लिए pre middleware
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+  
+  try {
+    this.password = await bcrypt.hash(this.password, 10);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Password compare करने का method
+userSchema.methods.isPasswordCorrect = async function(password) {
+  try {
+    return await bcrypt.compare(password, this.password);
+  } catch (error) {
+    return false;
+  }
+};
+
+// JWT token generate करने का method
+userSchema.methods.generateAccessToken = function() {
+  try {
+    return jwt.sign(
       {
-          _id: this._id,
-          email: this.email,
-          username: this.username,
-          fullName: this.fullName
+        _id: this._id,
+        email: this.email,
+        username: this.username,
+        fullname: this.fullname
       },
       process.env.ACCESS_TOKEN_SECRET,
       {
-          expiresIn: process.env.ACCESS_TOKEN_EXPIRY
+        expiresIn: process.env.ACCESS_TOKEN_EXPIRY
       }
-  )
-}
+    );
+  } catch (error) {
+    throw new Error("Token generation failed");
+  }
+};
 
 export const User = mongoose.model("User", userSchema);

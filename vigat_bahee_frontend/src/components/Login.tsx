@@ -1,13 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import vigatBaheeLogo from '../../src/assets/images/vigat-bahee.png';
-import { FaRegEye } from 'react-icons/fa';
-import { FaEyeSlash } from 'react-icons/fa6';
-import { FaSignInAlt } from 'react-icons/fa';
+import { FaRegEye, FaEyeSlash, FaSignInAlt, FaCheckCircle } from 'react-icons/fa';
 import * as yup from 'yup';
 import apiService from '../api/apiService.ts';
 
-type Mode = 'login' | 'register';
+// Types
+type Mode = 'login' | 'register' | 'forgot-password';
 
 interface LoginData {
   email: string;
@@ -22,11 +21,18 @@ interface RegisterData {
   password: string;
 }
 
-interface FormErrors { [k: string]: string | undefined; }
+interface FormErrors { 
+  [key: string]: string | undefined; 
+}
 
+// Validation schemas
 const loginSchema = yup.object({
-  email: yup.string().required('Email is required').email('Invalid email'),
-  password: yup.string().required('Password is required'),
+  email: yup.string().required('Email is required').email('Please enter a valid email'),
+  password: yup.string().required('Password is required').min(1, 'Password cannot be empty'),
+});
+
+const forgotPasswordSchema = yup.object({
+  email: yup.string().required('Email is required').email('Please enter a valid email'),
 });
 
 const registerSchema = yup.object({
@@ -39,9 +45,7 @@ const registerSchema = yup.object({
     .required('Full name is required')
     .min(3, 'Full name must be at least 3 characters')
     .max(50, 'Full name must not exceed 50 characters'),
-  email: yup.string()
-    .required('Email is required')
-    .email('Invalid email'),
+  email: yup.string().required('Email is required').email('Please enter a valid email'),
   phone: yup.string()
     .required('Phone number is required')
     .matches(/^[0-9]{10,15}$/, 'Phone number must be 10-15 digits'),
@@ -51,45 +55,63 @@ const registerSchema = yup.object({
 });
 
 const Login: React.FC = () => {
+  // State management
   const [mode, setMode] = useState<Mode>('login');
   const [login, setLogin] = useState<LoginData>({ email: '', password: '' });
   const [register, setRegister] = useState<RegisterData>({
     username: '', fullname: '', email: '', phone: '', password: '',
   });
+  const [forgotEmail, setForgotEmail] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
   const [apiError, setApiError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
+  const [loginSuccess, setLoginSuccess] = useState(false);
 
-  const clearMessages = () => {
+  // Clear messages function
+  const clearMessages = useCallback(() => {
     setApiError('');
     setSuccessMessage('');
-  };
+  }, []);
 
-  const clearErr = (field: string) => {
-    if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: undefined }));
-    }
+  // Clear specific field error
+  const clearFieldError = useCallback((field: string) => {
+    setErrors(prev => ({ ...prev, [field]: undefined }));
     clearMessages();
-  };
+  }, [clearMessages]);
 
-  const handle = (field: string) => (e: ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
+  // Handle input changes
+  const handleInputChange = useCallback((field: string) => 
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      
+      if (mode === 'login') {
+        setLogin(prev => ({ ...prev, [field]: value }));
+      } else if (mode === 'register') {
+        setRegister(prev => ({ ...prev, [field]: value }));
+      } else if (mode === 'forgot-password') {
+        setForgotEmail(value);
+      }
+      
+      clearFieldError(field);
+    }, [mode, clearFieldError]);
+
+  // Validation function
+  const validateForm = async (): Promise<boolean> => {
+    let data, schema;
     
     if (mode === 'login') {
-      setLogin(prev => ({ ...prev, [field]: value }));
+      data = login;
+      schema = loginSchema;
+    } else if (mode === 'register') {
+      data = register;
+      schema = registerSchema;
     } else {
-      setRegister(prev => ({ ...prev, [field]: value }));
+      data = { email: forgotEmail };
+      schema = forgotPasswordSchema;
     }
-    
-    clearErr(field);
-  };
-
-  const validate = async (): Promise<boolean> => {
-    const data = mode === 'login' ? login : register;
-    const schema = mode === 'login' ? loginSchema : registerSchema;
 
     try {
       await schema.validate(data, { abortEarly: false });
@@ -109,37 +131,90 @@ const Login: React.FC = () => {
     }
   };
 
+  // **LOGIN HANDLER WITH SUCCESS ANIMATION**
   const handleLogin = async (loginData: LoginData) => {
     try {
+      console.log('Attempting login with:', { email: loginData.email, remember });
+      
       const response = await apiService.post('/login', {
-        ...loginData,
+        email: loginData.email.toLowerCase().trim(),
+        password: loginData.password,
         remember
       });
 
-      if (response.token) {
+      if (!response) {
+        throw new Error('No response received from server');
+      }
+
+      if (response.token && response.user) {
+        // Store authentication data
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
         
-        setSuccessMessage('Login successful! Redirecting...');
+        // Check if it's temporary password
+        if (response.isTemporaryPassword) {
+          localStorage.setItem('isTemporaryPassword', 'true');
+          setSuccessMessage('Login successful with temporary password! Please change your password.');
+        } else {
+          setSuccessMessage('Login successful! Redirecting...');
+        }
         
-        // Redirect or update app state
+        // Show success animation
+        setLoginSuccess(true);
+        
+        // Redirect after success message
         setTimeout(() => {
-          // Handle successful login (e.g., redirect to dashboard)
-          window.location.href = '/bahee';
-        }, 1500);
+          if (response.isTemporaryPassword) {
+            window.location.href = '/bahee?changePassword=true';
+          } else {
+            window.location.href = '/bahee';
+          }
+        }, 2000);
+      } else {
+        throw new Error('Invalid response format - missing token or user data');
       }
     } catch (error: any) {
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Login failed. Please try again.'
-      );
+      console.error('Login error:', error);
+      
+      if (error.response) {
+        const status = error.response.status;
+        const message = error.response.data?.message || '';
+        
+        switch (status) {
+          case 401:
+            throw new Error('Invalid email or password. Please check your credentials.');
+          case 400:
+            throw new Error(message || 'Please fill all required fields correctly.');
+          case 429:
+            throw new Error('Too many login attempts. Please try again later.');
+          case 500:
+            throw new Error('Server error. Please try again later.');
+          default:
+            throw new Error(message || `Login failed with status ${status}`);
+        }
+      } else if (error.code === 'NETWORK_ERROR') {
+        throw new Error('Network connection failed. Please check your internet connection.');
+      } else {
+        throw new Error(error.message || 'Login failed. Please try again.');
+      }
     }
   };
 
+  // **REGISTER HANDLER**
   const handleRegister = async (registerData: RegisterData) => {
     try {
-      const response = await apiService.post('/register', registerData);
+      console.log('Attempting registration with:', { 
+        username: registerData.username, 
+        email: registerData.email 
+      });
+
+      const response = await apiService.post('/register', {
+        username: registerData.username.toLowerCase().trim(),
+        email: registerData.email.toLowerCase().trim(),
+        fullname: registerData.fullname.trim(),
+        phone: registerData.phone.trim(),
+        password: registerData.password,
+      });
       
       setSuccessMessage('Registration successful! Please login to continue.');
       
@@ -154,54 +229,72 @@ const Login: React.FC = () => {
       }, 2000);
       
     } catch (error: any) {
-      // Handle 409 status code (conflict - user already exists)
-      if (error.response?.status === 409) {
-        const errorData = error.response?.data;
-        const errorMessage = errorData?.message || '';
-        
-        console.log('409 Error Data:', errorData); // For debugging
-        
-        // Check different types of conflicts
-        if (errorMessage.toLowerCase().includes('email') || errorData?.field === 'email') {
-          setErrors({ email: 'यह email पहले से registered है। कृपया अलग email का उपयोग करें या login करें।' });
-          return;
-        } else if (errorMessage.toLowerCase().includes('username') || errorData?.field === 'username') {
-          setErrors({ username: 'यह username पहले से उपयोग में है। कृपया अलग username चुनें।' });
-          return;
-        } else if (errorMessage.toLowerCase().includes('phone') || errorData?.field === 'phone') {
-          setErrors({ phone: 'यह phone number पहले से registered है।' });
-          return;
-        } else {
-          // Generic conflict message
-          setApiError('User पहले से मौजूद है। कृपया अलग details का उपयोग करें।');
-          return;
-        }
-      }
+      console.error('Registration error:', error);
       
-      // For other errors (400, 500, etc.)
-      throw new Error(
-        error.response?.data?.message || 
-        error.message || 
-        'Registration failed. Please try again.'
-      );
+      if (error.response?.status === 409) {
+        const errorMessage = error.response?.data?.message || '';
+        
+        if (errorMessage.toLowerCase().includes('email')) {
+          setErrors({ email: 'यह email पहले से registered है। कृपया अलग email का उपयोग करें।' });
+        } else if (errorMessage.toLowerCase().includes('username')) {
+          setErrors({ username: 'यह username पहले से उपयोग में है। कृपया अलग username चुनें।' });
+        } else if (errorMessage.toLowerCase().includes('phone')) {
+          setErrors({ phone: 'यह phone number पहले से registered है।' });
+        } else {
+          throw new Error('User already exists. Please use different details.');
+        }
+      } else {
+        const message = error.response?.data?.message || error.message || 'Registration failed';
+        throw new Error(message);
+      }
     }
   };
 
+  // **FORGOT PASSWORD HANDLER**
+  const handleForgotPassword = async (email: string) => {
+    try {
+      console.log('Attempting forgot password for:', email);
+      
+      const response = await apiService.post('/forgot-password', {
+        email: email.toLowerCase().trim()
+      });
+      
+      setSuccessMessage('Temporary password sent to your email! Please check your inbox.');
+      
+      setTimeout(() => {
+        setMode('login');
+        setSuccessMessage('');
+      }, 3000);
+      
+    } catch (error: any) {
+      console.error('Forgot password error:', error);
+      
+      if (error.response?.status === 404) {
+        setErrors({ email: 'No account found with this email address.' });
+      } else {
+        const message = error.response?.data?.message || error.message || 'Failed to send reset email';
+        throw new Error(message);
+      }
+    }
+  };
+
+  // Form submission handler
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
     
-    if (!(await validate())) return;
+    if (!(await validateForm())) return;
 
     setLoading(true);
     clearMessages();
-    // Clear any existing errors when submitting
     setErrors({});
 
     try {
       if (mode === 'login') {
         await handleLogin(login);
-      } else {
+      } else if (mode === 'register') {
         await handleRegister(register);
+      } else if (mode === 'forgot-password') {
+        await handleForgotPassword(forgotEmail);
       }
     } catch (error) {
       setApiError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -210,22 +303,31 @@ const Login: React.FC = () => {
     }
   };
 
-  const switchMode = (newMode: Mode) => {
+  // Mode switching function
+  const switchMode = useCallback((newMode: Mode) => {
     setMode(newMode);
     setErrors({});
     clearMessages();
+    setLoginSuccess(false);
     
-    // Clear form data when switching modes
     if (newMode === 'login') {
       setLogin({ email: '', password: '' });
-    } else {
+    } else if (newMode === 'register') {
       setRegister({
         username: '', fullname: '', email: '', phone: '', password: '',
       });
+    } else if (newMode === 'forgot-password') {
+      setForgotEmail('');
     }
+  }, [clearMessages]);
+
+  const getCurrentData = () => {
+    if (mode === 'login') return login;
+    if (mode === 'register') return register;
+    return { email: forgotEmail, password: '' };
   };
 
-  const data = mode === 'login' ? login : register;
+  const currentData = getCurrentData();
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10 px-4">
@@ -234,10 +336,12 @@ const Login: React.FC = () => {
 
         <header className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">
-            {mode === 'login' ? 'Sign in to your account' : 'Create a new account'}
+            {mode === 'login' && 'Sign in to your account'}
+            {mode === 'register' && 'Create a new account'}
+            {mode === 'forgot-password' && 'Reset your password'}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            {mode === 'login' ? (
+            {mode === 'login' && (
               <>Or{' '}
                 <button 
                   onClick={() => switchMode('register')}
@@ -247,23 +351,38 @@ const Login: React.FC = () => {
                   create a new account
                 </button>
               </>
-            ) : (
+            )}
+            {mode === 'register' && (
               <>Already have an account?{' '}
                 <button 
                   onClick={() => switchMode('login')}
                   className="font-medium text-indigo-600 hover:text-indigo-500 focus:underline"
                   type="button"
                 >
-                  Back to sign&nbsp;in
+                  Back to sign in
+                </button>
+              </>
+            )}
+            {mode === 'forgot-password' && (
+              <>Remember your password?{' '}
+                <button 
+                  onClick={() => switchMode('login')}
+                  className="font-medium text-indigo-600 hover:text-indigo-500 focus:underline"
+                  type="button"
+                >
+                  Back to sign in
                 </button>
               </>
             )}
           </p>
         </header>
 
-        {/* Success Message */}
-        {successMessage && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded">
+        {/* Success Message with Animation */}
+        {(successMessage || loginSuccess) && (
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded flex items-center">
+            {loginSuccess && (
+              <FaCheckCircle className="text-green-600 mr-3 text-lg animate-bounce" />
+            )}
             {successMessage}
           </div>
         )}
@@ -282,7 +401,7 @@ const Login: React.FC = () => {
                 id="username" 
                 placeholder="Username" 
                 value={register.username}
-                onChange={handle('username')} 
+                onChange={handleInputChange('username')} 
                 error={errors.username} 
                 rounded="t-md"
                 autoComplete="username"
@@ -291,7 +410,7 @@ const Login: React.FC = () => {
                 id="fullname" 
                 placeholder="Full Name" 
                 value={register.fullname}
-                onChange={handle('fullname')} 
+                onChange={handleInputChange('fullname')} 
                 error={errors.fullname} 
                 rounded="none"
                 autoComplete="name"
@@ -303,8 +422,8 @@ const Login: React.FC = () => {
             id="email" 
             type="email" 
             placeholder="Email address" 
-            value={data.email}
-            onChange={handle('email')} 
+            value={currentData.email}
+            onChange={handleInputChange('email')} 
             error={errors.email}
             rounded={mode === 'register' ? 'none' : 't-md'}
             autoComplete="email"
@@ -316,38 +435,39 @@ const Login: React.FC = () => {
               type="tel" 
               placeholder="Phone Number (10-15 digits)" 
               value={register.phone}
-              onChange={handle('phone')} 
+              onChange={handleInputChange('phone')} 
               error={errors.phone} 
               rounded="none"
               autoComplete="tel"
             />
           )}
 
-          <div className="relative">
-            <input
-              id="password"
-              type={showPwd ? 'text' : 'password'}
-              placeholder="Password"
-              value={data.password}
-              onChange={handle('password')}
-              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-              className={`block w-full px-3 py-2 border ${
-                errors.password ? 'border-red-300' : 'border-gray-300'
-              } rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
-            />
-            <button 
-              type="button"
-              onClick={() => setShowPwd(prev => !prev)}
-              className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
-              tabIndex={-1}
-              aria-label={showPwd ? 'Hide password' : 'Show password'}
-            >
-              {showPwd ? <FaEyeSlash className="w-5 h-5"/> : <FaRegEye className="w-5 h-5"/>}
-            </button>
-            {errors.password && (
-              <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-            )}
-          </div>
+          {mode !== 'forgot-password' && (
+            <div className="relative">
+              <input
+                id="password"
+                type={showPwd ? 'text' : 'password'}
+                placeholder="Password"
+                value={currentData.password}
+                onChange={handleInputChange('password')}
+                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+                className={`block w-full px-3 py-2 border ${
+                  errors.password ? 'border-red-300' : 'border-gray-300'
+                } rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+              />
+              <button 
+                type="button"
+                onClick={() => setShowPwd(prev => !prev)}
+                className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
+                tabIndex={-1}
+              >
+                {showPwd ? <FaEyeSlash className="w-5 h-5"/> : <FaRegEye className="w-5 h-5"/>}
+              </button>
+              {errors.password && (
+                <p className="text-red-600 text-sm mt-1">{errors.password}</p>
+              )}
+            </div>
+          )}
 
           {mode === 'login' && (
             <div className="flex items-center justify-between">
@@ -362,7 +482,7 @@ const Login: React.FC = () => {
               </label>
               <button 
                 type="button"
-                onClick={() => console.log('Forgot password clicked')}
+                onClick={() => switchMode('forgot-password')}
                 className="text-sm font-medium text-indigo-600 hover:text-indigo-500 focus:underline"
               >
                 Forgot your password?
@@ -373,7 +493,7 @@ const Login: React.FC = () => {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {loading ? (
               <div className="flex items-center">
@@ -383,7 +503,9 @@ const Login: React.FC = () => {
             ) : (
               <>
                 {mode === 'login' && <FaSignInAlt className="mr-2"/>}
-                {mode === 'login' ? 'Sign in' : 'Register'}
+                {mode === 'login' && 'Sign in'}
+                {mode === 'register' && 'Register'}
+                {mode === 'forgot-password' && 'Send Reset Link'}
               </>
             )}
           </button>
@@ -393,6 +515,7 @@ const Login: React.FC = () => {
   );
 };
 
+// Input component remains same
 interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string; 
   rounded?: 't-md' | 'b-md' | 'none';
@@ -408,7 +531,7 @@ const Input: React.FC<FieldProps> = ({ error, rounded = 'none', className, ...re
         rounded === 't-md' ? 'rounded-t-md' : 
         rounded === 'b-md' ? 'rounded-b-md' : 
         'rounded-none'
-      } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm ${className || ''}`}
+      } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors ${className || ''}`}
     />
     {error && <p className="text-red-600 text-sm mt-1">{error}</p>}
   </div>
