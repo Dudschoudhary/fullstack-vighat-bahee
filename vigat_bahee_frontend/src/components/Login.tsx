@@ -1,29 +1,13 @@
 import React, { useState, useCallback } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import vigatBaheeLogo from '../../src/assets/images/vigat-bahee.png';
+import { useNavigate, useLocation } from 'react-router-dom';
+import vigatBaheeLogo from '../assets/images/vigat-bahee.png';
 import { FaRegEye, FaEyeSlash, FaSignInAlt, FaCheckCircle } from 'react-icons/fa';
 import * as yup from 'yup';
-import apiService from '../api/apiService.ts';
-
-// Types
-type Mode = 'login' | 'register' | 'forgot-password';
-
-interface LoginData {
-  email: string;
-  password: string;
-}
-
-interface RegisterData {
-  username: string;
-  fullname: string;
-  email: string;
-  phone: string;
-  password: string;
-}
-
-interface FormErrors { 
-  [key: string]: string | undefined; 
-}
+import apiService from '../api/apiService';
+import Loader from '../common/Loader';
+import { useAuth } from '../context/AuthContext';
+import type { ApiError, AuthResponse, FormErrors, LoginData, Mode, RegisterData } from '../types';
 
 // Validation schemas
 const loginSchema = yup.object({
@@ -55,6 +39,10 @@ const registerSchema = yup.object({
 });
 
 const Login: React.FC = () => {
+  const { login: authLogin, isAuthenticated } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
+  
   // State management
   const [mode, setMode] = useState<Mode>('login');
   const [login, setLogin] = useState<LoginData>({ email: '', password: '' });
@@ -69,6 +57,14 @@ const Login: React.FC = () => {
   const [apiError, setApiError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [loginSuccess, setLoginSuccess] = useState(false);
+
+  // Redirect if already authenticated
+  React.useEffect(() => {
+    if (isAuthenticated) {
+      const from = location.state?.from?.pathname || '/bahee';
+      navigate(from, { replace: true });
+    }
+  }, [isAuthenticated, navigate, location]);
 
   // Clear messages function
   const clearMessages = useCallback(() => {
@@ -131,12 +127,10 @@ const Login: React.FC = () => {
     }
   };
 
-  // **LOGIN HANDLER WITH SUCCESS ANIMATION**
+  // LOGIN HANDLER
   const handleLogin = async (loginData: LoginData) => {
     try {
-      console.log('Attempting login with:', { email: loginData.email, remember });
-      
-      const response = await apiService.post('/login', {
+      const response: AuthResponse = await apiService.post('/login', {
         email: loginData.email.toLowerCase().trim(),
         password: loginData.password,
         remember
@@ -147,11 +141,8 @@ const Login: React.FC = () => {
       }
 
       if (response.token && response.user) {
-        // Store authentication data
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user));
+        authLogin(response.token, response.user);
         
-        // Check if it's temporary password
         if (response.isTemporaryPassword) {
           localStorage.setItem('isTemporaryPassword', 'true');
           setSuccessMessage('Login successful with temporary password! Please change your password.');
@@ -159,26 +150,24 @@ const Login: React.FC = () => {
           setSuccessMessage('Login successful! Redirecting...');
         }
         
-        // Show success animation
         setLoginSuccess(true);
         
-        // Redirect after success message
         setTimeout(() => {
-          if (response.isTemporaryPassword) {
-            window.location.href = '/bahee?changePassword=true';
-          } else {
-            window.location.href = '/bahee';
-          }
+          const from = location.state?.from?.pathname || '/bahee';
+          const redirectUrl = response.isTemporaryPassword 
+            ? `${from}?changePassword=true` 
+            : from;
+          navigate(redirectUrl, { replace: true });
         }, 2000);
       } else {
         throw new Error('Invalid response format - missing token or user data');
       }
     } catch (error: any) {
-      console.error('Login error:', error);
+      const apiError = error as ApiError;
       
-      if (error.response) {
-        const status = error.response.status;
-        const message = error.response.data?.message || '';
+      if (apiError.response) {
+        const status = apiError.response.status;
+        const message = apiError.response.data?.message || '';
         
         switch (status) {
           case 401:
@@ -192,23 +181,18 @@ const Login: React.FC = () => {
           default:
             throw new Error(message || `Login failed with status ${status}`);
         }
-      } else if (error.code === 'NETWORK_ERROR') {
+      } else if (apiError.code === 'NETWORK_ERROR') {
         throw new Error('Network connection failed. Please check your internet connection.');
       } else {
-        throw new Error(error.message || 'Login failed. Please try again.');
+        throw new Error(apiError.message || 'Login failed. Please try again.');
       }
     }
   };
 
-  // **REGISTER HANDLER**
+  // REGISTER HANDLER
   const handleRegister = async (registerData: RegisterData) => {
     try {
-      console.log('Attempting registration with:', { 
-        username: registerData.username, 
-        email: registerData.email 
-      });
-
-      const response = await apiService.post('/register', {
+      await apiService.post('/register', {
         username: registerData.username.toLowerCase().trim(),
         email: registerData.email.toLowerCase().trim(),
         fullname: registerData.fullname.trim(),
@@ -218,7 +202,6 @@ const Login: React.FC = () => {
       
       setSuccessMessage('Registration successful! Please login to continue.');
       
-      // Clear form and switch to login mode
       setRegister({
         username: '', fullname: '', email: '', phone: '', password: '',
       });
@@ -229,10 +212,10 @@ const Login: React.FC = () => {
       }, 2000);
       
     } catch (error: any) {
-      console.error('Registration error:', error);
+      const apiError = error as ApiError;
       
-      if (error.response?.status === 409) {
-        const errorMessage = error.response?.data?.message || '';
+      if (apiError.response?.status === 409) {
+        const errorMessage = apiError.response?.data?.message || '';
         
         if (errorMessage.toLowerCase().includes('email')) {
           setErrors({ email: 'यह email पहले से registered है। कृपया अलग email का उपयोग करें।' });
@@ -244,18 +227,16 @@ const Login: React.FC = () => {
           throw new Error('User already exists. Please use different details.');
         }
       } else {
-        const message = error.response?.data?.message || error.message || 'Registration failed';
+        const message = apiError.response?.data?.message || apiError.message || 'Registration failed';
         throw new Error(message);
       }
     }
   };
 
-  // **FORGOT PASSWORD HANDLER**
+  // FORGOT PASSWORD HANDLER
   const handleForgotPassword = async (email: string) => {
     try {
-      console.log('Attempting forgot password for:', email);
-      
-      const response = await apiService.post('/forgot-password', {
+      await apiService.post('/forgot-password', {
         email: email.toLowerCase().trim()
       });
       
@@ -267,12 +248,12 @@ const Login: React.FC = () => {
       }, 3000);
       
     } catch (error: any) {
-      console.error('Forgot password error:', error);
+      const apiError = error as ApiError;
       
-      if (error.response?.status === 404) {
+      if (apiError.response?.status === 404) {
         setErrors({ email: 'No account found with this email address.' });
       } else {
-        const message = error.response?.data?.message || error.message || 'Failed to send reset email';
+        const message = apiError.response?.data?.message || apiError.message || 'Failed to send reset email';
         throw new Error(message);
       }
     }
@@ -331,6 +312,20 @@ const Login: React.FC = () => {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 py-10 px-4">
+      {/* Full-screen loader overlay when processing */}
+      {loading && (
+        <Loader
+          fullScreen={true}
+          size="large"
+          text={
+            mode === 'login' ? 'Signing you in...' :
+            mode === 'register' ? 'Creating your account...' :
+            'Sending reset email...'
+          }
+          colors={["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b"]}
+        />
+      )}
+
       <div className="w-full max-w-md space-y-8">
         <img src={vigatBaheeLogo} alt="Vigat Bahee" className="h-20 rounded-full mx-auto" />
 
@@ -495,12 +490,7 @@ const Login: React.FC = () => {
             disabled={loading}
             className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
-            {loading ? (
-              <div className="flex items-center">
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Please wait...
-              </div>
-            ) : (
+            {!loading && (
               <>
                 {mode === 'login' && <FaSignInAlt className="mr-2"/>}
                 {mode === 'login' && 'Sign in'}
@@ -508,6 +498,7 @@ const Login: React.FC = () => {
                 {mode === 'forgot-password' && 'Send Reset Link'}
               </>
             )}
+            {loading && 'Processing...'}
           </button>
         </form>
       </div>
@@ -515,7 +506,7 @@ const Login: React.FC = () => {
   );
 };
 
-// Input component remains same
+// Input component
 interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string; 
   rounded?: 't-md' | 'b-md' | 'none';

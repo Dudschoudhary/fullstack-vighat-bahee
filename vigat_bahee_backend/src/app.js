@@ -21,5 +21,3 @@ app.use(userRouter);
 
 
 export default app;
-
-

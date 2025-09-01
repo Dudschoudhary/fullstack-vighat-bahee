@@ -1,32 +1,51 @@
-// src/router/index.js or router.js
-import { createBrowserRouter } from "react-router-dom";
+// src/router/index.ts
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import VigatBahee from "../components/VigatBahee";
 import VigatBaheeLayout from "../components/VigatBaheeLayout";
 import AddNewEntries from "../common/AddNewEntries";
 import Login from "../components/Login";
-
-// Define the routes
+import ProtectedRoute from "../components/ProtectedRoute";
+import PublicRoute from "../components/PublicRoute"; // नया import
 
 const router = createBrowserRouter([
   {
     path: "/",
-    // element: <VigatBahee />,
     children: [
       {
-        path: "/bahee",
-        element: <VigatBahee/>
-      },
-      {
-        path: "/bahee-layout",
-        element: <VigatBaheeLayout/>
-      },
-      {
-        path: "/new-entries",
-        element: <AddNewEntries/>
+        path: "/",
+        element: <Navigate to="/login" replace />
       },
       {
         path: "/login",
-        element: <Login/>
+        element: (
+          <PublicRoute redirectTo="/bahee">
+            <Login />
+          </PublicRoute>
+        )
+      },
+      {
+        path: "/bahee",
+        element: (
+          <ProtectedRoute>
+            <VigatBahee />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "/bahee-layout",
+        element: (
+          <ProtectedRoute>
+            <VigatBaheeLayout />
+          </ProtectedRoute>
+        )
+      },
+      {
+        path: "/new-entries",
+        element: (
+          <ProtectedRoute>
+            <AddNewEntries />
+          </ProtectedRoute>
+        )
       }
     ]
   }
