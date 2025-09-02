@@ -1,3 +1,4 @@
+// src/components/Login.tsx - Without Auth Context
 import React, { useState, useCallback } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -6,7 +7,6 @@ import { FaRegEye, FaEyeSlash, FaSignInAlt, FaCheckCircle } from 'react-icons/fa
 import * as yup from 'yup';
 import apiService from '../api/apiService';
 import Loader from '../common/Loader';
-import { useAuth } from '../context/AuthContext';
 import type { ApiError, AuthResponse, FormErrors, LoginData, Mode, RegisterData } from '../types';
 
 // Validation schemas
@@ -39,7 +39,6 @@ const registerSchema = yup.object({
 });
 
 const Login: React.FC = () => {
-  const { login: authLogin, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -58,13 +57,13 @@ const Login: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [loginSuccess, setLoginSuccess] = useState(false);
 
-  // Redirect if already authenticated
+  // Check if user is already logged in
   React.useEffect(() => {
-    if (isAuthenticated) {
-      const from = location.state?.from?.pathname || '/bahee';
-      navigate(from, { replace: true });
+    const token = localStorage.getItem('token');
+    if (token) {
+      navigate('/bahee', { replace: true });
     }
-  }, [isAuthenticated, navigate, location]);
+  }, [navigate]);
 
   // Clear messages function
   const clearMessages = useCallback(() => {
@@ -127,7 +126,7 @@ const Login: React.FC = () => {
     }
   };
 
-  // LOGIN HANDLER
+  // LOGIN HANDLER - Without Auth Context
   const handleLogin = async (loginData: LoginData) => {
     try {
       const response: AuthResponse = await apiService.post('/login', {
@@ -141,7 +140,9 @@ const Login: React.FC = () => {
       }
 
       if (response.token && response.user) {
-        authLogin(response.token, response.user);
+        // Store auth data directly in localStorage
+        localStorage.setItem('token', response.token);
+        localStorage.setItem('user', JSON.stringify(response.user));
         
         if (response.isTemporaryPassword) {
           localStorage.setItem('isTemporaryPassword', 'true');
@@ -153,12 +154,12 @@ const Login: React.FC = () => {
         setLoginSuccess(true);
         
         setTimeout(() => {
-          const from = location.state?.from?.pathname || '/bahee';
+          const from = location.state?.from || '/bahee';
           const redirectUrl = response.isTemporaryPassword 
             ? `${from}?changePassword=true` 
             : from;
           navigate(redirectUrl, { replace: true });
-        }, 2000);
+        }, 1500);
       } else {
         throw new Error('Invalid response format - missing token or user data');
       }
@@ -262,6 +263,7 @@ const Login: React.FC = () => {
   // Form submission handler
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     if (!(await validateForm())) return;
 
