@@ -1,6 +1,7 @@
 import express,{urlencoded} from 'express'
 import cors from "cors"
 import userRouter from "./routes/user.route.js";
+import baheeRouter from "./routes/baheeRoutes.js"
 import cookieParser from 'cookie-parser';   
 
 let app = express();
@@ -18,6 +19,7 @@ app.use(cookieParser());
 app.use(express.static("public"));
 
 app.use(userRouter);
+app.use(baheeRouter)
 
 
 export default app;
