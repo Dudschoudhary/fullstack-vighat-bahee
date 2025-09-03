@@ -4,6 +4,7 @@ import VigatBahee from "../components/VigatBahee";
 import VigatBaheeLayout from "../components/VigatBaheeLayout";
 import AddNewEntries from "../common/AddNewEntries";
 import Login from "../components/Login";
+import EntryForm from "../components/EntryForm";
 
 // Define the routes
 
@@ -21,13 +22,13 @@ const router = createBrowserRouter([
         element: <VigatBaheeLayout/>
       },
       {
-        path: "/new-entries",
+        path: "/new-bahee",
         element: <AddNewEntries/>
       },
       {
         path: "/login",
         element: <Login/>
-      }
+      },
     ]
   }
 ]);

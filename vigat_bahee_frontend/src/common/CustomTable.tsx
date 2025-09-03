@@ -1,16 +1,18 @@
 // components/AddNewEntriesInterface.tsx
 import React, { useMemo, useState, useEffect } from "react";
 import { Space, Table, Button, Form, message, DatePicker, Select, Switch, Input, Tooltip } from "antd";
-import { EditOutlined, DeleteOutlined, SearchOutlined, EyeOutlined, FilterOutlined, UnorderedListOutlined, RollbackOutlined, SaveOutlined, LockOutlined } from "@ant-design/icons";
+import { EditOutlined, DeleteOutlined, SearchOutlined, EyeOutlined, FilterOutlined, UnorderedListOutlined, RollbackOutlined, SaveOutlined, LockOutlined, PlusOutlined, HomeOutlined } from "@ant-design/icons";
 import type { TableProps, TablePaginationConfig } from "antd";
 import { ReactTransliterate } from 'react-transliterate';
 import dayjs from 'dayjs';
+import { useNavigate } from 'react-router-dom';
 import CommonModal from "../common/CommonModal";
 import ConfirmModal from "../common/ConfirmModal";
 import EditRecordForm, { type EditValues } from "../common/EditRecordForm";
 import { useAddNewEntriesInterface } from "../hooks/useAddNewEntriesInterface";
 import TransliterateSearch from "../components/TransliterateSearch";
 import BaheeEditForm from "../common/BaheeEditForm";
+import CustomVigatBaheeLogo from "../common/CustomVigatBaheeLogo";
 import type { DataType, BaheeDetails, ReturnNetLog } from "../types/addNewEntriesInterface.types";
 
 const { Option } = Select;
@@ -18,13 +20,15 @@ const { TextArea } = Input;
 
 interface AddNewEntriesInterfaceProps {
   currentBaheeType?: string;
-  selectedBaheeId?: string; // Add this to link with specific bahee
+  selectedBaheeId?: string;
 }
 
 const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({ 
   currentBaheeType, 
   selectedBaheeId 
 }) => {
+  const navigate = useNavigate();
+  
   const {
     data,
     baheeDetails,
@@ -47,6 +51,9 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   // Search and filtered data
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
+  
+  // Selected specific bahee person state
+  const [selectedSpecificBahee, setSelectedSpecificBahee] = useState<BaheeDetails | null>(null);
 
   // Modal states
   const [editOpen, setEditOpen] = useState(false);
@@ -77,12 +84,25 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     showQuickJumper: true,
   });
 
+  // Set default selection when contextual bahee details load
+  useEffect(() => {
+    if (contextualBaheeDetails.length > 0 && !selectedSpecificBahee) {
+      // Select first bahee by default
+      setSelectedSpecificBahee(contextualBaheeDetails[0]);
+    }
+  }, [contextualBaheeDetails, selectedSpecificBahee]);
+
   // Filter data based on selected bahee and search
   useEffect(() => {
     let filtered = data;
     
-    // Filter by bahee type or specific bahee
-    if (selectedBaheeId) {
+    // Filter by specific selected bahee person
+    if (selectedSpecificBahee) {
+      filtered = data.filter(r => 
+        r.baheeType === selectedSpecificBahee.baheeType && 
+        r.headerName === selectedSpecificBahee.name
+      );
+    } else if (selectedBaheeId) {
       // Filter by specific bahee ID
       const targetBahee = baheeDetails.find(b => b.id === selectedBaheeId);
       if (targetBahee) {
@@ -112,7 +132,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
     setFilteredData(filtered);
     setPagination(prev => ({ ...prev, current: 1 }));
-  }, [data, selectedBaheeType, selectedBaheeId, searchText, baheeDetails]);
+  }, [data, selectedBaheeType, selectedBaheeId, searchText, baheeDetails, selectedSpecificBahee]);
 
   // Search handlers
   const handleSearch = (value: string) => setSearchText(value);
@@ -122,7 +142,44 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   // Bahee type change handler
   const handleBaheeTypeChange = (value: string) => {
     setSelectedBaheeType(value);
-    setSearchText(""); // Clear search when changing bahee type
+    setSearchText("");
+    setSelectedSpecificBahee(null); // Reset specific selection
+  };
+
+  // Navigate to Add Entries page
+  const handleAddEntries = () => {
+    let targetBahee: BaheeDetails | null = null;
+
+    if (selectedSpecificBahee) {
+      targetBahee = selectedSpecificBahee;
+    } else if (selectedBaheeDetails) {
+      targetBahee = selectedBaheeDetails;
+    } else if (contextualBaheeDetails.length > 0) {
+      targetBahee = contextualBaheeDetails[0];
+    }
+
+    if (targetBahee) {
+      navigate('/new-bahee', {
+        state: {
+          baheeType: targetBahee.baheeType,
+          baheeTypeName: targetBahee.baheeTypeName,
+          existingBaheeData: targetBahee
+        }
+      });
+    } else {
+      message.warning("कृपया पहले बही चुनें");
+    }
+  };
+
+  // Navigate to home
+  const handleGoHome = () => {
+    navigate('/bahee-layout');
+  };
+
+  // Handle specific bahee selection from सूची button
+  const handleSelectSpecificBahee = (bahee: BaheeDetails) => {
+    setSelectedSpecificBahee(bahee);
+    message.success(`${bahee.name} की बही चुनी गई`);
   };
 
   // Entry edit functions
@@ -209,6 +266,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         setBaheeEditOpen(false);
         setCurrentBahee(null);
         baheeForm.resetFields();
+        
+        // Update selected specific bahee if it was the one being edited
+        if (selectedSpecificBahee && selectedSpecificBahee.id === updatedBahee.id) {
+          setSelectedSpecificBahee(updatedBahee);
+        }
       }
     } catch (error) {
       console.error('Bahee edit save error:', error);
@@ -302,11 +364,9 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     }
   };
 
-  // Go to bahee list
+  // Go to bahee list (legacy function - now replaced with specific selection)
   const goToBaheeList = (bahee: BaheeDetails) => {
-    setSelectedBaheeType(bahee.baheeType);
-    localStorage.setItem('currentBaheeContext', bahee.baheeType);
-    message.success("सूची पर ले जाया गया");
+    handleSelectSpecificBahee(bahee);
   };
 
   // Highlight search text
@@ -484,8 +544,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // Get display name for current selection
   const getDisplayName = () => {
+    if (selectedSpecificBahee) {
+      return `${selectedSpecificBahee.baheeTypeName} - ${selectedSpecificBahee.name}`;
+    }
     if (selectedBaheeDetails) {
       return `${selectedBaheeDetails.baheeTypeName} - ${selectedBaheeDetails.name}`;
+    }
+    if (contextualBaheeDetails.length > 0) {
+      return `${contextualBaheeDetails[0].baheeTypeName} - ${contextualBaheeDetails[0].name}`;
     }
     if (selectedBaheeType) {
       const bahee = baheeDetails.find(bd => bd.baheeType === selectedBaheeType);
@@ -505,18 +571,40 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   return (
     <>
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {/* Contextual Bahee Details */}
+        {/* Contextual Bahee Details - Enhanced */}
         {contextualBaheeDetails.length > 0 && (
           <div className="p-4 bg-blue-50 border-b">
-            <h3 className="text-lg font-bold text-gray-700 mb-2">
-              {currentBaheeType || selectedBaheeId ? 'वर्तमान बही विवरण:' : 'सहेजी गई बही विवरण:'}
-            </h3>
+            <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
+              <h3 className="text-lg font-bold text-gray-700">
+                {currentBaheeType || selectedBaheeId ? 'वर्तमान बही विवरण:' : 'सहेजी गई बही विवरण:'}
+              </h3>
+              
+              {/* Show selected person indicator */}
+              {selectedSpecificBahee && (
+                <div className="flex items-center gap-2 bg-green-100 border border-green-300 rounded-lg px-3 py-1">
+                  <span className="text-green-700 text-sm font-medium">चयनित:</span>
+                  <span className="text-green-800 font-semibold">{selectedSpecificBahee.name}</span>
+                </div>
+              )}
+            </div>
+            
             <div className="flex flex-col gap-2">
               {contextualBaheeDetails.map((bd, index) => (
-                <div key={bd.id || index} className="bg-white border border-blue-200 rounded-lg px-4 py-2 flex items-center justify-between gap-4">
+                <div 
+                  key={bd.id || index} 
+                  className={`border rounded-lg px-4 py-2 flex items-center justify-between gap-4 transition-all duration-200 ${
+                    selectedSpecificBahee?.id === bd.id 
+                      ? 'bg-green-50 border-green-300 shadow-md' 
+                      : 'bg-white border-blue-200 hover:border-blue-300'
+                  }`}
+                >
                   <div className="flex items-center gap-4 overflow-x-auto" style={{ whiteSpace: "nowrap" }}>
-                    <span className="text-lg">🕉️</span>
-                    <span className="font-semibold text-blue-800">{bd.baheeTypeName}</span>
+                    <span className="text-lg">
+                      {selectedSpecificBahee?.id === bd.id ? '✅' : '🕉️'}
+                    </span>
+                    <span className={`font-semibold ${selectedSpecificBahee?.id === bd.id ? 'text-green-800' : 'text-blue-800'}`}>
+                      {bd.baheeTypeName}
+                    </span>
                     <span className="text-gray-400">|</span>
                     <span className="text-sm">नाम: <b>{bd.name}</b></span>
                     <span className="text-gray-400">|</span>
@@ -544,13 +632,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                       title="संपादित करें" 
                     />
                     <Button 
-                      type="default" 
+                      type={selectedSpecificBahee?.id === bd.id ? "primary" : "default"}
                       icon={<UnorderedListOutlined />} 
                       size="small" 
-                      onClick={() => goToBaheeList(bd)} 
-                      title="बही सूची पर जाएं"
+                      onClick={() => handleSelectSpecificBahee(bd)} 
+                      className={selectedSpecificBahee?.id === bd.id ? "bg-green-600 hover:bg-green-700" : ""}
+                      title={selectedSpecificBahee?.id === bd.id ? "चयनित बही" : "इस बही की entries देखें"}
                     >
-                      सूची
+                      {selectedSpecificBahee?.id === bd.id ? "चयनित" : "सूची"}
                     </Button>
                   </Space>
                 </div>
@@ -559,13 +648,30 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           </div>
         )}
 
-        {/* Header with Filter and Search */}
+        {/* Header with Filter and Search - Enhanced */}
         <div className="p-4 border-b">
           <div className="flex flex-col space-y-4">
-            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-start gap-4">
-              <h2 className="text-xl font-semibold text-gray-800">
-                विगत बही सूची - {getDisplayName()}
-              </h2>
+            {/* Title with Add Entries Button - Enhanced */}
+            <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
+              <div className="flex flex-col lg:flex-row lg:items-center lg:gap-6">
+                <h2 className="text-xl font-semibold text-gray-800">
+                  विगत बही सूची - {getDisplayName()}
+                </h2>
+                
+                {/* Add Entries Button - Center positioned */}
+                <div className="flex justify-center lg:justify-start">
+                  <Button 
+                    type="primary" 
+                    icon={<PlusOutlined />}
+                    onClick={handleAddEntries}
+                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                    size="large"
+                  >
+                    नई Entries जोड़ें
+                  </Button>
+                </div>
+              </div>
+              
               {!currentBaheeType && !selectedBaheeId && baheeTypeOptions.length > 0 && (
                 <div className="flex items-center gap-2">
                   <FilterOutlined className="text-blue-500" />
@@ -585,6 +691,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 </div>
               )}
             </div>
+            
             <div className="flex justify-center lg:justify-end">
               <TransliterateSearch
                 value={searchText}
@@ -605,6 +712,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 {filteredData.length} रिकॉर्ड 
                 {searchText ? ` "${searchText}" के लिए` : ""}
               </span>
+              {selectedSpecificBahee && (
+                <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
+                  {selectedSpecificBahee.name} की entries
+                </span>
+              )}
               {(selectedBaheeType !== "" || searchText) && (
                 <span className="text-blue-600">(कुल {data.length} में से)</span>
               )}
@@ -629,14 +741,16 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           rowClassName={(record) => (lockedKeys[record.key] ? "opacity-60" : "")}
           locale={{
             emptyText: filteredData.length === 0
-              ? (selectedBaheeType !== "" ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
-                  : (searchText ? `"${searchText}" के लिए कोई परिणाम नहीं मिला` : 'कोई डेटा उपलब्ध नहीं है'))
+              ? (selectedSpecificBahee 
+                  ? `${selectedSpecificBahee.name} की कोई entries नहीं मिली`
+                  : (selectedBaheeType !== "" ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
+                      : (searchText ? `"${searchText}" के लिए कोई परिणाम नहीं मिला` : 'कोई डेटा उपलब्ध नहीं है')))
               : 'कोई डेटा उपलब्ध नहीं है'
           }}
           loading={loading}
         />
 
-        {/* Totals Section */}
+        {/* Enhanced Totals Section */}
         <div className="px-4 pb-4 space-y-3">
           <div className="w-full rounded-md border bg-gray-50 p-3 sm:p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -684,7 +798,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         </div>
       </div>
 
-      {/* All Modals */}
+      {/* All Modals remain the same... */}
       {/* Entry Edit Modal */}
       <CommonModal
         open={editOpen}
