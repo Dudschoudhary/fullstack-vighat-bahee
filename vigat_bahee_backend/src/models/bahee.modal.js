@@ -1,5 +1,5 @@
 // models/BaheeDetails.js
-import mongoose from 'mongoose';
+import mongoose, { Schema } from 'mongoose';
 
 const baheeDetailsSchema = new mongoose.Schema({
   baheeType: {
@@ -25,6 +25,10 @@ const baheeDetailsSchema = new mongoose.Schema({
     type: String,
     required: true,
     trim: true
+  },  
+    user_id:{
+    type: Schema.Types.ObjectId,
+    ref: "User"
   }
 }, {
   timestamps: true

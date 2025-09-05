@@ -72,8 +72,9 @@ const VigatBahee = () => {
       const response = await baheeApiService.getAllBaheeDetails();
       
       if (response.success && response.data) {
-        setSavedHeaders(response.data);
-        console.log('✅ Loaded Bahee Details:', response.data);
+        
+        setSavedHeaders(response.data.baheeDetails_ids);
+        console.log('✅ Loaded Bahee Details:', response.data.baheeDetails_ids);
         localStorage.setItem('baheeDetailsSavedArr', JSON.stringify(response.data));
       } else {
         throw new Error(response.message || 'Failed to load bahee details');

@@ -12,12 +12,13 @@ import {
   updateBaheeEntry,
   deleteBaheeEntry
 } from '../controllers/bahee.controller.js';
+import { authMiddleware } from '../middleware/auth.middleware.js';
 
 const router = express.Router();
 
 // Bahee Details routes
-router.post('/bahee-details', createBaheeDetails);
-router.get('/bahee-details', getAllBaheeDetails);
+router.post('/bahee-details', authMiddleware, createBaheeDetails);
+router.get('/bahee-details', authMiddleware, getAllBaheeDetails);
 router.get('/bahee-details/:baheeType', getBaheeDetailsByType);
 router.put('/bahee-details/:id', updateBaheeDetails);
 router.delete('/bahee-details/:id', deleteBaheeDetails);

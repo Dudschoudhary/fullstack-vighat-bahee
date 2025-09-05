@@ -43,6 +43,10 @@ const userSchema = new Schema(
       type: Boolean,
       default: false,
     },
+    baheeDetails_ids:[{
+        type: Schema.Types.ObjectId,
+        ref: "BaheeDetails"
+      }]
   },
   {
     timestamps: true,

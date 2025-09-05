@@ -1,10 +1,12 @@
 // controllers/baheeController.js
 import BaheeDetails from '../models/bahee.modal.js';
 import BaheeEntry from '../models/BaheeEntry.modal.js';
+import { User } from '../models/user.model.js';
 
 // Bahee Details Controllers
 export const createBaheeDetails = async (req, res) => {
   try {
+    const user_id = req.user._id
     const { baheeType, baheeTypeName, name, date, tithi } = req.body;
     
     if (!baheeType || !baheeTypeName || !name || !date || !tithi) {
@@ -31,10 +33,16 @@ export const createBaheeDetails = async (req, res) => {
       baheeTypeName: baheeTypeName.trim(),
       name: name.trim(),
       date,
-      tithi: tithi.trim()
+      tithi: tithi.trim(),
+      user_id
     });
 
-    await baheeDetails.save();
+    const baheeData = await baheeDetails.save();
+
+    await User.findByIdAndUpdate(user_id, {
+      $push: {baheeDetails_ids : baheeData._id},
+    })
+
 
     res.status(201).json({
       success: true,
@@ -53,7 +61,8 @@ export const createBaheeDetails = async (req, res) => {
 
 export const getAllBaheeDetails = async (req, res) => {
   try {
-    const baheeDetails = await BaheeDetails.find().sort({ createdAt: -1 });
+    const user_id = req.user._id
+    const baheeDetails = await User.findById(user_id).populate("baheeDetails_ids")
     
     res.status(200).json({
       success: true,
@@ -197,7 +206,8 @@ export const createBaheeEntry = async (req, res) => {
       fatherName: fatherName.trim(),
       villageName: villageName.trim(),
       income: parseFloat(income),
-      amount: isAmountRequired ? parseFloat(amount) : null
+      amount: isAmountRequired ? parseFloat(amount) : null,
+      // user_id
     });
 
     await baheeEntry.save();
