@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import VigatBaheeLayout from '../common/CustomVigatBaheeLogo';
 import UserProfile from '../components/UserProfile';
 import PasswordChangeModal from '../components/PasswordChangeModal';
@@ -24,7 +24,7 @@ const getBaheeTypeName = (value: string) => {
     mahera: 'माहेरा की विगत',
     anya: 'अन्य विगत'
   };
-  return baheeTypes[value] || '';
+  return baheeTypes[value?.toLowerCase()] || value || '';
 };
 
 const VigatBahee = () => {
@@ -36,33 +36,24 @@ const VigatBahee = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
   
-  // ✅ FIX: Navigation state management
-  const [pendingNavigation, setPendingNavigation] = useState<{
-    path: string;
-    state: any;
-  } | null>(null);
-  
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // ✅ FIX: Navigation in useEffect
+  // ✅ FIXED: Restore previous selections when coming back
   useEffect(() => {
-    if (pendingNavigation) {
-      console.log('🚀 Executing navigation:', pendingNavigation);
+    const savedState = location.state;
+    if (savedState?.returnFromBaheeLayout) {
+      // Restore previous selections when returning from bahee-layout
+      if (savedState.previousFirstSelect) setFirstSelectValue(savedState.previousFirstSelect);
+      if (savedState.previousSecondSelect) setSecondSelectValue(savedState.previousSecondSelect);
+      if (savedState.previousThirdSelect) setThirdSelectValue(savedState.previousThirdSelect);
       
-      // Small delay to ensure state is properly set
-      const timer = setTimeout(() => {
-        navigate(pendingNavigation.path, { 
-          state: pendingNavigation.state,
-          replace: true 
-        });
-        setPendingNavigation(null);
-      }, 100);
-
-      return () => clearTimeout(timer);
+      // Clear the state to prevent re-triggering
+      window.history.replaceState({}, document.title, window.location.pathname);
     }
-  }, [pendingNavigation, navigate]);
+  }, [location.state]);
 
-  // Load bahee details from API
+  // Enhanced data loading with better processing
   const loadBaheeDetails = async () => {
     try {
       setLoading(true);
@@ -72,10 +63,36 @@ const VigatBahee = () => {
       const response = await baheeApiService.getAllBaheeDetails();
       
       if (response.success && response.data) {
+        const rawData = response.data.baheeDetails_ids || [];
+        console.log('📦 Raw API Data:', rawData);
         
-        setSavedHeaders(response.data.baheeDetails_ids);
-        console.log('✅ Loaded Bahee Details:', response.data.baheeDetails_ids);
-        localStorage.setItem('baheeDetailsSavedArr', JSON.stringify(response.data));
+        const processedData = rawData.map((item: any, index: number) => {
+          const processed = {
+            id: item.id || item._id || `temp_${index}`,
+            baheeType: (item.baheeType || item.type || '').toLowerCase().trim(),
+            baheeTypeName: item.baheeTypeName || getBaheeTypeName(item.baheeType || item.type || ''),
+            name: item.name || item.title || `बिना नाम ${index + 1}`,
+            date: item.date || '',
+            tithi: item.tithi || '',
+            createdAt: item.createdAt || item.created_at || ''
+          };
+          
+          if (!processed.baheeType) {
+            console.warn('⚠️ Missing baheeType for item:', item);
+            processed.baheeType = 'anya';
+            processed.baheeTypeName = 'अन्य विगत';
+          }
+          
+          return processed;
+        }).filter(item => item.id && item.name);
+        
+        console.log('✅ Processed Data:', processedData);
+        
+        setSavedHeaders(processedData);
+        localStorage.setItem('baheeDetailsSavedArr', JSON.stringify({
+          ...response.data,
+          baheeDetails_ids: processedData
+        }));
       } else {
         throw new Error(response.message || 'Failed to load bahee details');
       }
@@ -83,8 +100,21 @@ const VigatBahee = () => {
       console.error('❌ Error loading bahee details:', error);
       setError('डेटा लोड करने में समस्या हुई।');
       
-      const saved = JSON.parse(localStorage.getItem('baheeDetailsSavedArr') || '[]') as BaheeDetails[];
-      setSavedHeaders(saved);
+      try {
+        const saved = JSON.parse(localStorage.getItem('baheeDetailsSavedArr') || '{}');
+        const fallbackData = saved.baheeDetails_ids || [];
+        
+        if (fallbackData.length > 0) {
+          console.log('📦 Using fallback data:', fallbackData);
+          setSavedHeaders(fallbackData);
+        } else {
+          console.log('📦 No fallback data available');
+          setSavedHeaders([]);
+        }
+      } catch (e) {
+        console.error('❌ Error parsing fallback data:', e);
+        setSavedHeaders([]);
+      }
     } finally {
       setLoading(false);
     }
@@ -131,7 +161,7 @@ const VigatBahee = () => {
     }
   };
 
-  // ✅ FIXED: Enhanced navigation with debugging
+  // ✅ FIXED: Remove automatic navigation - only set selection
   const handleSecondSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     console.log('📋 Second select changed to:', selectedId);
@@ -141,30 +171,6 @@ const VigatBahee = () => {
     if (selectedId !== '') {
       setFirstSelectValue('');
       setThirdSelectValue('');
-      
-      const selectedBahee = savedHeaders.find(h => h.id === selectedId);
-      
-      if (selectedBahee) {
-        console.log('✅ Found selected bahee:', selectedBahee);
-        
-        // ✅ FIX: Set navigation state instead of direct navigate
-        const navigationState = {
-          selectedBaheeId: selectedBahee.id,
-          baheeType: selectedBahee.baheeType,
-          baheeTypeName: selectedBahee.baheeTypeName,
-          existingBaheeData: selectedBahee,
-          autoNavigateToInterface: true
-        };
-
-        console.log('🎯 Setting navigation state:', navigationState);
-        
-        setPendingNavigation({
-          path: '/bahee-layout',
-          state: navigationState
-        });
-      } else {
-        console.error('❌ Selected bahee not found in savedHeaders');
-      }
     }
   };
 
@@ -180,26 +186,52 @@ const VigatBahee = () => {
     setFirstSelectValue('');
     setSecondSelectValue('');
     setThirdSelectValue('');
-    setPendingNavigation(null); // Clear pending navigation
   };
 
-  const handleRefresh = () => {
-    loadBaheeDetails();
-  };
-
+  // ✅ FIXED: Handle all navigation in submit with state preservation
   const handleSubmit = () => {
+    // Create state object to preserve current selections
+    const currentSelections = {
+      previousFirstSelect: firstSelectValue,
+      previousSecondSelect: secondSelectValue,
+      previousThirdSelect: thirdSelectValue
+    };
+
     if (firstSelectValue !== '') {
       navigate('/new-bahee', {
         state: {
           baheeType: firstSelectValue,
-          baheeTypeName: getBaheeTypeName(firstSelectValue)
+          baheeTypeName: getBaheeTypeName(firstSelectValue),
+          ...currentSelections
         }
       });
       return;
     }
     
     if (secondSelectValue !== '') {
-      console.log('Second select already handled in onChange');
+      const selectedBahee = savedHeaders.find(h => h.id === secondSelectValue);
+      
+      if (selectedBahee) {
+        console.log('✅ Found selected bahee:', selectedBahee);
+        
+        const navigationState = {
+          selectedBaheeId: selectedBahee.id,
+          baheeType: selectedBahee.baheeType,
+          baheeTypeName: selectedBahee.baheeTypeName,
+          existingBaheeData: selectedBahee,
+          autoNavigateToInterface: true,
+          ...currentSelections
+        };
+
+        console.log('🎯 Navigating with state:', navigationState);
+        
+        navigate('/bahee-layout', { 
+          state: navigationState,
+          replace: false 
+        });
+      } else {
+        console.error('❌ Selected bahee not found in savedHeaders');
+      }
       return;
     }
     
@@ -212,14 +244,16 @@ const VigatBahee = () => {
             baheeTypeName: existing.baheeTypeName,
             selectedBaheeId: existing.id,
             existingBaheeData: existing,
-            autoNavigateToInterface: true
+            autoNavigateToInterface: true,
+            ...currentSelections
           }
         });
       } else {
         navigate('/new-bahee', {
           state: {
             baheeType: thirdSelectValue,
-            baheeTypeName: getBaheeTypeName(thirdSelectValue)
+            baheeTypeName: getBaheeTypeName(thirdSelectValue),
+            ...currentSelections
           }
         });
       }
@@ -229,11 +263,25 @@ const VigatBahee = () => {
 
   const isAnySelected = firstSelectValue !== '' || secondSelectValue !== '' || thirdSelectValue !== '';
 
+  // Robust grouping with comprehensive validation
   const groupedByType: Record<string, BaheeDetails[]> = savedHeaders.reduce((acc, cur) => {
-    acc[cur.baheeType] = acc[cur.baheeType] || [];
-    acc[cur.baheeType].push(cur);
+    if (cur && typeof cur === 'object' && cur.baheeType) {
+      const baheeType = cur.baheeType.toLowerCase().trim();
+      const validTypes = ['vivah', 'muklawa', 'odhawani', 'mahera', 'anya'];
+      const finalType = validTypes.includes(baheeType) ? baheeType : 'anya';
+      
+      acc[finalType] = acc[finalType] || [];
+      acc[finalType].push(cur);
+    } else {
+      console.warn('⚠️ Skipping invalid entry:', cur);
+    }
     return acc;
   }, {} as Record<string, BaheeDetails[]>);
+
+  console.log('📊 SavedHeaders Count:', savedHeaders.length);
+  console.log('📊 SavedHeaders Sample:', savedHeaders.slice(0, 2));
+  console.log('📊 GroupedByType Keys:', Object.keys(groupedByType));
+  console.log('📊 GroupedByType Counts:', Object.entries(groupedByType).map(([type, items]) => `${type}: ${items.length}`));
 
   const typeOrder = ['vivah', 'muklawa', 'odhawani', 'mahera', 'anya'];
 
@@ -258,12 +306,6 @@ const VigatBahee = () => {
         </div>
 
         <div className="bg-white rounded-xl shadow-lg p-6 lg:p-8">
-          {/* Debug Info */}
-          {process.env.NODE_ENV === 'development' && pendingNavigation && (
-            <div className="mb-4 p-2 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded text-xs">
-              🔄 Navigation Pending: {pendingNavigation.path}
-            </div>
-          )}
 
           {/* Loading indicator for refresh */}
           {loading && savedHeaders.length > 0 && (
@@ -298,6 +340,21 @@ const VigatBahee = () => {
             </div>
           )}
 
+          {/* Selection Status Display */}
+          {isAnySelected && (
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg">
+              <span className="font-medium">चयनित: </span>
+              {firstSelectValue && <span>नई बही - {getBaheeTypeName(firstSelectValue)}</span>}
+              {secondSelectValue && (
+                <span>
+                  मौजूदा बही - {savedHeaders.find(h => h.id === secondSelectValue)?.name} 
+                  ({savedHeaders.find(h => h.id === secondSelectValue)?.baheeTypeName})
+                </span>
+              )}
+              {thirdSelectValue && <span>प्रकार अनुसार - {getBaheeTypeName(thirdSelectValue)}</span>}
+            </div>
+          )}
+
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8">
             {/* First Select - नई बही */}
             <div className="w-full lg:w-80">
@@ -329,7 +386,7 @@ const VigatBahee = () => {
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
             </div>
 
-            {/* Second Select - मौजूदा बही (FIXED with proper navigation) */}
+            {/* Second Select */}
             <div className="w-full lg:w-80">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 मौजूदा बही चुनें
@@ -339,7 +396,7 @@ const VigatBahee = () => {
               </label>
               <select
                 value={secondSelectValue}
-                onChange={handleSecondSelectChange} // ✅ FIXED: Now with proper navigation
+                onChange={handleSecondSelectChange}
                 disabled={firstSelectValue !== '' || thirdSelectValue !== '' || loading}
                 className={`w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all duration-200 ${
                   firstSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
@@ -348,20 +405,29 @@ const VigatBahee = () => {
                 <option value="">
                   {savedHeaders.length === 0 ? 'कोई बही उपलब्ध नहीं' : 'बही का विवरण देखे'}
                 </option>
-                {typeOrder.map(type => {
-                  const headersOfType = groupedByType[type] || [];
-                  if (headersOfType.length === 0) return null;
-                  
-                  return (
-                    <optgroup key={type} label={`${getBaheeTypeName(type)} (${headersOfType.length})`}>
-                      {headersOfType.map(h => (
-                        <option key={h.id} value={h.id}>
-                          {getBaheeTypeName(h.baheeType)} — {h.name}
-                        </option>
-                      ))}
-                    </optgroup>
-                  );
-                })}
+                
+                {savedHeaders.length > 0 && Object.keys(groupedByType).length > 0 ? (
+                  typeOrder.map(type => {
+                    const headersOfType = groupedByType[type] || [];
+                    if (headersOfType.length === 0) return null;
+                    
+                    return (
+                      <optgroup key={type} label={`${getBaheeTypeName(type)} (${headersOfType.length})`}>
+                        {headersOfType.map(h => (
+                          <option key={h.id} value={h.id}>
+                            {h.name} — {h.baheeTypeName || getBaheeTypeName(h.baheeType)}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })
+                ) : (
+                  savedHeaders.map(h => (
+                    <option key={h.id} value={h.id}>
+                      {h.name} — {h.baheeTypeName || getBaheeTypeName(h.baheeType)}
+                    </option>
+                  ))
+                )}
               </select>
             </div>
 
@@ -423,7 +489,7 @@ const VigatBahee = () => {
             </button>
           </div>
 
-          {/* Summary Section */}
+          {/* Enhanced Summary Section */}
           {savedHeaders.length > 0 && (
             <div className="mt-8 p-4 bg-blue-50 rounded-lg">
               <h3 className="text-lg font-semibold text-blue-800 mb-3">बही सारांश</h3>
@@ -437,6 +503,12 @@ const VigatBahee = () => {
                   </div>
                 ))}
               </div>
+              
+              {savedHeaders.length > 0 && Object.values(groupedByType).flat().length !== savedHeaders.length && (
+                <div className="mt-3 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
+                  ⚠️ कुछ डेटा वर्गीकृत नहीं है: {savedHeaders.length - Object.values(groupedByType).flat().length} items
+                </div>
+              )}
             </div>
           )}
         </div>

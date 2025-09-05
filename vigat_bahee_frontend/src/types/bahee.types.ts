@@ -31,6 +31,7 @@ export interface BaheeDetails {
     message?: string;
     data?: T;
     error?: string;
+    baheeDetails_ids?:string
   }
   
   export interface BaheeDetailsCreateRequest {

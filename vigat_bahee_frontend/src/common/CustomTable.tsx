@@ -32,7 +32,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   const {
     data,
     baheeDetails,
-    returnNetLogs,
     lockedKeys,
     selectedBaheeType,
     setSelectedBaheeType,
@@ -44,10 +43,8 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     updateBaheeDetails,
     addReturnNetLog,
     getReturnNetLogForRecord,
-    loadAllData,
     selectedBaheeDetails
   } = useAddNewEntriesInterface(currentBaheeType, selectedBaheeId);
-
   // Search and filtered data
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
@@ -83,6 +80,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     pageSizeOptions: ["10", "20", "50", "100"],
     showQuickJumper: true,
   });
+
 
   // Set default selection when contextual bahee details load
   useEffect(() => {
@@ -169,11 +167,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     } else {
       message.warning("कृपया पहले बही चुनें");
     }
-  };
-
-  // Navigate to home
-  const handleGoHome = () => {
-    navigate('/bahee-layout');
   };
 
   // Handle specific bahee selection from सूची button
