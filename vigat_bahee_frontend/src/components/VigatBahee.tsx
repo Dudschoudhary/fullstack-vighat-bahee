@@ -310,31 +310,18 @@ const VigatBahee = () => {
           {/* Loading indicator for refresh */}
           {loading && savedHeaders.length > 0 && (
             <div className="mb-4">
-              <Loader 
-                size="small" 
+              <Loader
+                size="small"
                 text="अपडेट हो रहा है..." 
                 colors={["#327fcd", "#32cd32"]}
               />
             </div>
           )}
 
-          {/* Error message */}
-          {error && (
-            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg flex items-center justify-between">
-              <span>{error}</span>
-              <button
-                onClick={handleRefresh}
-                className="text-red-700 hover:text-red-900 font-medium"
-              >
-                पुनः प्रयास करें
-              </button>
-            </div>
-          )}
-
           {/* Data count display */}
           {savedHeaders.length > 0 && (
             <div className="mb-4 text-center">
-              <span className="text-sm text-gray-600">
+              <span className="text-md text-blue-800 YatraOne-Regular">
                 कुल बही विवरण: <strong>{savedHeaders.length}</strong>
               </span>
             </div>
@@ -358,7 +345,7 @@ const VigatBahee = () => {
           <div className="flex flex-col lg:flex-row items-center justify-center gap-6 lg:gap-8">
             {/* First Select - नई बही */}
             <div className="w-full lg:w-80">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                 नई बही का प्रकार चुनें
               </label>
               <select
@@ -380,7 +367,7 @@ const VigatBahee = () => {
 
             <div className="flex items-center justify-center lg:flex-col lg:h-20">
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-              <span className="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-full lg:my-2">
+              <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
                 या
               </span>
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
@@ -388,7 +375,7 @@ const VigatBahee = () => {
 
             {/* Second Select */}
             <div className="w-full lg:w-80">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                 मौजूदा बही चुनें
                 {savedHeaders.length > 0 && (
                   <span className="text-xs text-green-600 ml-1">({savedHeaders.length} बही मिली)</span>
@@ -433,7 +420,7 @@ const VigatBahee = () => {
 
             <div className="flex items-center justify-center lg:flex-col lg:h-20">
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-              <span className="px-4 py-2 bg-gray-100 text-gray-600 text-sm font-medium rounded-full lg:my-2">
+              <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
                 या
               </span>
               <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
@@ -441,7 +428,7 @@ const VigatBahee = () => {
 
             {/* Third Select - प्रकार अनुसार */}
             <div className="w-full lg:w-80">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                 प्रकार अनुसार चुनें
               </label>
               <select

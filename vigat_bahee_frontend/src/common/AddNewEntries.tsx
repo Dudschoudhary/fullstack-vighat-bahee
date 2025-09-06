@@ -202,7 +202,7 @@ const AddNewEntries: React.FC = () => {
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
               <span className="text-red-600 text-3xl font-bold mr-2" role="img" aria-label="Swastik">🕉️</span>
-              <h2 className="text-xl font-bold text-gray-800">
+              <h2 className="text-xl font-bold text-red-800 Hind-Regular">
                 {selectedBaheeTypeName} का विवरण जोड़ें
               </h2>
             </div>

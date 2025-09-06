@@ -8,6 +8,31 @@
     src: url(../../src/assets/fonts/Rozha_One/RozhaOne-Regular.ttf);
 }
 
+@font-face {
+    font-family: "YatraOne-Regular";
+    src: url(../../src/assets/fonts/Yatra_One/YatraOne-Regular.ttf);
+}
+
+@font-face {
+    font-family: "Alkatra-Bold";
+    src: url(../../src/assets/fonts/Alkatra/Alkatra-Bold.ttf);
+}
+
+@font-face {
+    font-family: "Alkatra-Regular";
+    src: url(../../src/assets/fonts/Alkatra/Alkatra-Regular.ttf);
+}
+
+@font-face {
+    font-family: "Hind-Bold";
+    src: url(../../src/assets/fonts/Hind/Hind-Bold.ttf);
+}
+
+@font-face {
+    font-family: "Hind-Regular";
+    src: url(../../src/assets/fonts/Hind/Hind-Regular.ttf);
+}
+
 .tiroDevanagariSanskrit-Italic {
     font-family: "TiroDevanagariSanskrit-Italic";
 }
@@ -15,3 +40,24 @@
 .rozhaOne-Regular {
     font-family: "RozhaOne-Regular";
 }
+
+.YatraOne-Regular {
+    font-family: "YatraOne-Regular";
+}
+
+.Alkatra-Bold {
+    font-family: "Alkatra-Bold";
+}
+
+.Alkatra-Regular {
+    font-family: "Alkatra-Regular";
+}
+
+.Hind-Bold {
+    font-family: "Hind-Bold";
+}
+
+.Hind-Regular {
+    font-family: "Hind-Regular";
+}
+
