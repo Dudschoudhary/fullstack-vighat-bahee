@@ -1,19 +1,29 @@
-// components/AddNewEntriesInterface.tsx
-import React, { useMemo, useState, useEffect } from "react";
+// src/components/AddNewEntriesInterface.tsx
+import React, { useMemo, useState, useEffect, useRef } from "react";
 import { Space, Table, Button, Form, message, DatePicker, Select, Switch, Input, Tooltip } from "antd";
-import { EditOutlined, DeleteOutlined, SearchOutlined, EyeOutlined, FilterOutlined, UnorderedListOutlined, RollbackOutlined, SaveOutlined, LockOutlined, PlusOutlined, HomeOutlined } from "@ant-design/icons";
+import {
+  EditOutlined,
+  DeleteOutlined,
+  SearchOutlined,
+  EyeOutlined,
+  FilterOutlined,
+  UnorderedListOutlined,
+  RollbackOutlined,
+  SaveOutlined,
+  LockOutlined,
+  PlusOutlined,
+} from "@ant-design/icons";
 import type { TableProps, TablePaginationConfig } from "antd";
-import { ReactTransliterate } from 'react-transliterate';
-import dayjs from 'dayjs';
-import { useNavigate } from 'react-router-dom';
+import { ReactTransliterate } from "react-transliterate";
+import dayjs from "dayjs";
+import { useNavigate, useLocation } from "react-router-dom"; // NEW
 import CommonModal from "../common/CommonModal";
 import ConfirmModal from "../common/ConfirmModal";
 import EditRecordForm, { type EditValues } from "../common/EditRecordForm";
 import { useAddNewEntriesInterface } from "../hooks/useAddNewEntriesInterface";
 import TransliterateSearch from "../components/TransliterateSearch";
 import BaheeEditForm from "../common/BaheeEditForm";
-import CustomVigatBaheeLogo from "../common/CustomVigatBaheeLogo";
-import type { DataType, BaheeDetails, ReturnNetLog } from "../types/addNewEntriesInterface.types";
+import type { DataType, BaheeDetails } from "../types/addNewEntriesInterface.types";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -23,12 +33,12 @@ interface AddNewEntriesInterfaceProps {
   selectedBaheeId?: string;
 }
 
-const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({ 
-  currentBaheeType, 
-  selectedBaheeId 
+const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
+  currentBaheeType = "",
+  selectedBaheeId = "",
 }) => {
   const navigate = useNavigate();
-  
+
   const {
     data,
     baheeDetails,
@@ -43,16 +53,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     updateBaheeDetails,
     addReturnNetLog,
     getReturnNetLogForRecord,
-    selectedBaheeDetails
+    selectedBaheeDetails,
   } = useAddNewEntriesInterface(currentBaheeType, selectedBaheeId);
-  // Search and filtered data
+
+  // UI + local state (as in your file)
   const [searchText, setSearchText] = useState("");
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
-  
-  // Selected specific bahee person state
   const [selectedSpecificBahee, setSelectedSpecificBahee] = useState<BaheeDetails | null>(null);
 
-  // Modal states
   const [editOpen, setEditOpen] = useState(false);
   const [current, setCurrent] = useState<DataType | null>(null);
   const [form] = Form.useForm<EditValues>();
@@ -72,7 +80,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   const [returnSaving, setReturnSaving] = useState(false);
   const [returnTarget, setReturnTarget] = useState<DataType | null>(null);
 
-  // Pagination
   const [pagination, setPagination] = useState<TablePaginationConfig>({
     current: 1,
     pageSize: 10,
@@ -81,70 +88,96 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     showQuickJumper: true,
   });
 
+  // -------- NEW: read route state once and preselect dropdown/person ----------
+  const location = useLocation() as any; // NEW
+  const typeFromRoute = (location?.state?.baheeType ?? "").trim(); // NEW
+  const idFromRoute = (location?.state?.selectedBaheeId ?? "").trim(); // NEW
+  const didInitRef = useRef(false); // NEW
 
-  // Set default selection when contextual bahee details load
+  // 1) Preselect dropdown from props OR route state (runs once)
+  useEffect(() => {
+    if (didInitRef.current) return;
+    const initialType = (currentBaheeType || typeFromRoute || "").trim();
+    if (initialType && selectedBaheeType !== initialType) {
+      setSelectedBaheeType(initialType);
+      setSelectedSpecificBahee(null);
+      setSearchText("");
+    }
+    didInitRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentBaheeType, typeFromRoute]);
+
+  // 2) If a specific header id is present, select that person and sync type
+  useEffect(() => {
+    const targetId = (selectedBaheeId || idFromRoute || "").trim();
+    if (!targetId || baheeDetails.length === 0) return;
+    const target = baheeDetails.find((b) => b.id === targetId);
+    if (target) {
+      setSelectedSpecificBahee(target);
+      if (target.baheeType && selectedBaheeType !== target.baheeType) {
+        setSelectedBaheeType(target.baheeType);
+      }
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedBaheeId, idFromRoute, baheeDetails]);
+
+  // Default selection when contextual list loads (as in your file)
   useEffect(() => {
     if (contextualBaheeDetails.length > 0 && !selectedSpecificBahee) {
-      // Select first bahee by default
-      setSelectedSpecificBahee(contextualBaheeDetails[0]);
+      setSelectedSpecificBahee(contextualBaheeDetails);
     }
   }, [contextualBaheeDetails, selectedSpecificBahee]);
 
-  // Filter data based on selected bahee and search
+  // Filter data based on selected person/type + search (as in your file)
   useEffect(() => {
     let filtered = data;
-    
-    // Filter by specific selected bahee person
+
     if (selectedSpecificBahee) {
-      filtered = data.filter(r => 
-        r.baheeType === selectedSpecificBahee.baheeType && 
-        r.headerName === selectedSpecificBahee.name
+      filtered = data.filter(
+        (r) => r.baheeType === selectedSpecificBahee.baheeType && r.headerName === selectedSpecificBahee.name
       );
     } else if (selectedBaheeId) {
-      // Filter by specific bahee ID
-      const targetBahee = baheeDetails.find(b => b.id === selectedBaheeId);
+      const targetBahee = baheeDetails.find((b) => b.id === selectedBaheeId);
       if (targetBahee) {
-        filtered = data.filter(r => 
-          r.baheeType === targetBahee.baheeType && 
-          r.headerName === targetBahee.name
+        filtered = data.filter(
+          (r) => r.baheeType === targetBahee.baheeType && r.headerName === targetBahee.name
         );
       }
     } else if (selectedBaheeType !== "") {
-      // Filter by bahee type
-      filtered = data.filter(r => r.baheeType === selectedBaheeType);
+      filtered = data.filter((r) => r.baheeType === selectedBaheeType);
     }
 
-    // Apply search filter
     if (searchText !== "") {
-      const query = searchText.trim().toLowerCase();
-      filtered = filtered.filter(r =>
-        r.cast.toLowerCase().includes(query) ||
-        r.name.toLowerCase().includes(query) ||
-        r.fathername.toLowerCase().includes(query) ||
-        r.address.toLowerCase().includes(query) ||
-        r.aavta.toString().includes(query) ||
-        r.uparnet.toString().includes(query) ||
-        (r.baheeTypeName && r.baheeTypeName.toLowerCase().includes(query))
+      const q = searchText.trim().toLowerCase();
+      filtered = filtered.filter(
+        (r) =>
+          r.cast.toLowerCase().includes(q) ||
+          r.name.toLowerCase().includes(q) ||
+          r.fathername.toLowerCase().includes(q) ||
+          r.address.toLowerCase().includes(q) ||
+          r.aavta.toString().includes(q) ||
+          r.uparnet.toString().includes(q) ||
+          (r.baheeTypeName && r.baheeTypeName.toLowerCase().includes(q))
       );
     }
 
     setFilteredData(filtered);
-    setPagination(prev => ({ ...prev, current: 1 }));
+    setPagination((prev) => ({ ...prev, current: 1 }));
   }, [data, selectedBaheeType, selectedBaheeId, searchText, baheeDetails, selectedSpecificBahee]);
 
-  // Search handlers
+  // Search handlers (same)
   const handleSearch = (value: string) => setSearchText(value);
   const handleSearchChange = (value: string) => setSearchText(value);
   const handleClearSearch = () => setSearchText("");
 
-  // Bahee type change handler
+  // Bahee type change (same)
   const handleBaheeTypeChange = (value: string) => {
     setSelectedBaheeType(value);
     setSearchText("");
-    setSelectedSpecificBahee(null); // Reset specific selection
+    setSelectedSpecificBahee(null);
   };
 
-  // Navigate to Add Entries page
+  // Add entries navigation (same)
   const handleAddEntries = () => {
     let targetBahee: BaheeDetails | null = null;
 
@@ -153,29 +186,29 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     } else if (selectedBaheeDetails) {
       targetBahee = selectedBaheeDetails;
     } else if (contextualBaheeDetails.length > 0) {
-      targetBahee = contextualBaheeDetails[0];
+      targetBahee = contextualBaheeDetails;
     }
 
     if (targetBahee) {
-      navigate('/new-bahee', {
+      navigate("/new-bahee", {
         state: {
           baheeType: targetBahee.baheeType,
           baheeTypeName: targetBahee.baheeTypeName,
-          existingBaheeData: targetBahee
-        }
+          existingBaheeData: targetBahee,
+        },
       });
     } else {
       message.warning("कृपया पहले बही चुनें");
     }
   };
 
-  // Handle specific bahee selection from सूची button
+  // Select specific bahee person (same)
   const handleSelectSpecificBahee = (bahee: BaheeDetails) => {
     setSelectedSpecificBahee(bahee);
     message.success(`${bahee.name} की बही चुनी गई`);
   };
 
-  // Entry edit functions
+  // Edit entry (same)
   const openEdit = (record: DataType) => {
     if (lockedKeys[record.key]) {
       message.warning("यह प्रविष्टि लॉक है");
@@ -198,7 +231,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       const values = await form.validateFields();
       const aavta = Number(values.aavta ?? 0);
       const uparnet = Number(values.uparnet ?? 0);
-      
+
       if (aavta === 0 && uparnet === 0) {
         message.error("आवता और ऊपर नेत दोनों एक साथ 0 नहीं हो सकते");
         return;
@@ -209,7 +242,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           ...current,
           ...values,
           aavta,
-          uparnet
+          uparnet,
         };
 
         const success = await updateEntry(updatedEntry);
@@ -220,11 +253,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         }
       }
     } catch (error) {
-      console.error('Edit save error:', error);
+      // ignore
     }
   };
 
-  // Bahee details functions
+  // View/Edit bahee details (same)
   const openBaheeView = (bahee: BaheeDetails) => {
     setCurrentBahee(bahee);
     setBaheeViewOpen(true);
@@ -250,7 +283,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         ...currentBahee,
         baheeTypeName: values.baheeTypeName,
         name: values.name,
-        date: values.date.format('YYYY-MM-DD'),
+        date: values.date.format("YYYY-MM-DD"),
         tithi: values.tithi,
       };
 
@@ -259,14 +292,13 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         setBaheeEditOpen(false);
         setCurrentBahee(null);
         baheeForm.resetFields();
-        
-        // Update selected specific bahee if it was the one being edited
+
         if (selectedSpecificBahee && selectedSpecificBahee.id === updatedBahee.id) {
           setSelectedSpecificBahee(updatedBahee);
         }
       }
     } catch (error) {
-      console.error('Bahee edit save error:', error);
+      // ignore
     }
   };
 
@@ -277,7 +309,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     baheeForm.resetFields();
   };
 
-  // Delete functions
+  // Delete entry (same)
   const openDeleteModal = (record: DataType) => {
     if (lockedKeys[record.key]) {
       message.warning("यह प्रविष्टि लॉक है");
@@ -288,15 +320,12 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   const handleDeleteConfirm = async () => {
     if (!deleteModal.record) return;
-    
     setDeleteLoading(true);
     try {
       const success = await deleteEntry(deleteModal.record.key);
       if (success) {
         setDeleteModal({ open: false, record: null });
       }
-    } catch (error) {
-      console.error('Delete error:', error);
     } finally {
       setDeleteLoading(false);
     }
@@ -304,13 +333,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   const handleDeleteCancel = () => setDeleteModal({ open: false, record: null });
 
-  // View functions
-  const openViewModal = (record: DataType) => {
-    setViewModal({ open: true, record });
-  };
+  // View entry (same)
+  const openViewModal = (record: DataType) => setViewModal({ open: true, record });
   const handleViewCancel = () => setViewModal({ open: false, record: null });
 
-  // Return Net functions
+  // Return Net (same)
   const openReturnNetModal = (record: DataType) => {
     if (lockedKeys[record.key]) {
       message.warning("यह प्रविष्टि लॉक है");
@@ -324,7 +351,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       name: record?.name || "",
       date: dayjs(),
       description: "",
-      confirmToggle: false
+      confirmToggle: false,
     });
   };
 
@@ -336,9 +363,9 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       if (returnTarget) {
         const logData = {
           forKey: returnTarget.key,
-          baheeType: returnTarget.baheeType || '',
+          baheeType: returnTarget.baheeType || "",
           name: values.name,
-          date: values.date?.format("YYYY-MM-DD") || '',
+          date: values.date?.format("YYYY-MM-DD") || "",
           description: values.description,
           confirmToggle: values.confirmToggle,
         };
@@ -350,31 +377,33 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           returnNetForm.resetFields();
         }
       }
-    } catch (error) {
-      console.error('Return net save error:', error);
     } finally {
       setReturnSaving(false);
     }
   };
 
-  // Go to bahee list (legacy function - now replaced with specific selection)
+  // Legacy helper (kept)
   const goToBaheeList = (bahee: BaheeDetails) => {
     handleSelectSpecificBahee(bahee);
   };
 
-  // Highlight search text
-  const highlightSearchText = (text: string, searchText: string) => {
-    if (!searchText.trim()) return text;
-    const regex = new RegExp(`(${searchText.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')})`, 'gi');
+  // Highlight helper (same)
+  const highlightSearchText = (text: string, search: string) => {
+    if (!search.trim()) return text;
+    const regex = new RegExp(`(${search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
     const parts = text.split(regex);
-    return parts.map((part, index) => 
-      regex.test(part)
-        ? <span key={index} className="bg-yellow-200 font-medium">{part}</span>
-        : part
+    return parts.map((part, i) =>
+      regex.test(part) ? (
+        <span key={i} className="bg-yellow-200 font-medium">
+          {part}
+        </span>
+      ) : (
+        part
+      )
     );
   };
 
-  // Table columns
+  // Columns (same shape)
   const columns: TableProps<DataType>["columns"] = useMemo(
     () => [
       {
@@ -387,39 +416,35 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           const pageSize = pagination.pageSize || 10;
           const current = pagination.current || 1;
           return (current - 1) * pageSize + index + 1;
-        }
+        },
       },
       {
         title: "जाति",
         dataIndex: "cast",
         key: "cast",
         width: 120,
-        render: (text) => (
-          <span className="capitalize">
-            {highlightSearchText(text, searchText)}
-          </span>
-        )
+        render: (text) => <span className="capitalize">{highlightSearchText(text, searchText)}</span>,
       },
       {
         title: "नाम",
         dataIndex: "name",
         key: "name",
         width: 150,
-        render: (text) => highlightSearchText(text, searchText)
+        render: (text) => highlightSearchText(text, searchText),
       },
       {
         title: "पिता का नाम",
         dataIndex: "fathername",
         key: "fathername",
         width: 150,
-        render: (text) => highlightSearchText(text, searchText)
+        render: (text) => highlightSearchText(text, searchText),
       },
       {
         title: "गाँव का नाम",
         dataIndex: "address",
         key: "address",
         width: 200,
-        render: (text) => highlightSearchText(text, searchText)
+        render: (text) => highlightSearchText(text, searchText),
       },
       {
         title: "आवता",
@@ -427,7 +452,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         key: "aavta",
         width: 120,
         align: "right",
-        render: (value) => highlightSearchText(`₹${(value ?? 0).toLocaleString()}`, searchText)
+        render: (value) => highlightSearchText(`₹${(value ?? 0).toLocaleString()}`, searchText),
       },
       {
         title: "ऊपर नेत",
@@ -435,7 +460,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         key: "uparnet",
         width: 120,
         align: "right",
-        render: (value) => highlightSearchText(`₹${(value ?? 0).toLocaleString()}`, searchText)
+        render: (value) => highlightSearchText(`₹${(value ?? 0).toLocaleString()}`, searchText),
       },
       {
         title: "कार्य",
@@ -505,7 +530,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     [searchText, pagination.current, pagination.pageSize, lockedKeys]
   );
 
-  // Current page data and totals
+  // Pagination helpers (same)
   const currentSlice = useMemo(() => {
     const current = pagination.current ?? 1;
     const size = pagination.pageSize ?? 10;
@@ -515,40 +540,29 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   }, [filteredData, pagination.current, pagination.pageSize]);
 
   const { pageAavta, pageUpar, pageTotal } = useMemo(() => {
-    const pageAavta = currentSlice.reduce((sum, record) => sum + (Number(record.aavta) || 0), 0);
-    const pageUpar = currentSlice.reduce((sum, record) => sum + (Number(record.uparnet) || 0), 0);
+    const pageAavta = currentSlice.reduce((sum, r) => sum + (Number(r.aavta) || 0), 0);
+    const pageUpar = currentSlice.reduce((sum, r) => sum + (Number(r.uparnet) || 0), 0);
     return { pageAavta, pageUpar, pageTotal: pageAavta + pageUpar };
   }, [currentSlice]);
 
   const { totalAavta, totalUpar, grandTotal } = useMemo(() => {
-    const totalAavta = filteredData.reduce((sum, record) => sum + (Number(record.aavta) || 0), 0);
-    const totalUpar = filteredData.reduce((sum, record) => sum + (Number(record.uparnet) || 0), 0);
+    const totalAavta = filteredData.reduce((sum, r) => sum + (Number(r.aavta) || 0), 0);
+    const totalUpar = filteredData.reduce((sum, r) => sum + (Number(r.uparnet) || 0), 0);
     return { totalAavta, totalUpar, grandTotal: totalAavta + totalUpar };
   }, [filteredData]);
 
-  // Table pagination change
-  const onChange: TableProps<DataType>["onChange"] = (paginationConfig) => {
-    setPagination((prev) => ({
-      ...prev,
-      current: paginationConfig.current,
-      pageSize: paginationConfig.pageSize,
-    }));
+  const onChange: TableProps<DataType>["onChange"] = (p) => {
+    setPagination((prev) => ({ ...prev, current: p.current, pageSize: p.pageSize }));
   };
 
-  // Get display name for current selection
   const getDisplayName = () => {
-    if (selectedSpecificBahee) {
-      return `${selectedSpecificBahee.baheeTypeName} - ${selectedSpecificBahee.name}`;
-    }
-    if (selectedBaheeDetails) {
-      return `${selectedBaheeDetails.baheeTypeName} - ${selectedBaheeDetails.name}`;
-    }
-    if (contextualBaheeDetails.length > 0) {
-      return `${contextualBaheeDetails[0].baheeTypeName} - ${contextualBaheeDetails[0].name}`;
-    }
+    if (selectedSpecificBahee) return `${selectedSpecificBahee.baheeTypeName} - ${selectedSpecificBahee.name}`;
+    if (selectedBaheeDetails) return `${selectedBaheeDetails.baheeTypeName} - ${selectedBaheeDetails.name}`;
+    if (contextualBaheeDetails.length > 0)
+      return `${contextualBaheeDetails.baheeTypeName} - ${contextualBaheeDetails.name}`;
     if (selectedBaheeType) {
-      const bahee = baheeDetails.find(bd => bd.baheeType === selectedBaheeType);
-      return bahee?.baheeTypeName || "अज्ञात बही";
+      const bd = baheeDetails.find((x) => x.baheeType === selectedBaheeType);
+      return bd?.baheeTypeName || "अज्ञात बही";
     }
     return "सभी बही";
   };
@@ -564,15 +578,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   return (
     <>
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-        {/* Contextual Bahee Details - Enhanced */}
+        {/* Contextual Bahee Details */}
         {contextualBaheeDetails.length > 0 && (
           <div className="p-4 bg-blue-50 border-b">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
               <h3 className="text-lg font-bold text-gray-700">
-                {currentBaheeType || selectedBaheeId ? 'वर्तमान बही विवरण:' : 'सहेजी गई बही विवरण:'}
+                {currentBaheeType || selectedBaheeId ? "वर्तमान बही विवरण:" : "सहेजी गई बही विवरण:"}
               </h3>
-              
-              {/* Show selected person indicator */}
+
               {selectedSpecificBahee && (
                 <div className="flex items-center gap-2 bg-green-100 border border-green-300 rounded-lg px-3 py-1">
                   <span className="text-green-700 text-sm font-medium">चयनित:</span>
@@ -580,55 +593,59 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="flex flex-col gap-2">
-              {contextualBaheeDetails.map((bd, index) => (
-                <div 
-                  key={bd.id || index} 
+              {contextualBaheeDetails.map((bd) => (
+                <div
+                  key={bd.id}
                   className={`border rounded-lg px-4 py-2 flex items-center justify-between gap-4 transition-all duration-200 ${
-                    selectedSpecificBahee?.id === bd.id 
-                      ? 'bg-green-50 border-green-300 shadow-md' 
-                      : 'bg-white border-blue-200 hover:border-blue-300'
+                    selectedSpecificBahee?.id === bd.id
+                      ? "bg-green-50 border-green-300 shadow-md"
+                      : "bg-white border-blue-200 hover:border-blue-300"
                   }`}
                 >
                   <div className="flex items-center gap-4 overflow-x-auto" style={{ whiteSpace: "nowrap" }}>
-                    <span className="text-lg">
-                      {selectedSpecificBahee?.id === bd.id ? '✅' : '🕉️'}
-                    </span>
-                    <span className={`font-semibold ${selectedSpecificBahee?.id === bd.id ? 'text-green-800' : 'text-blue-800'}`}>
+                    <span className="text-lg">{selectedSpecificBahee?.id === bd.id ? "✅" : "🕉️"}</span>
+                    <span
+                      className={`font-semibold ${
+                        selectedSpecificBahee?.id === bd.id ? "text-green-800" : "text-blue-800"
+                      }`}
+                    >
                       {bd.baheeTypeName}
                     </span>
                     <span className="text-gray-400">|</span>
-                    <span className="text-sm">नाम: <b>{bd.name}</b></span>
+                    <span className="text-sm">
+                      नाम: <b>{bd.name}</b>
+                    </span>
                     <span className="text-gray-400">|</span>
                     <span className="text-sm">तारीख: {bd.date}</span>
                     <span className="text-gray-400">|</span>
                     <span className="text-sm">तिथि: {bd.tithi}</span>
                   </div>
                   <Space size="small" className="flex-shrink-0">
-                    <Button 
-                      type="primary" 
-                      icon={<EyeOutlined />} 
-                      size="small" 
-                      onClick={() => openBaheeView(bd)} 
-                      className="bg-green-500 hover:bg-green-600" 
+                    <Button
+                      type="primary"
+                      icon={<EyeOutlined />}
+                      size="small"
+                      onClick={() => openBaheeView(bd)}
+                      className="bg-green-500 hover:bg-green-600"
                       title="देखें"
                     >
                       देखें
                     </Button>
-                    <Button 
-                      type="primary" 
-                      icon={<EditOutlined />} 
-                      size="small" 
-                      onClick={() => openBaheeEdit(bd)} 
-                      className="bg-blue-500 hover:bg-blue-600" 
-                      title="संपादित करें" 
+                    <Button
+                      type="primary"
+                      icon={<EditOutlined />}
+                      size="small"
+                      onClick={() => openBaheeEdit(bd)}
+                      className="bg-blue-500 hover:bg-blue-600"
+                      title="संपादित करें"
                     />
-                    <Button 
+                    <Button
                       type={selectedSpecificBahee?.id === bd.id ? "primary" : "default"}
-                      icon={<UnorderedListOutlined />} 
-                      size="small" 
-                      onClick={() => handleSelectSpecificBahee(bd)} 
+                      icon={<UnorderedListOutlined />}
+                      size="small"
+                      onClick={() => handleSelectSpecificBahee(bd)}
                       className={selectedSpecificBahee?.id === bd.id ? "bg-green-600 hover:bg-green-700" : ""}
                       title={selectedSpecificBahee?.id === bd.id ? "चयनित बही" : "इस बही की entries देखें"}
                     >
@@ -641,20 +658,16 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           </div>
         )}
 
-        {/* Header with Filter and Search - Enhanced */}
+        {/* Header + Filter/Search */}
         <div className="p-4 border-b">
           <div className="flex flex-col space-y-4">
-            {/* Title with Add Entries Button - Enhanced */}
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
               <div className="flex flex-col lg:flex-row lg:items-center lg:gap-6">
-                <h2 className="text-xl font-semibold text-gray-800">
-                  विगत बही सूची - {getDisplayName()}
-                </h2>
-                
-                {/* Add Entries Button - Center positioned */}
+                <h2 className="text-xl font-semibold text-gray-800">विगत बही सूची - {getDisplayName()}</h2>
+
                 <div className="flex justify-center lg:justify-start">
-                  <Button 
-                    type="primary" 
+                  <Button
+                    type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAddEntries}
                     className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
@@ -664,18 +677,18 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                   </Button>
                 </div>
               </div>
-              
+
               {!currentBaheeType && !selectedBaheeId && baheeTypeOptions.length > 0 && (
                 <div className="flex items-center gap-2">
                   <FilterOutlined className="text-blue-500" />
-                  <Select 
-                    value={selectedBaheeType} 
-                    onChange={handleBaheeTypeChange} 
-                    className="min-w-[200px]" 
+                  <Select
+                    value={selectedBaheeType}
+                    onChange={handleBaheeTypeChange}
+                    className="min-w-[200px]"
                     placeholder="बही प्रकार चुनें"
                     allowClear
                   >
-                    {baheeTypeOptions.map(option => (
+                    {baheeTypeOptions.map((option) => (
                       <Option key={option.value} value={option.value}>
                         {option.label}
                       </Option>
@@ -684,7 +697,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 </div>
               )}
             </div>
-            
+
             <div className="flex justify-center lg:justify-end">
               <TransliterateSearch
                 value={searchText}
@@ -695,15 +708,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               />
             </div>
           </div>
-          
+
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex flex-wrap items-center gap-2 text-sm">
               <span className="text-blue-700 flex items-center">
                 <SearchOutlined className="mr-1" /> परिणाम:
               </span>
               <span className="font-semibold text-blue-900">
-                {filteredData.length} रिकॉर्ड 
-                {searchText ? ` "${searchText}" के लिए` : ""}
+                {filteredData.length} रिकॉर्ड {searchText ? ` "${searchText}" के लिए` : ""}
               </span>
               {selectedSpecificBahee && (
                 <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
@@ -726,30 +738,32 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           pagination={{
             ...pagination,
             total: filteredData.length,
-            showTotal: (total, range) => `${range[0]}-${range[1]} of ${total} items`,
-            position: ["bottomCenter"]
+            showTotal: (total, range) => `${range}-${range[1]} of ${total} items`,
+            position: ["bottomCenter"],
           }}
           scroll={{ x: 1100 }}
           size="middle"
           rowClassName={(record) => (lockedKeys[record.key] ? "opacity-60" : "")}
           locale={{
-            emptyText: filteredData.length === 0
-              ? (selectedSpecificBahee 
+            emptyText:
+              filteredData.length === 0
+                ? selectedSpecificBahee
                   ? `${selectedSpecificBahee.name} की कोई entries नहीं मिली`
-                  : (selectedBaheeType !== "" ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
-                      : (searchText ? `"${searchText}" के लिए कोई परिणाम नहीं मिला` : 'कोई डेटा उपलब्ध नहीं है')))
-              : 'कोई डेटा उपलब्ध नहीं है'
+                  : selectedBaheeType !== ""
+                  ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
+                  : searchText
+                  ? `"${searchText}" के लिए कोई परिणाम नहीं मिला`
+                  : "कोई डेटा उपलब्ध नहीं है"
+                : "कोई डेटा उपलब्ध नहीं है",
           }}
           loading={loading}
         />
 
-        {/* Enhanced Totals Section */}
+        {/* Totals */}
         <div className="px-4 pb-4 space-y-3">
           <div className="w-full rounded-md border bg-gray-50 p-3 sm:p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-              <div className="text-sm sm:text-base font-medium text-gray-700">
-                इस पेज के कुल ({getDisplayName()}):
-              </div>
+              <div className="text-sm sm:text-base font-medium text-gray-700">इस पेज के कुल ({getDisplayName()}):</div>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 sm:gap-4">
                 <div className="flex items-center justify-between sm:justify-start sm:gap-2">
                   <span className="text-gray-600">आवता:</span>
@@ -766,7 +780,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               </div>
             </div>
           </div>
-          
+
           <div className="w-full rounded-md border bg-blue-50 p-3 sm:p-4">
             <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
               <div className="text-sm sm:text-base font-medium text-blue-700">
@@ -791,8 +805,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         </div>
       </div>
 
-      {/* All Modals remain the same... */}
-      {/* Entry Edit Modal */}
+      {/* Modals (same as your file) */}
       <CommonModal
         open={editOpen}
         title="रिकॉर्ड संपादित करें"
@@ -811,14 +824,13 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         <EditRecordForm form={form} initialValues={current || undefined} />
       </CommonModal>
 
-      {/* Bahee View Modal */}
       <CommonModal
         open={baheeViewOpen}
         title="बही का विवरण"
         onOk={closeBaheeModals}
         onCancel={closeBaheeModals}
         okText="बंद करें"
-        cancelButtonProps={{ style: { display: 'none' } }}
+        cancelButtonProps={{ style: { display: "none" } }}
         width={600}
       >
         {currentBahee && (
@@ -845,14 +857,13 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         )}
       </CommonModal>
 
-      {/* Bahee Edit Modal */}
       <CommonModal
         open={baheeEditOpen}
         title="बही विवरण संपादित करें"
         onOk={saveBaheeEdit}
         onCancel={closeBaheeModals}
         okText="सेव करें"
-        cancelText="रद्द करें"
+        cancelText="รद्द करें"
         width={720}
         maskClosable={false}
         confirmLoading={loading}
@@ -860,14 +871,13 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         <BaheeEditForm form={baheeForm} initialValues={currentBahee || undefined} />
       </CommonModal>
 
-      {/* Entry View Modal */}
       <CommonModal
         open={viewModal.open}
         title="बही का विवरण"
         onOk={handleViewCancel}
         onCancel={handleViewCancel}
         okText="बंद करें"
-        cancelButtonProps={{ style: { display: 'none' } }}
+        cancelButtonProps={{ style: { display: "none" } }}
         width={600}
       >
         {viewModal.record && (
@@ -877,7 +887,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 ⚠️ यह प्रविष्टि लॉक है; केवल विवरण देखा जा सकता है।
               </div>
             )}
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700">नाम:</label>
@@ -897,11 +907,15 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">आवता:</label>
-                <p className="text-lg font-semibold text-green-600">₹{viewModal.record.aavta.toLocaleString()}</p>
+                <p className="text-lg font-semibold text-green-600">
+                  ₹{(viewModal.record.aavta ?? 0).toLocaleString()}
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-medium text-gray-700">ऊपर नेत:</label>
-                <p className="text-lg font-semibold text-blue-600">₹{viewModal.record.uparnet.toLocaleString()}</p>
+                <p className="text-lg font-semibold text-blue-600">
+                  ₹{(viewModal.record.uparnet ?? 0).toLocaleString()}
+                </p>
               </div>
               {viewModal.record.baheeTypeName && (
                 <div className="col-span-2">
@@ -911,10 +925,9 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               )}
             </div>
 
-            {/* Return Net Details for Locked Entries */}
             {lockedKeys[viewModal.record.key] && (() => {
-              const returnNetLog = getReturnNetLogForRecord(viewModal.record.key);
-              return returnNetLog ? (
+              const log = getReturnNetLogForRecord(viewModal.record.key);
+              return log ? (
                 <div className="mt-6 p-4 bg-red-50 border border-red-200 rounded-lg">
                   <h4 className="text-lg font-semibold text-red-800 mb-3 flex items-center">
                     <RollbackOutlined className="mr-2" />
@@ -923,23 +936,25 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
                       <label className="block text-sm font-medium text-red-700">नाम:</label>
-                      <p className="text-base font-semibold text-red-900">{returnNetLog.name}</p>
+                      <p className="text-base font-semibold text-red-900">{log.name}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-red-700">तारीख:</label>
-                      <p className="text-base text-red-800">{returnNetLog.date}</p>
+                      <p className="text-base text-red-800">{log.date}</p>
                     </div>
                     <div className="md:col-span-2">
                       <label className="block text-sm font-medium text-red-700">विवरण:</label>
-                      <p className="text-base text-red-800 bg-white p-2 rounded border">{returnNetLog.description}</p>
+                      <p className="text-base text-red-800 bg-white p-2 rounded border">{log.description}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-red-700">पुष्टि स्थिति:</label>
-                      <p className="text-base text-red-800">{returnNetLog.confirmToggle ? "✅ हाँ" : "❌ नहीं"}</p>
+                      <p className="text-base text-red-800">{log.confirmToggle ? "✅ हाँ" : "❌ नहीं"}</p>
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-red-700">लॉक की गई:</label>
-                      <p className="text-sm text-red-600">{new Date(returnNetLog.createdAt).toLocaleString('hi-IN')}</p>
+                      <p className="text-sm text-red-600">
+                        {new Date(log.createdAt).toLocaleString("hi-IN")}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -949,7 +964,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         )}
       </CommonModal>
 
-      {/* Delete Confirmation Modal */}
       <ConfirmModal
         open={deleteModal.open}
         title="रिकॉर्ड हटाएं"
@@ -959,10 +973,9 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         loading={deleteLoading}
         confirmText="हटाएं"
         cancelText="रद्द करें"
-        danger={true}
+        danger
       />
 
-      {/* Return Net Modal */}
       <CommonModal
         open={returnNetOpen}
         title="वापस डाला गया नेत"
@@ -973,61 +986,47 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           setReturnTarget(null);
           returnNetForm.resetFields();
         }}
-        okText={<><SaveOutlined /> सहेजें</>}
+        okText={
+          <>
+            <SaveOutlined /> सहेजें
+          </>
+        }
         cancelText="रद्द करें"
         width={640}
         maskClosable={false}
         confirmLoading={returnSaving}
       >
         <Form form={returnNetForm} layout="vertical" disabled={returnSaving}>
-          <Form.Item 
-            name="name" 
-            label="नाम" 
-            rules={[{ required: true, message: 'नाम दर्ज करें' }]}
-          >
-            <ReactTransliterate 
-              lang="hi" 
-              placeholder="नाम दर्ज करें" 
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm" 
-              style={{ height: 40 }} 
+          <Form.Item name="name" label="नाम" rules={[{ required: true, message: "नाम दर्ज करें" }]}>
+            <ReactTransliterate
+              lang="hi"
+              placeholder="नाम दर्ज करें"
+              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
+              style={{ height: 40 }}
             />
           </Form.Item>
-          <Form.Item 
-            name="date" 
-            label="तारीख" 
-            rules={[{ required: true, message: 'तारीख चुनें' }]}
-          >
-            <DatePicker 
-              format="YYYY-MM-DD" 
-              className="w-full" 
-              placeholder="तारीख चुनें" 
+          <Form.Item name="date" label="तारीख" rules={[{ required: true, message: "तारीख चुनें" }]}>
+            <DatePicker format="YYYY-MM-DD" className="w-full" placeholder="तारीख चुनें" />
+          </Form.Item>
+          <Form.Item name="description" label="विवरण" rules={[{ required: true, message: "विवरण दर्ज करें" }]}>
+            <ReactTransliterate
+              renderComponent={(props: any) => <TextArea {...props} rows={4} />}
+              lang="hi"
+              placeholder="विवरण लिखें..."
+              className="w-full"
             />
           </Form.Item>
-          <Form.Item 
-            name="description" 
-            label="विवरण" 
-            rules={[{ required: true, message: 'विवरण दर्ज करें' }]}
+          <Form.Item
+            name="confirmToggle"
+            label="पुष्टि"
+            valuePropName="checked"
+            rules={[
+              {
+                validator: (_, value) => (value ? Promise.resolve() : Promise.reject(new Error("कृपया टॉगल ऑन करें"))),
+              },
+            ]}
           >
-            <ReactTransliterate 
-              renderComponent={(props: any) => (<TextArea {...props} rows={4} />)} 
-              lang="hi" 
-              placeholder="विवरण लिखें..." 
-              className="w-full" 
-            />
-          </Form.Item>
-          <Form.Item 
-            name="confirmToggle" 
-            label="पुष्टि" 
-            valuePropName="checked" 
-            rules={[{ 
-              validator: (_, value) => 
-                value ? Promise.resolve() : Promise.reject(new Error('कृपया टॉगल ऑन करें')) 
-            }]}
-          >
-            <Switch 
-              checkedChildren="हाँ" 
-              unCheckedChildren="नहीं" 
-            />
+            <Switch checkedChildren="हाँ" unCheckedChildren="नहीं" />
           </Form.Item>
         </Form>
       </CommonModal>

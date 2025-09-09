@@ -61,7 +61,7 @@ const AddNewEntries: React.FC = () => {
         setLoading(true);
         console.log('🔄 Loading Bahee Details...');
         const response = await baheeApiService.getAllBaheeDetails();
-        
+
         if (response.success && response.data) {
           setAllSavedBaheeDetails(response.data);
           console.log('✅ Loaded Bahee Details:', response.data);
@@ -96,12 +96,12 @@ const AddNewEntries: React.FC = () => {
     console.log(`⌨️ Details Input Change - ${field}:`, value);
     setLocalDetailsForm(prev => ({ ...prev, [field]: value })); // Immediate UI update
     setDetailsError('');
-    
+
     if (field === 'date') {
       const calculatedTithi = getHinduTithi(value);
       setLocalDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
     }
-    
+
     debouncedUpdateDetailsForm(field, value); // Debounced actual form update
   }, [debouncedUpdateDetailsForm]);
 
@@ -109,7 +109,7 @@ const AddNewEntries: React.FC = () => {
   const handleBaheeDetailsSave = async (e: FormEvent) => {
     e.preventDefault();
     const nameTrim = detailsForm.name.trim();
-    
+
     if (!nameTrim || !detailsForm.date.trim() || !detailsForm.tithi.trim()) {
       setDetailsError('सभी विवरण अनिवार्य हैं।');
       return;
@@ -129,11 +129,11 @@ const AddNewEntries: React.FC = () => {
       };
 
       const response = await baheeApiService.createBaheeDetails(detailsData);
-      
+
       if (response.success && response.data) {
         setThisTypeBaheeDetails(response.data);
         console.log('✅ Bahee Details Saved:', response.data);
-        
+
         // Refresh the list
         const updatedResponse = await baheeApiService.getAllBaheeDetails();
         if (updatedResponse.success && updatedResponse.data) {
@@ -159,7 +159,7 @@ const AddNewEntries: React.FC = () => {
       console.log('💾 Saving Entry...');
 
       const response = await baheeApiService.createBaheeEntry(entryData);
-      
+
       if (response.success) {
         console.log('✅ Entry Saved:', response.data);
       }
@@ -183,9 +183,9 @@ const AddNewEntries: React.FC = () => {
   // Show full screen loader during initial data load
   if (loading) {
     return (
-      <Loader 
-        size="large" 
-        text="डेटा लोड हो रहा है..." 
+      <Loader
+        size="large"
+        text="डेटा लोड हो रहा है..."
         fullScreen={true}
         colors={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
       />
@@ -201,70 +201,92 @@ const AddNewEntries: React.FC = () => {
         {!thisTypeBaheeDetails && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
-              <span className="text-red-600 text-3xl font-bold mr-2" role="img" aria-label="Swastik">🕉️</span>
-              <h2 className="text-xl font-bold text-red-800 Hind-Regular">
-                {selectedBaheeTypeName} का विवरण जोड़ें
-              </h2>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-2xl">🕉️</span>
+                <h2 className="text-lg font-bold text-red-800 Hind-Regular">
+                  {selectedBaheeTypeName} का विवरण जोड़ें
+                </h2>
+              </div>
             </div>
-            
+
             {detailsLoading && (
               <div className="mb-4">
-                <Loader 
-                  size="medium" 
-                  text="बही विवरण सेव हो रहा है..." 
+                <Loader
+                  size="medium"
+                  text="बही विवरण सेव हो रहा है..."
                   colors={["#32cd32", "#327fcd"]}
                 />
               </div>
             )}
 
-            <form onSubmit={handleBaheeDetailsSave} className="grid md:grid-cols-3 gap-4 items-end">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">नाम</label>
-                <ReactTransliterate
-                  value={localDetailsForm.name}
-                  onChangeText={text => handleChangeBaheeDetails('name', text)}
-                  lang="hi"
-                  placeholder="जैसे: दुदाराम"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2"
-                  disabled={detailsLoading}
-                  maxOptions={3}
-                  minMatchLength={2}
-                  showCurrentWordAsLastOption={false}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">तारीख</label>
-                <input
-                  type="date"
-                  value={localDetailsForm.date}
-                  onChange={e => handleChangeBaheeDetails('date', e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2"
-                  disabled={detailsLoading}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">तिथि</label>
-                <input
-                  type="text"
-                  value={localDetailsForm.tithi}
-                  placeholder="तिथि"
-                  className="w-full px-3 py-2 border rounded-lg focus:ring-2 bg-blue-50"
-                  disabled={true}
-                  readOnly
-                />
-              </div>
-              <div className="col-span-3 flex gap-4 items-center mt-4">
-                <button
-                  type="submit"
-                  disabled={detailsLoading}
-                  className="px-6 py-2 rounded-lg text-white font-semibold shadow bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                >
-                  {detailsLoading && (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+            <form onSubmit={handleBaheeDetailsSave} className="space-y-4">
+              {/* Card */}
+              <div className="bg-white/90 backdrop-blur rounded-2xl shadow-md p-4 sm:p-6 max-w-sm mx-auto sm:max-w-none">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                  {/* Name */}
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      नाम
+                    </label>
+                    <ReactTransliterate
+                      value={localDetailsForm.name}
+                      onChangeText={(text) => handleChangeBaheeDetails('name', text)}
+                      lang="hi"
+                      placeholder="जैसे: दुदाराम"
+                      className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base placeholder-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
+                      disabled={detailsLoading}
+                      maxOptions={3}
+                      minMatchLength={2}
+                      showCurrentWordAsLastOption={false}
+                    />
+                  </div>
+
+                  {/* Date */}
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      तारीख
+                    </label>
+                    <input
+                      type="date"
+                      value={localDetailsForm.date}
+                      onChange={(e) => handleChangeBaheeDetails('date', e.target.value)}
+                      className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
+                      disabled={detailsLoading}
+                    />
+                  </div>
+
+                  {/* Tithi (read-only) */}
+                  <div className="sm:col-span-1">
+                    <label className="block text-xs font-medium text-gray-700 mb-1">
+                      तिथि
+                    </label>
+                    <input
+                      type="text"
+                      value={localDetailsForm.tithi}
+                      placeholder="तिथि"
+                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base text-gray-700 cursor-not-allowed"
+                      disabled
+                      readOnly
+                    />
+                  </div>
+                </div>
+
+                {/* Actions */}
+                <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+                  <button
+                    type="submit"
+                    disabled={detailsLoading}
+                    className="h-12 w-full sm:w-auto px-5 rounded-xl text-white font-semibold shadow-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:opacity-60"
+                  >
+                    {detailsLoading ? 'Saving...' : 'Save'}
+                  </button>
+
+                  {detailsError && (
+                    <span role="alert" className="text-sm text-red-600">
+                      {detailsError}
+                    </span>
                   )}
-                  {detailsLoading ? 'Saving...' : 'Save'}
-                </button>
-                {detailsError && <span className="text-red-500">{detailsError}</span>}
+                </div>
               </div>
             </form>
           </div>
