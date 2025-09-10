@@ -582,8 +582,8 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         {contextualBaheeDetails.length > 0 && (
           <div className="p-4 bg-blue-50 border-b">
             <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-4">
-              <h3 className="text-lg font-bold text-gray-700">
-                {currentBaheeType || selectedBaheeId ? "वर्तमान बही विवरण:" : "सहेजी गई बही विवरण:"}
+              <h3 className="text-lg font-bold text-red-700">
+                {currentBaheeType || selectedBaheeId ? "वर्तमान बही विवरण:" : "Save बही का विवरण:"}
               </h3>
 
               {selectedSpecificBahee && (
@@ -618,7 +618,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                       नाम: <b>{bd.name}</b>
                     </span>
                     <span className="text-gray-400">|</span>
-                    <span className="text-sm">तारीख: {bd.date}</span>
+                    <span className="text-sm">तारीख: {formattedDate}</span>
                     <span className="text-gray-400">|</span>
                     <span className="text-sm">तिथि: {bd.tithi}</span>
                   </div>
@@ -663,14 +663,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           <div className="flex flex-col space-y-4">
             <div className="flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
               <div className="flex flex-col lg:flex-row lg:items-center lg:gap-6">
-                <h2 className="text-xl font-semibold text-gray-800">विगत बही सूची - {getDisplayName()}</h2>
+                <h2 className="text-xl font-semibold text-gray-800">विगत बही - {getDisplayName()}</h2>
 
                 <div className="flex justify-center lg:justify-start">
                   <Button
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAddEntries}
-                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105"
+                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 mt-2"
                     size="large"
                   >
                     नई Entries जोड़ें
@@ -684,7 +684,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                   <Select
                     value={selectedBaheeType}
                     onChange={handleBaheeTypeChange}
-                    className="min-w-[200px]"
+                    className="w-full sm:min-w-[200px]"
                     placeholder="बही प्रकार चुनें"
                     allowClear
                   >
