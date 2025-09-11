@@ -495,7 +495,7 @@
                   disabled={loading}
                   className="w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base bg-blue-500 hover:bg-blue-600 text-white focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 active:bg-blue-700 cursor-pointer transform hover:scale-105 hover:shadow-xl"
                 >
-                  {loading ? 'Loading...' : '✅ Submit करें'}
+                  {loading ? 'Loading...' : 'Submit करें'}
                 </button>
 
                 <button
@@ -503,7 +503,7 @@
                   disabled={loading}
                   className="w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base bg-gray-500 hover:bg-gray-600 text-white focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 active:bg-gray-700 cursor-pointer transform hover:scale-105 hover:shadow-xl"
                 >
-                  🗑️ Clear करें
+                  Clear करें
                 </button>
               </div>
             )}

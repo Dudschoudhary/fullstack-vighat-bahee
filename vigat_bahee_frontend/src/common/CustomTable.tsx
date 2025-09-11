@@ -478,9 +478,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                   size="small"
                   onClick={() => openViewModal(record)}
                   className="bg-green-500 hover:bg-green-600"
-                >
-                  विवरण
-                </Button>
+                />
               </Tooltip>
 
               <Tooltip title={isLocked ? "Locked: संपादन निष्क्रिय" : "संपादित करें"}>
@@ -618,7 +616,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                       नाम: <b>{bd.name}</b>
                     </span>
                     <span className="text-gray-400">|</span>
-                    <span className="text-sm">तारीख: {formattedDate}</span>
+                    <span className="text-sm">तारीख: {bd.date}</span>
                     <span className="text-gray-400">|</span>
                     <span className="text-sm">तिथि: {bd.tithi}</span>
                   </div>
@@ -670,7 +668,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                     type="primary"
                     icon={<PlusOutlined />}
                     onClick={handleAddEntries}
-                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 mt-2"
+                    className="bg-green-600 hover:bg-green-700 flex items-center gap-2 px-6 py-2 text-base font-medium shadow-lg hover:shadow-xl transform hover:scale-105 mt-2 Hind-Bold text-red-800"
                     size="large"
                   >
                     नई Entries जोड़ें
