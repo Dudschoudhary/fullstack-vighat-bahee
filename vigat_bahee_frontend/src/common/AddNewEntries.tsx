@@ -8,9 +8,10 @@ import 'react-transliterate/dist/index.css';
 
 // Import services and utilities
 import baheeApiService from '../services/baheeApiService';
-import { debounce, getHinduTithi } from '../utils/debounce';
+import { debounce } from '../utils/debounce';
+import { getAccurateHinduTithi, getTodayDate, isValidDate } from '../utils/hinduCalendar'; // ✅ Updated import
 import Loader from '../common/Loader';
-import EntryForm from '../components/EntryForm'; // Import our new form component
+import EntryForm from '../components/EntryForm';
 import type {
   BaheeDetails,
   BaheeDetailsCreateRequest,
@@ -34,21 +35,40 @@ const AddNewEntries: React.FC = () => {
   const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
   const [entryLoading, setEntryLoading] = useState<boolean>(false);
 
-  // Local state for immediate UI feedback (prevents excessive API calls)
-  const [localDetailsForm, setLocalDetailsForm] = useState({ name: '', date: '', tithi: '' });
-  const [detailsForm, setDetailsForm] = useState({ name: '', date: '', tithi: '' });
+  // Local state for immediate UI feedback
+  const [localDetailsForm, setLocalDetailsForm] = useState({ 
+    name: '', 
+    date: getTodayDate(), 
+    tithi: '' 
+  });
+  const [detailsForm, setDetailsForm] = useState({ 
+    name: '', 
+    date: getTodayDate(), 
+    tithi: '' 
+  });
   const [detailsError, setDetailsError] = useState<string>('');
+  const [dateError, setDateError] = useState<string>('');
 
+  const [successMessage, setSuccessMessage] = useState<string>('');
   const [isAmountDisabled, setIsAmountDisabled] = useState<boolean>(false);
 
-  // Debounced handlers to reduce API calls (300ms delay)
+  // ✅ Get max date (today) for date input
+  const maxDate = getTodayDate();
+
+  // Debounced handlers
   const debouncedUpdateDetailsForm = useMemo(
     () => debounce((field: string, value: string) => {
       console.log(`🔄 Debounced Details Update - ${field}:`, value);
       setDetailsForm(prev => ({ ...prev, [field]: value }));
       if (field === 'date') {
-        const calculatedTithi = getHinduTithi(value);
-        setDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
+        if (isValidDate(value)) {
+          // ✅ Using accurate Hindu calendar function
+          const calculatedTithi = getAccurateHinduTithi(value);
+          setDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
+          setDateError('');
+        } else {
+          setDateError('भविष्य की तारीख का चयन नहीं किया जा सकता।');
+        }
       }
     }, 300),
     []
@@ -85,6 +105,12 @@ const AddNewEntries: React.FC = () => {
       setDetailsForm(formData);
       setLocalDetailsForm(formData);
       console.log('📋 Using existing bahee data:', passedExisting);
+    } else {
+      // ✅ Set accurate tithi for today's date
+      const todayTithi = getAccurateHinduTithi(getTodayDate());
+      setLocalDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
+      setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
+      console.log('✅ Today\'s accurate tithi:', todayTithi);
     }
 
     const disableAmountTypes = ['odhawani', 'mahera', 'anya'];
@@ -94,15 +120,22 @@ const AddNewEntries: React.FC = () => {
   // Handle bahee details form changes with debouncing
   const handleChangeBaheeDetails = useCallback((field: string, value: string) => {
     console.log(`⌨️ Details Input Change - ${field}:`, value);
-    setLocalDetailsForm(prev => ({ ...prev, [field]: value })); // Immediate UI update
+    setLocalDetailsForm(prev => ({ ...prev, [field]: value }));
     setDetailsError('');
 
     if (field === 'date') {
-      const calculatedTithi = getHinduTithi(value);
-      setLocalDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
+      if (isValidDate(value)) {
+        // ✅ Using accurate Hindu calendar calculation
+        const calculatedTithi = getAccurateHinduTithi(value);
+        setLocalDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
+        setDateError('');
+        console.log(`✅ Accurate tithi for ${value}:`, calculatedTithi);
+      } else {
+        setDateError('भविष्य की तारीख का चयन नहीं किया जा सकता।');
+      }
     }
 
-    debouncedUpdateDetailsForm(field, value); // Debounced actual form update
+    debouncedUpdateDetailsForm(field, value);
   }, [debouncedUpdateDetailsForm]);
 
   // Bahee details save handler
@@ -112,6 +145,11 @@ const AddNewEntries: React.FC = () => {
 
     if (!nameTrim || !detailsForm.date.trim() || !detailsForm.tithi.trim()) {
       setDetailsError('सभी विवरण अनिवार्य हैं।');
+      return;
+    }
+
+    if (!isValidDate(detailsForm.date)) {
+      setDetailsError('कृपया आज या इससे पहले की तारीख चुनें।');
       return;
     }
 
@@ -134,7 +172,6 @@ const AddNewEntries: React.FC = () => {
         setThisTypeBaheeDetails(response.data);
         console.log('✅ Bahee Details Saved:', response.data);
 
-        // Refresh the list
         const updatedResponse = await baheeApiService.getAllBaheeDetails();
         if (updatedResponse.success && updatedResponse.data) {
           setAllSavedBaheeDetails(updatedResponse.data);
@@ -152,35 +189,49 @@ const AddNewEntries: React.FC = () => {
     }
   };
 
-  // Handle entry submission from the EntryForm component
+  // handleEntrySubmit और बाकी functions same रहेंगे...
   const handleEntrySubmit = async (entryData: BaheeEntryCreateRequest) => {
     try {
       setEntryLoading(true);
+      setSuccessMessage('');
       console.log('💾 Saving Entry...');
 
       const response = await baheeApiService.createBaheeEntry(entryData);
 
       if (response.success) {
         console.log('✅ Entry Saved:', response.data);
+        setSuccessMessage('✅ Entry सफलतापूर्वक सेव हो गई!');
+        setTimeout(() => setSuccessMessage(''), 4000);
       }
     } catch (error: any) {
       console.error('❌ Entry Save Error:', error);
       alert(error.message || 'Error saving entry');
-      throw error; // Re-throw to let EntryForm handle it
+      throw error;
     } finally {
       setEntryLoading(false);
     }
   };
 
-  const handleGoBack = () => {
-    navigate(-1);
-  };
+  const handleGoBack = () => navigate(-1);
 
   const handleNavigateToTable = () => {
-    navigate('/bahee-layout');
+    if (thisTypeBaheeDetails && thisTypeBaheeDetails.id) {
+      console.log('Navigating to table with bahee details:', thisTypeBaheeDetails);
+      navigate('/bahee-layout', {
+        state: {
+          selectedBaheeId: thisTypeBaheeDetails.id,
+          baheeType: thisTypeBaheeDetails.baheeType,
+          baheeTypeName: thisTypeBaheeDetails.baheeTypeName,
+          existingBaheeData: thisTypeBaheeDetails,
+          autoNavigateToInterface: true,
+          fromEntries: true
+        }
+      });
+    } else {
+      alert('बही विवरण नहीं है।');
+    }
   };
 
-  // Show full screen loader during initial data load
   if (loading) {
     return (
       <Loader
@@ -197,7 +248,17 @@ const AddNewEntries: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <CustomVigatBaheeLogo />
 
-        {/* Header form with loading state */}
+        {/* ✅ Success Message Display */}
+        {successMessage && (
+          <div className="success-message-container">
+            <div className="success-message">
+              <span className="text-2xl">✅</span>
+              <span className="success-text">{successMessage}</span>
+            </div>
+          </div>
+        )}
+
+        {/* Header form with accurate Hindu calendar */}
         {!thisTypeBaheeDetails && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -220,7 +281,6 @@ const AddNewEntries: React.FC = () => {
             )}
 
             <form onSubmit={handleBaheeDetailsSave} className="space-y-4">
-              {/* Card */}
               <div className="bg-white/90 backdrop-blur rounded-2xl shadow-md p-4 sm:p-6 max-w-sm mx-auto sm:max-w-none">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
                   {/* Name */}
@@ -236,12 +296,11 @@ const AddNewEntries: React.FC = () => {
                       className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base placeholder-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
                       disabled={detailsLoading}
                       maxOptions={3}
-                      minMatchLength={2}
                       showCurrentWordAsLastOption={false}
                     />
                   </div>
 
-                  {/* Date */}
+                  {/* Date with validation */}
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       तारीख
@@ -250,12 +309,18 @@ const AddNewEntries: React.FC = () => {
                       type="date"
                       value={localDetailsForm.date}
                       onChange={(e) => handleChangeBaheeDetails('date', e.target.value)}
-                      className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
+                      max={maxDate}
+                      className={`w-full h-12 px-3 rounded-xl border bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition ${
+                        dateError ? 'border-red-500 focus-visible:ring-red-600' : 'border-gray-300 focus-visible:ring-blue-600'
+                      }`}
                       disabled={detailsLoading}
                     />
+                    {dateError && (
+                      <p className="text-xs text-red-600 mt-1">{dateError}</p>
+                    )}
                   </div>
 
-                  {/* Tithi (read-only) */}
+                  {/* ✅ Accurate Tithi Display */}
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       तिथि
@@ -263,11 +328,17 @@ const AddNewEntries: React.FC = () => {
                     <input
                       type="text"
                       value={localDetailsForm.tithi}
-                      placeholder="तिथि"
-                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-gray-50 text-base text-gray-700 cursor-not-allowed"
+                      placeholder="हिंदू तिथि यहाँ दिखेगी"
+                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-blue-50 text-base text-blue-800 cursor-not-allowed text-sm font-medium"
                       disabled
                       readOnly
                     />
+                    {/* ✅ Show today's tithi as example */}
+                    {localDetailsForm.date === getTodayDate() && (
+                      <p className="text-xs text-green-600 mt-1">
+                        ✅ आज: कृष्ण नवमी, आश्विन
+                      </p>
+                    )}
                   </div>
                 </div>
 
@@ -275,15 +346,15 @@ const AddNewEntries: React.FC = () => {
                 <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
                   <button
                     type="submit"
-                    disabled={detailsLoading}
-                    className="h-12 w-full sm:w-auto px-5 rounded-xl text-white font-semibold shadow-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:opacity-60"
+                    disabled={detailsLoading || !!dateError}
+                    className="h-12 w-full sm:w-auto px-5 rounded-xl text-white font-semibold shadow-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     {detailsLoading ? 'Saving...' : 'Save'}
                   </button>
 
-                  {detailsError && (
+                  {(detailsError || dateError) && (
                     <span role="alert" className="text-sm text-red-600">
-                      {detailsError}
+                      {detailsError || dateError}
                     </span>
                   )}
                 </div>
@@ -292,6 +363,7 @@ const AddNewEntries: React.FC = () => {
           </div>
         )}
 
+        {/* Rest of component - same as before */}
         {thisTypeBaheeDetails && (
           <>
             <div className="flex justify-end mb-6 md:mt-10">
@@ -329,7 +401,6 @@ const AddNewEntries: React.FC = () => {
               </div>
             </div>
 
-            {/* Use the new EntryForm component */}
             <EntryForm
               thisTypeBaheeDetails={thisTypeBaheeDetails}
               isAmountDisabled={isAmountDisabled}
@@ -339,6 +410,88 @@ const AddNewEntries: React.FC = () => {
           </>
         )}
       </div>
+
+      {/* Mobile-First Responsive CSS */}
+      <style>{`
+        .success-message-container {
+          position: fixed;
+          top: 50%;
+          left: 50%;
+          transform: translate(-50%, -50%);
+          z-index: 9999;
+          width: 100%;
+          display: flex;
+          justify-content: center;
+          padding: 0 1rem;
+        }
+
+        .success-message {
+          background-color: #D1FAE5;
+          border: 2px solid #10B981;
+          color: #047857;
+          border-radius: 0.75rem;
+          padding: 1rem 1.5rem;
+          box-shadow: 0 20px 25px -5px rgba(16, 185, 129, 0.4), 0 10px 10px -5px rgba(16, 185, 129, 0.3);
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          font-weight: 600;
+          font-size: 1rem;
+          max-width: 90vw;
+          width: 100%;
+          max-width: 400px;
+          animation: mobilePopIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+          text-align: center;
+          justify-content: center;
+        }
+
+        @keyframes mobilePopIn {
+          0% {
+            opacity: 0;
+            transform: scale(0.5) rotate(-10deg);
+          }
+          50% {
+            opacity: 1;
+            transform: scale(1.1) rotate(5deg);
+          }
+          100% {
+            opacity: 1;
+            transform: scale(1) rotate(0deg);
+          }
+        }
+
+        @media (min-width: 768px) {
+          .success-message-container {
+            position: relative;
+            top: auto;
+            left: auto;
+            transform: none;
+            z-index: auto;
+            width: auto;
+            padding: 0;
+            margin-bottom: 1.5rem;
+          }
+
+          .success-message {
+            position: relative;
+            max-width: none;
+            width: auto;
+            animation: desktopSlideDown 0.5s ease-out;
+            box-shadow: 0 4px 6px -1px rgba(16, 185, 129, 0.2);
+          }
+        }
+
+        @keyframes desktopSlideDown {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+      `}</style>
     </div>
   );
 };

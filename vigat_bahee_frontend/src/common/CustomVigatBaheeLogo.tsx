@@ -44,7 +44,7 @@ const CustomVigatBaheeLogo = () => {
         <img
           src={baheeLogo}
           alt="Bahee Logo"
-          className="w-30 h-30 rounded-full object-cover shadow border border-white"
+          className=" w-16 h-16 md:w-30 md:h-30 rounded-full object-cover shadow border border-white"
         />
       </Link>
     </div>

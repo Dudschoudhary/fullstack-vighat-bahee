@@ -14,6 +14,7 @@
     date: string;
     tithi: string;
     createdAt: string;
+    baheeDetails_ids: any
   }
 
   const getBaheeTypeName = (value: string) => {
@@ -63,7 +64,7 @@
         const response = await baheeApiService.getAllBaheeDetails();
         
         if (response.success && response.data) {
-          const rawData = response.data.baheeDetails_ids || [];
+          const rawData = (response.data as any).baheeDetails_ids || [];
           console.log('📦 Raw API Data:', rawData);
           
           const processedData = rawData.map((item: any, index: number) => {
@@ -84,7 +85,7 @@
             }
             
             return processed;
-          }).filter(item => item.id && item.name);
+          }).filter((item: any) => item.id && item.name);
           
           console.log('✅ Processed Data:', processedData);
           
@@ -344,25 +345,13 @@
             )}
 
             {/* Selection Status Display - Only when selected */}
-            {isAnySelected && (
-              <div className="mb-4 p-2 sm:p-3 bg-green-100 border border-green-400 text-green-700 rounded-lg text-xs sm:text-sm">
-                <span className="font-medium">चयनित: </span>
-                {firstSelectValue && <span>नई बही - {getBaheeTypeName(firstSelectValue)}</span>}
-                {secondSelectValue && (
-                  <span>
-                    मौजूदा बही - {savedHeaders.find(h => h.id === secondSelectValue)?.name} 
-                    ({savedHeaders.find(h => h.id === secondSelectValue)?.baheeTypeName})
-                  </span>
-                )}
-                {thirdSelectValue && <span>प्रकार अनुसार - {getBaheeTypeName(thirdSelectValue)}</span>}
-              </div>
-            )}
+            
 
             {/* Main Selection Area */}
             <div className="space-y-4 sm:space-y-6 lg:space-y-0 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-8">
               {/* First Select - नई बही */}
               <div className="w-full lg:w-80">
-                <label className="block text-sm sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                   नई बही का प्रकार चुनें
                 </label>
                 <select
@@ -402,7 +391,7 @@
 
               {/* Second Select */}
               <div className="w-full lg:w-80">
-                <label className="block text-sm sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                   मौजूदा बही चुनें
                   {savedHeaders.length > 0 && (
                     <span className="text-xs text-green-600 ml-1">({savedHeaders.length} बही मिली)</span>
@@ -465,7 +454,7 @@
 
               {/* Third Select - प्रकार अनुसार */}
               <div className="w-full lg:w-80">
-                <label className="block text-sm sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                   प्रकार अनुसार चुनें
                 </label>
                 <select

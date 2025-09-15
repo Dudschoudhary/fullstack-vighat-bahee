@@ -8,6 +8,7 @@ export interface BaheeDetails {
     tithi: string;
     createdAt?: string;
     updatedAt?: string;
+    id:any
   }
   
   export interface BaheeEntry {
