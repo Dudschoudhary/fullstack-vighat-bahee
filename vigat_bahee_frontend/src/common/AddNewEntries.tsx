@@ -189,7 +189,6 @@ const AddNewEntries: React.FC = () => {
     }
   };
 
-  // handleEntrySubmit और बाकी functions same रहेंगे...
   const handleEntrySubmit = async (entryData: BaheeEntryCreateRequest) => {
     try {
       setEntryLoading(true);
@@ -199,7 +198,6 @@ const AddNewEntries: React.FC = () => {
       const response = await baheeApiService.createBaheeEntry(entryData);
 
       if (response.success) {
-        console.log('✅ Entry Saved:', response.data);
         setSuccessMessage('✅ Entry सफलतापूर्वक सेव हो गई!');
         setTimeout(() => setSuccessMessage(''), 4000);
       }
@@ -228,7 +226,7 @@ const AddNewEntries: React.FC = () => {
         }
       });
     } else {
-      alert('बही विवरण नहीं है।');
+      console.log('बही विवरण नहीं है।');
     }
   };
 
@@ -248,17 +246,14 @@ const AddNewEntries: React.FC = () => {
       <div className="max-w-4xl mx-auto">
         <CustomVigatBaheeLogo />
 
-        {/* ✅ Success Message Display */}
         {successMessage && (
           <div className="success-message-container">
             <div className="success-message">
-              <span className="text-2xl">✅</span>
               <span className="success-text">{successMessage}</span>
             </div>
           </div>
         )}
 
-        {/* Header form with accurate Hindu calendar */}
         {!thisTypeBaheeDetails && (
           <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
             <div className="flex items-center gap-3 mb-4">
@@ -283,7 +278,6 @@ const AddNewEntries: React.FC = () => {
             <form onSubmit={handleBaheeDetailsSave} className="space-y-4">
               <div className="bg-white/90 backdrop-blur rounded-2xl shadow-md p-4 sm:p-6 max-w-sm mx-auto sm:max-w-none">
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  {/* Name */}
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       नाम
@@ -300,7 +294,6 @@ const AddNewEntries: React.FC = () => {
                     />
                   </div>
 
-                  {/* Date with validation */}
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       तारीख
@@ -320,7 +313,6 @@ const AddNewEntries: React.FC = () => {
                     )}
                   </div>
 
-                  {/* ✅ Accurate Tithi Display */}
                   <div className="sm:col-span-1">
                     <label className="block text-xs font-medium text-gray-700 mb-1">
                       तिथि
@@ -329,11 +321,10 @@ const AddNewEntries: React.FC = () => {
                       type="text"
                       value={localDetailsForm.tithi}
                       placeholder="हिंदू तिथि यहाँ दिखेगी"
-                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-blue-50 text-base text-blue-800 cursor-not-allowed text-sm font-medium"
+                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-blue-50 text-base text-blue-800 cursor-not-allowed font-medium"
                       disabled
                       readOnly
                     />
-                    {/* ✅ Show today's tithi as example */}
                     {localDetailsForm.date === getTodayDate() && (
                       <p className="text-xs text-green-600 mt-1">
                         ✅ आज: कृष्ण नवमी, आश्विन
@@ -363,7 +354,6 @@ const AddNewEntries: React.FC = () => {
           </div>
         )}
 
-        {/* Rest of component - same as before */}
         {thisTypeBaheeDetails && (
           <>
             <div className="flex justify-end mb-6 md:mt-10">
@@ -378,22 +368,24 @@ const AddNewEntries: React.FC = () => {
               </button>
             </div>
 
-            <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <div className="bg-pink-700 rounded-lg shadow-md p-6 mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 text-center sm:text-left">
+              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+              <h1 className="text-lg  font-bold text-blue-700 text-center sm:text-left">
                   नई Entries जोड़ें
                 </h1>
+                  </div>
+
                 <div className="flex items-center gap-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
                     <h2 className="text-lg font-semibold text-blue-800">
                       {thisTypeBaheeDetails.baheeTypeName} — {thisTypeBaheeDetails.name}
                     </h2>
-                    <p className="text-sm text-blue-600">Selected Bahee Header</p>
                   </div>
                   <button
                     onClick={handleNavigateToTable}
                     disabled={entryLoading}
-                    className="bg-green-600 hover:bg-green-700 text-white font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                    className="bg-white text-lg hover:bg-gray-200 text-blue-700 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
                   >
                     बही विवरण
                   </button>

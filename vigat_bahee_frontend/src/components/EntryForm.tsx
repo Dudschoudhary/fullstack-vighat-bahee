@@ -1,4 +1,3 @@
-// components/EntryForm.tsx
 import React, { useState, useCallback, useMemo, type ChangeEvent, type FormEvent } from 'react';
 import { ReactTransliterate } from 'react-transliterate';
 import 'react-transliterate/dist/index.css';
@@ -21,7 +20,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
   onSubmit,
   onReset
 }) => {
-  // Local state for immediate UI feedback (prevents excessive API calls)
   const [localFormData, setLocalFormData] = useState<FormData>({
     sno: '',
     caste: '',
@@ -44,20 +42,16 @@ const EntryForm: React.FC<EntryFormProps> = ({
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // Debounced handler to reduce API calls (300ms delay)
   const debouncedUpdateFormData = useMemo(
     () => debounce((field: string, value: string) => {
-      console.log(`🔄 Debounced Form Update - ${field}:`, value);
       setFormData(prev => ({ ...prev, [field]: value }));
     }, 300),
     []
   );
 
-  // Handle form changes with debouncing
   const handleChange = useCallback((field: string, value: string) => {
-    console.log(`⌨️ Entry Input Change - ${field}:`, value);
-    setLocalFormData(prev => ({ ...prev, [field]: value })); // Immediate UI update
-    debouncedUpdateFormData(field, value); // Debounced actual form update
+    setLocalFormData(prev => ({ ...prev, [field]: value }));
+    debouncedUpdateFormData(field, value);
     
     if (errors[field]) {
       setErrors(prev => ({ ...prev, [field]: '' }));
@@ -96,7 +90,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
     setFormData(resetData);
     setLocalFormData(resetData);
     setErrors({});
-    console.log('🔄 Form Reset');
     
     if (onReset) {
       onReset();
@@ -129,7 +122,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
       }
     } else {
       setErrors(newErrors);
-      console.log('❌ Form Validation Errors:', newErrors);
     }
   };
 
@@ -156,7 +148,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
             value={localFormData.caste}
             onChangeText={(text: string) => handleChange('caste', text)}
             lang="hi"
-            placeholder="जाति दर्ज करें (जैसे: brahmin)"
+            placeholder="जाति"
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.caste ? 'border-red-500' : 'border-gray-300'}`}
             style={{ fontSize: '16px', fontFamily: 'inherit' }}
             disabled={entryLoading}
@@ -175,7 +167,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
             value={localFormData.name}
             onChangeText={(text: string) => handleChange('name', text)}
             lang="hi"
-            placeholder="नाम दर्ज करें (जैसे: ramesh)"
+            placeholder="नाम"
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.name ? 'border-red-500' : 'border-gray-300'}`}
             style={{ fontSize: '16px', fontFamily: 'inherit' }}
             disabled={entryLoading}
@@ -194,7 +186,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
             value={localFormData.fatherName}
             onChangeText={(text: string) => handleChange('fatherName', text)}
             lang="hi"
-            placeholder="पिता का नाम दर्ज करें (जैसे: suresh)"
+            placeholder="पिता का नाम"
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.fatherName ? 'border-red-500' : 'border-gray-300'}`}
             style={{ fontSize: '16px', fontFamily: 'inherit' }}
             disabled={entryLoading}
@@ -213,7 +205,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
             value={localFormData.villageName}
             onChangeText={(text: string) => handleChange('villageName', text)}
             lang="hi"
-            placeholder="गाँव का नाम दर्ज करें (जैसे: jaipur rajasthan)"
+            placeholder="गाँव का नाम"
             className={`w-full px-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.villageName ? 'border-red-500' : 'border-gray-300'}`}
             style={{ fontSize: '16px', fontFamily: 'inherit' }}
             disabled={entryLoading}
@@ -236,7 +228,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
               value={localFormData.income}
               onChange={handleRegularChange}
               className={`w-full pl-8 pr-4 py-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors ${errors.income ? 'border-red-500' : 'border-gray-300'}`}
-              placeholder="450"
+              placeholder="100"
               disabled={entryLoading}
               min="0"
               step="0.01"
@@ -264,7 +256,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
                   ? 'bg-gray-100 cursor-not-allowed text-gray-500 border-gray-200'
                   : `focus:ring-2 focus:ring-blue-500 focus:border-blue-500 ${errors.amount ? 'border-red-500' : 'border-gray-300'}`
               }`}
-              placeholder={isAmountDisabled ? "लागू नहीं" : "600"}
+              placeholder={isAmountDisabled ? "लागू नहीं" : "100"}
               min="0"
               step="0.01"
             />

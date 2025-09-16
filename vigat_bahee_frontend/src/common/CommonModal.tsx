@@ -6,7 +6,7 @@ export interface CommonModalProps {
   title?: React.ReactNode;
   onOk?: () => void | Promise<void>;
   onCancel?: () => void;
-  okText?: string;
+  okText?: any;
   cancelText?: string;
   width?: number | string;
   centered?: boolean;
@@ -21,6 +21,7 @@ export interface CommonModalProps {
   className?: string;
   bodyClassName?: string;
   children?: React.ReactNode;
+  cancelButtonProps?: any
 }
 
 const CommonModal: React.FC<CommonModalProps> = React.memo((props) => {
