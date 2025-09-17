@@ -180,7 +180,7 @@ const AddNewEntries: React.FC = () => {
     } catch (error: any) {
       console.error('❌ Bahee Details Save Error:', error);
       if (error.message.includes('Network Error')) {
-        setDetailsError('सर्वर से कनेक्शन नहीं हो पा रहा। कृपया सर्वर चालू करें।');
+        setDetailsError('please try again');
       } else {
         setDetailsError(error.message || 'कुछ गलत हुआ है।');
       }

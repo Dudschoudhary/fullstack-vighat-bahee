@@ -764,14 +764,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           {/* ✅ Fixed: Results summary */}
           <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <div className="flex flex-wrap items-center gap-2 text-sm">
-              <span className="text-blue-700 flex items-center">
+              <span className="text-blue-700 text-sm flex items-center">
                 <SearchOutlined className="mr-1" /> परिणाम:
               </span>
-              <span className="font-semibold text-blue-900">
+              <span className="font-semibold text-blue-900 text-sm">
                 {filteredData.length} रिकॉर्ड {searchText ? ` "${searchText}" के लिए` : ""}
               </span>
               {selectedSpecificBahee && (
-                <span className="text-green-700 bg-green-100 px-2 py-1 rounded">
+                <span className="text-white text-lg bg-pink-700 px-2 py-1.5 rounded border ms-3">
                   {selectedSpecificBahee.name} की Entries
                 </span>
               )}
