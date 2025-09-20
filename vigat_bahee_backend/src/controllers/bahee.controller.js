@@ -18,13 +18,15 @@ export const createBaheeDetails = async (req, res) => {
 
     const existingDetails = await BaheeDetails.findOne({
       baheeType: baheeType.trim(),
-      name: name.trim().toLowerCase()
+      name: name.trim().toLowerCase(),
+      user_id
     });
 
     if (existingDetails) {
       return res.status(400).json({
         success: false,
-        message: 'इस बही प्रकार में यह नाम पहले से मौजूद है।'
+        message: 'इस बही प्रकार में यह नाम पहले से मौजूद है।',
+
       });
     }
 

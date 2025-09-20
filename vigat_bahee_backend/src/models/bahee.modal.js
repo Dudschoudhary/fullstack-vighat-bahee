@@ -34,7 +34,4 @@ const baheeDetailsSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Create compound index for uniqueness
-baheeDetailsSchema.index({ baheeType: 1, name: 1 }, { unique: true });
-
 export default mongoose.model('BaheeDetails', baheeDetailsSchema);
