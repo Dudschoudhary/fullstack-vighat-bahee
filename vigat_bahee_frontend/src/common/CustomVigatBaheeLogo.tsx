@@ -59,7 +59,7 @@ const CustomVigatBaheeLogo = () => {
         {!isOnBaheePage && (
           <button
             onClick={handleBack}
-            className="absolute left-0 top-1/2 transform -translate-y-1/2 p-3 bg-white border border-gray-300 rounded-full shadow hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all group"
+            className="absolute left-10 top-1/2 transform -translate-y-1/2 p-3 bg-white border border-gray-300 rounded-full shadow hover:bg-gray-50 focus:outline-none focus:ring-4 focus:ring-indigo-200 transition-all group"
             aria-label="होम पर जाएं"
           >
             <FaHome className="text-gray-600 text-lg group-hover:text-indigo-600 transition-colors" />

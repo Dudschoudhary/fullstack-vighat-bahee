@@ -25,6 +25,8 @@ import TransliterateSearch from "../components/TransliterateSearch";
 import BaheeEditForm from "../common/BaheeEditForm";
 import type { DataType, BaheeDetails } from "../types/addNewEntriesInterface.types";
 import Loader from "./Loader";
+import CustomVigatBaheeLogo from "./CustomVigatBaheeLogo";
+import Footer from "../google adsense/Footer";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -858,6 +860,8 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           </div>
         </div>
       </div>
+
+      <Footer/>
 
       {/* All modals remain the same... */}
       <CommonModal

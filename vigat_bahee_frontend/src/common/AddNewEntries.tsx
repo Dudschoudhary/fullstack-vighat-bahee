@@ -18,6 +18,7 @@ import type {
   BaheeEntryCreateRequest,
   LocationState
 } from '../types/bahee.types';
+import Footer from '../google adsense/Footer';
 
 const AddNewEntries: React.FC = () => {
   const navigate = useNavigate();
@@ -226,7 +227,7 @@ const AddNewEntries: React.FC = () => {
         }
       });
     } else {
-      console.log('बही विवरण नहीं है।');
+      navigate('/bahee-layout')
     }
   };
 
@@ -402,6 +403,7 @@ const AddNewEntries: React.FC = () => {
           </>
         )}
       </div>
+      <Footer/>
 
       {/* Mobile-First Responsive CSS */}
       <style>{`

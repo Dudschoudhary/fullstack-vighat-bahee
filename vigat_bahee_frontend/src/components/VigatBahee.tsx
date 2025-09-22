@@ -6,6 +6,7 @@ import PasswordChangeModal from '../components/PasswordChangeModal';
 import Loader from '../common/Loader';
 import { ReactTransliterate } from 'react-transliterate';
 import baheeApiService from '../services/baheeApiService';
+import Footer from '../google adsense/Footer';
 
 interface BaheeDetails {
   id: string;
@@ -37,11 +38,11 @@ const VigatBahee = () => {
   const [showPasswordModal, setShowPasswordModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
-  
+
   // ✅ NEW: Custom input states for "अन्य विगत"
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customBaheeType, setCustomBaheeType] = useState('');
-  
+
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -53,7 +54,7 @@ const VigatBahee = () => {
       if (savedState.previousFirstSelect) setFirstSelectValue(savedState.previousFirstSelect);
       if (savedState.previousSecondSelect) setSecondSelectValue(savedState.previousSecondSelect);
       if (savedState.previousThirdSelect) setThirdSelectValue(savedState.previousThirdSelect);
-      
+
       // Clear the state to prevent re-triggering
       window.history.replaceState({}, document.title, window.location.pathname);
     }
@@ -65,13 +66,13 @@ const VigatBahee = () => {
       setLoading(true);
       setError('');
       console.log('🔄 Loading Bahee Details from API...');
-      
+
       const response = await baheeApiService.getAllBaheeDetails();
-      
+
       if (response.success && response.data) {
         const rawData = (response.data as any).baheeDetails_ids || [];
         console.log('📦 Raw API Data:', rawData);
-        
+
         const processedData = rawData.map((item: any, index: number) => {
           const processed = {
             id: item.id || item._id || `temp_${index}`,
@@ -82,18 +83,18 @@ const VigatBahee = () => {
             tithi: item.tithi || '',
             createdAt: item.createdAt || item.created_at || ''
           };
-          
+
           if (!processed.baheeType) {
             console.warn('⚠️ Missing baheeType for item:', item);
             processed.baheeType = 'anya';
             processed.baheeTypeName = 'अन्य विगत';
           }
-          
+
           return processed;
         }).filter((item: any) => item.id && item.name);
-        
+
         console.log('✅ Processed Data:', processedData);
-        
+
         setSavedHeaders(processedData);
         localStorage.setItem('baheeDetailsSavedArr', JSON.stringify({
           ...response.data,
@@ -105,11 +106,11 @@ const VigatBahee = () => {
     } catch (error: any) {
       console.error('❌ Error loading bahee details:', error);
       setError('डेटा लोड करने में समस्या हुई।');
-      
+
       try {
         const saved = JSON.parse(localStorage.getItem('baheeDetailsSavedArr') || '{}');
         const fallbackData = saved.baheeDetails_ids || [];
-        
+
         if (fallbackData.length > 0) {
           console.log('📦 Using fallback data:', fallbackData);
           setSavedHeaders(fallbackData);
@@ -129,7 +130,7 @@ const VigatBahee = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
-    
+
     if (!token || !user) {
       navigate('/login');
       return;
@@ -138,7 +139,7 @@ const VigatBahee = () => {
     const isTemporaryPassword = localStorage.getItem('isTemporaryPassword') === 'true';
     const urlParams = new URLSearchParams(window.location.search);
     const changePasswordParam = urlParams.get('changePassword') === 'true';
-    
+
     if (isTemporaryPassword || changePasswordParam) {
       setShowPasswordModal(true);
     }
@@ -164,11 +165,11 @@ const VigatBahee = () => {
     const selectedValue = e.target.value;
     console.log('🔥 First select changed to:', selectedValue);
     setFirstSelectValue(selectedValue);
-    
+
     if (selectedValue !== '') {
       setSecondSelectValue('');
       setThirdSelectValue('');
-      
+
       // ✅ NEW: Show custom input for "अन्य विगत"
       if (selectedValue === 'anya') {
         setShowCustomInput(true);
@@ -186,7 +187,7 @@ const VigatBahee = () => {
   const handleSecondSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
     console.log('🔥 Second select changed to:', selectedId);
-    
+
     setSecondSelectValue(selectedId);
 
     if (selectedId !== '') {
@@ -202,7 +203,7 @@ const VigatBahee = () => {
     const selectedValue = e.target.value;
     console.log('🔥 Third select changed to:', selectedValue);
     setThirdSelectValue(selectedValue);
-    
+
     if (selectedValue !== '') {
       setFirstSelectValue('');
       setSecondSelectValue('');
@@ -261,13 +262,13 @@ const VigatBahee = () => {
         return;
       }
     }
-    
+
     if (secondSelectValue !== '') {
       const selectedBahee = savedHeaders.find(h => h.id === secondSelectValue);
-      
+
       if (selectedBahee) {
         console.log('✅ Found selected bahee:', selectedBahee);
-        
+
         const navigationState = {
           selectedBaheeId: selectedBahee.id,
           baheeType: selectedBahee.baheeType,
@@ -278,17 +279,17 @@ const VigatBahee = () => {
         };
 
         console.log('🎯 Navigating with state:', navigationState);
-        
-        navigate('/bahee-layout', { 
+
+        navigate('/bahee-layout', {
           state: navigationState,
-          replace: false 
+          replace: false
         });
       } else {
         console.error('❌ Selected bahee not found in savedHeaders');
       }
       return;
     }
-    
+
     if (thirdSelectValue !== '') {
       const existing = savedHeaders.find(h => h.baheeType === thirdSelectValue);
       if (existing) {
@@ -336,7 +337,7 @@ const VigatBahee = () => {
       const baheeType = cur.baheeType.toLowerCase().trim();
       const validTypes = ['vivah', 'muklawa', 'odhawani', 'mahera', 'anya'];
       const finalType = validTypes.includes(baheeType) ? baheeType : 'anya';
-      
+
       acc[finalType] = acc[finalType] || [];
       acc[finalType].push(cur);
     } else {
@@ -349,9 +350,9 @@ const VigatBahee = () => {
 
   if (loading && savedHeaders.length === 0) {
     return (
-      <Loader 
-        size="large" 
-        text="बही विवरण लोड हो रहे हैं..." 
+      <Loader
+        size="large"
+        text="बही विवरण लोड हो रहे हैं..."
         fullScreen={true}
         colors={["#32cd32", "#327fcd", "#cd32cd", "#cd8032"]}
       />
@@ -359,251 +360,248 @@ const VigatBahee = () => {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gray-50">
-      <div className="max-w-6xl mx-auto p-3 sm:p-6 lg:p-8">
-        {/* Header with Profile - FIXED: Mobile sticky header */}
-        <div className="sticky top-0 z-50 bg-white shadow-md rounded-lg mb-4 sm:mb-6 p-3 lg:p-0 lg:bg-transparent lg:shadow-none lg:static">
-          <div className="flex justify-between items-center">
-            <VigatBaheeLayout />
-            <UserProfile />
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 lg:p-8">
-
-          {/* Loading indicator for refresh */}
-          {loading && savedHeaders.length > 0 && (
-            <div className="mb-4">
-              <Loader
-                size="small"
-                text="अपडेट हो रहा है..." 
-                colors={["#327fcd", "#32cd32"]}
-              />
-            </div>
-          )}
-
-          {/* Data count display */}
-          {savedHeaders.length > 0 && (
-            <div className="mb-4 text-center">
-              <span className="text-sm sm:text-md text-blue-800 YatraOne-Regular">
-                कुल बही विवरण: <strong>{savedHeaders.length}</strong>
-              </span>
-            </div>
-          )}
-
-          {/* Main Selection Area */}
-          <div className="space-y-4 sm:space-y-6 lg:space-y-0 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-8">
-            {/* First Select - नई बही */}
-            <div className="w-full lg:w-80">
-              <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                नई बही का प्रकार चुनें
-              </label>
-              <select
-                value={firstSelectValue}
-                onChange={handleFirstSelectChange}
-                disabled={secondSelectValue !== '' || thirdSelectValue !== '' || loading}
-                className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${
-                  secondSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                }`}
-              >
-                <option value="">नई बही जोड़ें +</option>
-                <option value="vivah">विवाह की विगत जोड़े +</option>
-                <option value="muklawa">मुकलावा की विगत जोड़े +</option>
-                <option value="odhawani">ओढावणी की विगत जोड़े +</option>
-                <option value="mahera">माहेरा की विगत जोड़े +</option>
-                <option value="anya">अन्य विगत जोड़े +</option>
-              </select>
-              
-              {/* ✅ NEW: Custom Input Box for "अन्य विगत" */}
-              {showCustomInput && (
-                <div className="mt-3 animate-fade-in">
-                  <label className="block text-sm font-medium text-red-600 mb-2">
-                    अपना विगत प्रकार लिखें:
-                  </label>
-                  <ReactTransliterate
-                    value={customBaheeType}
-                    onChangeText={(text) => setCustomBaheeType(text)}
-                    lang="hi"
-                    placeholder="विगत..."
-                    className="w-full px-3 py-2 border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700"
-                    style={{
-                      fontSize: '14px',
-                      fontFamily: 'inherit'
-                    }}
-                  />
-                  {customBaheeType.trim().length > 0 && (
-                    <div className="mt-2 text-xs text-green-600">
-                      ✓ आपका विगत प्रकार: <strong>{customBaheeType}</strong>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-
-            {/* Desktop Separator */}
-            <div className="hidden lg:flex items-center justify-center lg:flex-col lg:h-20">
-              <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-              <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
-                या
-              </span>
-              <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-            </div>
-
-            {/* Mobile separator */}
-            <div className="flex lg:hidden items-center justify-center w-full my-3">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="px-3 py-1 bg-blue-800 text-white text-xs font-medium rounded-full mx-3">
-                या
-              </span>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Second Select */}
-            <div className="w-full lg:w-80">
-              <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                मौजूदा बही चुनें
-                {savedHeaders.length > 0 && (
-                  <span className="text-xs text-green-600 ml-1">({savedHeaders.length} बही मिली)</span>
-                )}
-              </label>
-              <select
-                value={secondSelectValue}
-                onChange={handleSecondSelectChange}
-                disabled={firstSelectValue !== '' || thirdSelectValue !== '' || loading}
-                className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${
-                  firstSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                }`}
-              >
-                <option value="">
-                  {savedHeaders.length === 0 ? 'कोई बही उपलब्ध नहीं' : 'बही का विवरण देखे'}
-                </option>
-                
-                {savedHeaders.length > 0 && Object.keys(groupedByType).length > 0 ? (
-                  typeOrder.map(type => {
-                    const headersOfType = groupedByType[type] || [];
-                    if (headersOfType.length === 0) return null;
-                    
-                    return (
-                      <optgroup key={type} label={`${getBaheeTypeName(type)} (${headersOfType.length})`}>
-                        {headersOfType.map(h => (
-                          <option key={h.id} value={h.id}>
-                            {h.name}
-                          </option>
-                        ))}
-                      </optgroup>
-                    );
-                  })
-                ) : (
-                  savedHeaders.map(h => (
-                    <option key={h.id} value={h.id}>
-                      {h.name} — {h.baheeTypeName}
-                    </option>
-                  ))
-                )}
-              </select>
-            </div>
-
-            {/* Desktop Separator */}
-            <div className="hidden lg:flex items-center justify-center lg:flex-col lg:h-20">
-              <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-              <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
-                या
-              </span>
-              <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
-            </div>
-
-            {/* Mobile separator */}
-            <div className="flex lg:hidden items-center justify-center w-full my-3">
-              <div className="flex-1 h-px bg-gray-300"></div>
-              <span className="px-3 py-1 bg-blue-800 text-white text-xs font-medium rounded-full mx-3">
-                या
-              </span>
-              <div className="flex-1 h-px bg-gray-300"></div>
-            </div>
-
-            {/* Third Select - प्रकार अनुसार */}
-            <div className="w-full lg:w-80">
-              <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                प्रकार अनुसार चुनें
-              </label>
-              <select
-                value={thirdSelectValue}
-                onChange={handleThirdSelectChange}
-                disabled={firstSelectValue !== '' || secondSelectValue !== '' || loading}
-                className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${
-                  firstSelectValue !== '' || secondSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                }`}
-              >
-                <option value="">बही प्रकार चुनें</option>
-                {typeOrder.map(type => (
-                  <option key={type} value={type}>
-                    {getBaheeTypeName(type)} 
-                    {groupedByType[type] && ` (${groupedByType[type].length})`}
-                  </option>
-                ))}
-              </select>
+    <>
+      <div className="w-full min-h-screen bg-gray-50">
+        <div className="max-w-6xl mx-auto p-3 sm:p-6 lg:p-8">
+          {/* Header with Profile - FIXED: Mobile sticky header */}
+          <div className="sticky top-0 z-50 bg-white shadow-md rounded-lg mb-4 sm:mb-6 p-3 lg:p-0 lg:bg-transparent lg:shadow-none lg:static">
+            <div className="flex justify-between items-center">
+              <VigatBaheeLayout />
+              <UserProfile />
             </div>
           </div>
 
-          {/* ✅ MODIFIED: Enhanced buttons logic for custom input */}
-          {canSubmit && (
-            <div className="mt-6 space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:justify-center sm:gap-4 animate-fade-in">
-              <button
-                onClick={handleSubmit}
-                disabled={loading || (showCustomInput && customBaheeType.trim().length === 0)}
-                className={`w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base focus:ring-2 focus:ring-offset-2 cursor-pointer transform hover:scale-105 hover:shadow-xl ${
-                  loading || (showCustomInput && customBaheeType.trim().length === 0)
-                    ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
-                    : 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500 active:bg-blue-700'
-                }`}
-              >
-                {loading ? 'Loading...' : 'Submit करें'}
-              </button>
+          <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 lg:p-8">
 
-              <button
-                onClick={handleClearSelection}
-                disabled={loading}
-                className="w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base bg-gray-500 hover:bg-gray-600 text-white focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 active:bg-gray-700 cursor-pointer transform hover:scale-105 hover:shadow-xl"
-              >
-                Clear करें
-              </button>
-            </div>
-          )}
-
-          {/* Enhanced Summary Section */}
-          {savedHeaders.length > 0 && (
-            <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
-              <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">बही सारांश</h3>
-              <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 text-center">
-                {typeOrder.map(type => (
-                  <div key={type} className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
-                    <div className="text-lg sm:text-2xl font-bold text-blue-600">
-                      {groupedByType[type]?.length || 0}
-                    </div>
-                    <div className="text-xs text-gray-600">{getBaheeTypeName(type)}</div>
-                  </div>
-                ))}
+            {/* Loading indicator for refresh */}
+            {loading && savedHeaders.length > 0 && (
+              <div className="mb-4">
+                <Loader
+                  size="small"
+                  text="अपडेट हो रहा है..."
+                  colors={["#327fcd", "#32cd32"]}
+                />
               </div>
-              
-              {savedHeaders.length > 0 && Object.values(groupedByType).flat().length !== savedHeaders.length && (
-                <div className="mt-3 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
-                  ⚠️ कुछ डेटा वर्गीकृत नहीं है: {savedHeaders.length - Object.values(groupedByType).flat().length} items
-                </div>
-              )}
+            )}
+
+            {/* Data count display */}
+            {savedHeaders.length > 0 && (
+              <div className="mb-4 text-center">
+                <span className="text-sm sm:text-md text-blue-800 YatraOne-Regular">
+                  कुल बही विवरण: <strong>{savedHeaders.length}</strong>
+                </span>
+              </div>
+            )}
+
+            {/* Main Selection Area */}
+            <div className="space-y-4 sm:space-y-6 lg:space-y-0 lg:flex lg:flex-row lg:items-center lg:justify-center lg:gap-8">
+              {/* First Select - नई बही */}
+              <div className="w-full lg:w-80">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                  नई बही का प्रकार चुनें
+                </label>
+                <select
+                  value={firstSelectValue}
+                  onChange={handleFirstSelectChange}
+                  disabled={secondSelectValue !== '' || thirdSelectValue !== '' || loading}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${secondSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                    }`}
+                >
+                  <option value="">नई बही जोड़ें +</option>
+                  <option value="vivah">विवाह की विगत जोड़े +</option>
+                  <option value="muklawa">मुकलावा की विगत जोड़े +</option>
+                  <option value="odhawani">ओढावणी की विगत जोड़े +</option>
+                  <option value="mahera">माहेरा की विगत जोड़े +</option>
+                  <option value="anya">अन्य विगत जोड़े +</option>
+                </select>
+
+                {/* ✅ NEW: Custom Input Box for "अन्य विगत" */}
+                {showCustomInput && (
+                  <div className="mt-3 animate-fade-in">
+                    <label className="block text-sm font-medium text-red-600 mb-2">
+                      अपना विगत प्रकार लिखें:
+                    </label>
+                    <ReactTransliterate
+                      value={customBaheeType}
+                      onChangeText={(text) => setCustomBaheeType(text)}
+                      lang="hi"
+                      placeholder="विगत..."
+                      className="w-full px-3 py-2 border border-blue-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 text-sm text-gray-700"
+                      style={{
+                        fontSize: '14px',
+                        fontFamily: 'inherit'
+                      }}
+                    />
+                    {customBaheeType.trim().length > 0 && (
+                      <div className="mt-2 text-xs text-green-600">
+                        ✓ आपका विगत प्रकार: <strong>{customBaheeType}</strong>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+
+              {/* Desktop Separator */}
+              <div className="hidden lg:flex items-center justify-center lg:flex-col lg:h-20">
+                <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
+                <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
+                  या
+                </span>
+                <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
+              </div>
+
+              {/* Mobile separator */}
+              <div className="flex lg:hidden items-center justify-center w-full my-3">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <span className="px-3 py-1 bg-blue-800 text-white text-xs font-medium rounded-full mx-3">
+                  या
+                </span>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
+              {/* Second Select */}
+              <div className="w-full lg:w-80">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                  मौजूदा बही चुनें
+                  {savedHeaders.length > 0 && (
+                    <span className="text-xs text-green-600 ml-1">({savedHeaders.length} बही मिली)</span>
+                  )}
+                </label>
+                <select
+                  value={secondSelectValue}
+                  onChange={handleSecondSelectChange}
+                  disabled={firstSelectValue !== '' || thirdSelectValue !== '' || loading}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                    }`}
+                >
+                  <option value="">
+                    {savedHeaders.length === 0 ? 'कोई बही उपलब्ध नहीं' : 'बही का विवरण देखे'}
+                  </option>
+
+                  {savedHeaders.length > 0 && Object.keys(groupedByType).length > 0 ? (
+                    typeOrder.map(type => {
+                      const headersOfType = groupedByType[type] || [];
+                      if (headersOfType.length === 0) return null;
+
+                      return (
+                        <optgroup key={type} label={`${getBaheeTypeName(type)} (${headersOfType.length})`}>
+                          {headersOfType.map(h => (
+                            <option key={h.id} value={h.id}>
+                              {h.name}
+                            </option>
+                          ))}
+                        </optgroup>
+                      );
+                    })
+                  ) : (
+                    savedHeaders.map(h => (
+                      <option key={h.id} value={h.id}>
+                        {h.name} — {h.baheeTypeName}
+                      </option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              {/* Desktop Separator */}
+              <div className="hidden lg:flex items-center justify-center lg:flex-col lg:h-20">
+                <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
+                <span className="px-4 py-2 bg-blue-800 text-white text-sm font-medium rounded-full lg:my-2">
+                  या
+                </span>
+                <div className="w-20 h-px bg-gray-300 lg:w-px lg:h-8"></div>
+              </div>
+
+              {/* Mobile separator */}
+              <div className="flex lg:hidden items-center justify-center w-full my-3">
+                <div className="flex-1 h-px bg-gray-300"></div>
+                <span className="px-3 py-1 bg-blue-800 text-white text-xs font-medium rounded-full mx-3">
+                  या
+                </span>
+                <div className="flex-1 h-px bg-gray-300"></div>
+              </div>
+
+              {/* Third Select - प्रकार अनुसार */}
+              <div className="w-full lg:w-80">
+                <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                  प्रकार अनुसार चुनें
+                </label>
+                <select
+                  value={thirdSelectValue}
+                  onChange={handleThirdSelectChange}
+                  disabled={firstSelectValue !== '' || secondSelectValue !== '' || loading}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || secondSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
+                    }`}
+                >
+                  <option value="">बही प्रकार चुनें</option>
+                  {typeOrder.map(type => (
+                    <option key={type} value={type}>
+                      {getBaheeTypeName(type)}
+                      {groupedByType[type] && ` (${groupedByType[type].length})`}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
-          )}
+
+            {/* ✅ MODIFIED: Enhanced buttons logic for custom input */}
+            {canSubmit && (
+              <div className="mt-6 space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:justify-center sm:gap-4 animate-fade-in">
+                <button
+                  onClick={handleSubmit}
+                  disabled={loading || (showCustomInput && customBaheeType.trim().length === 0)}
+                  className={`w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base focus:ring-2 focus:ring-offset-2 cursor-pointer transform hover:scale-105 hover:shadow-xl ${loading || (showCustomInput && customBaheeType.trim().length === 0)
+                      ? 'bg-gray-400 text-gray-700 cursor-not-allowed'
+                      : 'bg-blue-500 hover:bg-blue-600 text-white focus:ring-blue-500 active:bg-blue-700'
+                    }`}
+                >
+                  {loading ? 'Loading...' : 'Submit करें'}
+                </button>
+
+                <button
+                  onClick={handleClearSelection}
+                  disabled={loading}
+                  className="w-full sm:w-48 px-4 py-3 font-semibold rounded-lg transition-all duration-300 focus:outline-none shadow-lg text-sm sm:text-base bg-gray-500 hover:bg-gray-600 text-white focus:ring-2 focus:ring-gray-500 focus:ring-offset-2 active:bg-gray-700 cursor-pointer transform hover:scale-105 hover:shadow-xl"
+                >
+                  Clear करें
+                </button>
+              </div>
+            )}
+
+            {/* Enhanced Summary Section */}
+            {savedHeaders.length > 0 && (
+              <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
+                <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">बही सारांश</h3>
+                <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 text-center">
+                  {typeOrder.map(type => (
+                    <div key={type} className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
+                      <div className="text-lg sm:text-2xl font-bold text-blue-600">
+                        {groupedByType[type]?.length || 0}
+                      </div>
+                      <div className="text-xs text-gray-600">{getBaheeTypeName(type)}</div>
+                    </div>
+                  ))}
+                </div>
+
+                {savedHeaders.length > 0 && Object.values(groupedByType).flat().length !== savedHeaders.length && (
+                  <div className="mt-3 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
+                    ⚠️ कुछ डेटा वर्गीकृत नहीं है: {savedHeaders.length - Object.values(groupedByType).flat().length} items
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
         </div>
-      </div>
 
-      {/* Password Change Modal */}
-      <PasswordChangeModal 
-        isOpen={showPasswordModal}
-        onClose={() => setShowPasswordModal(false)}
-        isMandatory={localStorage.getItem('isTemporaryPassword') === 'true'}
-      />
+        {/* Password Change Modal */}
+        <PasswordChangeModal
+          isOpen={showPasswordModal}
+          onClose={() => setShowPasswordModal(false)}
+          isMandatory={localStorage.getItem('isTemporaryPassword') === 'true'}
+        />
 
-      {/* Custom CSS for animations and mobile optimization */}
-      <style>{`
+        {/* Custom CSS for animations and mobile optimization */}
+        <style>{`
         .animate-fade-in {
           animation: fadeInUp 0.4s ease-out;
         }
@@ -628,8 +626,9 @@ const VigatBahee = () => {
           }
         }
       `}</style>
-    </div>
+      </div>
+      <Footer />
+    </>
   );
 };
-
 export default VigatBahee;
