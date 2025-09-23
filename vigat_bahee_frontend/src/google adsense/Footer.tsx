@@ -25,7 +25,7 @@ const Footer = () => {
             {/* Social Media Links */}
             <div className="flex space-x-4">
               <a 
-                href="https://facebook.com/yourcompany" 
+                href="https://facebook.com/duda.ram.choudhary" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-blue-500 transition-colors duration-200"
@@ -37,7 +37,7 @@ const Footer = () => {
               </a>
               
               <a 
-                href="https://twitter.com/yourcompany" 
+                href="https://twitter.com/erduds656" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-blue-400 transition-colors duration-200"
@@ -49,7 +49,7 @@ const Footer = () => {
               </a>
               
               <a 
-                href="https://instagram.com/yourcompany" 
+                href="https://instagram.com/dudaram_choudhary_656" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-pink-500 transition-colors duration-200"
@@ -61,7 +61,7 @@ const Footer = () => {
               </a>
               
               <a 
-                href="https://linkedin.com/company/yourcompany" 
+                href="https://linkedin.com/company/duda.ram.choudhary"
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="text-gray-400 hover:text-blue-600 transition-colors duration-200"

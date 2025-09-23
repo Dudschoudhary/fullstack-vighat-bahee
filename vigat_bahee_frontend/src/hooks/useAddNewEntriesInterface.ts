@@ -19,13 +19,10 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
     try {
       setLoading(true);
       setError("");
-      console.log('🔄 Loading all data...');
 
       // ✅ FIXED: Load bahee details with proper response structure
       try {
         const baheeResponse = await baheeApiService.getAllBaheeDetails();
-        console.log('📦 Raw bahee response:', baheeResponse);
-        console.log("Dudaram.........data",baheeResponse)
 
         if (baheeResponse.success && baheeResponse.data) {
           // ✅ FIXED: Handle both array and object responses
@@ -49,9 +46,7 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
           }));
 
           setBaheeDetails(formattedBaheeDetails);
-          console.log('✅ Bahee details loaded:', formattedBaheeDetails);
         } else {
-          console.log('📋 No bahee details found');
           setBaheeDetails([]);
         }
       } catch (baheeError) {
@@ -62,7 +57,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       // ✅ FIXED: Load bahee entries with enhanced error handling
       try {
         const entriesResponse = await baheeApiService.getAllBaheeEntries();
-        console.log('📦 Raw entries response:', entriesResponse);
 
         if (entriesResponse.success && entriesResponse.data) {
           // ✅ FIXED: Handle different response structures
@@ -99,9 +93,7 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
           );
 
           setData(validEntries);
-          console.log('✅ Entries loaded:', validEntries.length, 'valid entries');
         } else {
-          console.log('📋 No entries found');
           setData([]);
         }
       } catch (entriesError) {
@@ -122,7 +114,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
               : [];
           }
         } catch (apiError) {
-          console.log('⚠️ Return net logs API not available, trying localStorage');
         }
 
         // Fallback to localStorage
@@ -149,7 +140,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
         });
         setLockedKeys(lockedKeysMap);
         
-        console.log('✅ Return net logs loaded:', returnNetLogs.length, 'logs');
       } catch (returnNetError) {
         console.error('❌ Error loading return net logs:', returnNetError);
         setReturnNetLogs([]);
@@ -160,7 +150,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       const detectedType = currentBaheeType || detectCurrentBaheeType();
       if (detectedType && detectedType.trim() !== '') {
         setSelectedBaheeType(detectedType);
-        console.log('🎯 Set default bahee type:', detectedType);
       }
 
     } catch (error: any) {
@@ -214,8 +203,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   const updateEntry = useCallback(async (updatedEntry: DataType): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🔄 Updating entry:', updatedEntry.name);
-
       // ✅ FIXED: Prepare data for API with proper field mapping
       const updatePayload = {
         caste: updatedEntry.cast,
@@ -240,7 +227,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
         );
         
         message.success("रिकॉर्ड सफलतापूर्वक अपडेट हो गया");
-        console.log('✅ Entry updated successfully');
         return true;
       } else {
         throw new Error(response.message || 'Update failed');
@@ -259,7 +245,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   const deleteEntry = useCallback(async (entryKey: string): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🗑️ Deleting entry:', entryKey);
 
       const response = await baheeApiService.deleteBaheeEntry(entryKey);
       
@@ -268,7 +253,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
         setData(prevData => prevData.filter(r => r.key !== entryKey));
         
         message.success("रिकॉर्ड सफलतापूर्वक डिलीट हो गया");
-        console.log('✅ Entry deleted successfully');
         return true;
       } else {
         throw new Error(response.message || 'Delete failed');
@@ -287,7 +271,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   const updateBaheeDetails = useCallback(async (updatedBahee: BaheeDetails): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🔄 Updating bahee details:', updatedBahee.name);
 
       const updatePayload = {
         baheeType: updatedBahee.baheeType,
@@ -315,7 +298,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
         );
         
         message.success("बही विवरण सफलतापूर्वक अपडेट हो गया");
-        console.log('✅ Bahee details updated successfully');
         return true;
       } else {
         throw new Error(response.message || 'Update failed');
@@ -334,7 +316,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   const addReturnNetLog = useCallback(async (logData: Omit<ReturnNetLog, 'createdAt'>): Promise<boolean> => {
     try {
       setLoading(true);
-      console.log('🔄 Adding return net log for:', logData.name);
 
       const newLog: ReturnNetLog = {
         ...logData,
@@ -345,12 +326,10 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       try {
         const response = await baheeApiService.addReturnNetLog(newLog);
         if (response.success) {
-          console.log('✅ Return net log saved to API');
         } else {
           throw new Error('API save failed');
         }
       } catch (apiError) {
-        console.log('⚠️ API not available, saving to localStorage');
         
         // Fallback to localStorage
         const currentLogs = [...returnNetLogs, newLog];
@@ -366,7 +345,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       }
       
       message.success("विवरण सुरक्षित कर दिया गया");
-      console.log('✅ Return net log added successfully');
       return true;
     } catch (error: any) {
       console.error('❌ Error adding return net log:', error);
@@ -384,12 +362,10 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
     
     if (selectedBaheeId) {
       const filtered = baheeDetails.filter(bd => bd.id === selectedBaheeId);
-      console.log('🔍 Contextual by ID:', filtered);
       return filtered;
     }
     
     if (!currentBaheeType && selectedBaheeType === "") {
-      console.log('🔍 All bahee details:', baheeDetails);
       return baheeDetails;
     }
     
@@ -397,7 +373,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
     if (!target) return baheeDetails;
     
     const filtered = baheeDetails.filter(bd => bd.baheeType === target);
-    console.log('🔍 Contextual by type:', target, filtered);
     return filtered;
   }, [baheeDetails, currentBaheeType, selectedBaheeType, selectedBaheeId]);
 

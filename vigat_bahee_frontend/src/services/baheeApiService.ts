@@ -13,7 +13,6 @@ class BaheeApiService {
   // Bahee Details methods
   async createBaheeDetails(data: BaheeDetailsCreateRequest): Promise<ApiResponse<BaheeDetails>> {
     try {
-      console.log('🔥 Creating Bahee Details:', data);
       return await apiService.post<ApiResponse<BaheeDetails>>('/bahee-details', data);
     } catch (error: any) {
       console.error('❌ Bahee Details Creation Error:', error);
@@ -29,7 +28,6 @@ class BaheeApiService {
 
   async getAllBaheeDetails(): Promise<ApiResponse<BaheeDetails[]>> {
     try {
-      console.log('📋 Fetching All Bahee Details');
       return await apiService.get<ApiResponse<BaheeDetails[]>>('/bahee-details');
     } catch (error: any) {
       console.error('❌ Fetch Bahee Details Error:', error);
@@ -39,7 +37,6 @@ class BaheeApiService {
 
   async getBaheeDetailsByType(baheeType: string): Promise<ApiResponse<BaheeDetails[]>> {
     try {
-      console.log('📋 Fetching Bahee Details by Type:', baheeType);
       return await apiService.get<ApiResponse<BaheeDetails[]>>(`/bahee-details/${baheeType}`);
     } catch (error: any) {
       console.error('❌ Fetch Bahee Details by Type Error:', error);
@@ -49,7 +46,6 @@ class BaheeApiService {
 
   async updateBaheeDetails(id: string, data: Partial<BaheeDetails>): Promise<ApiResponse<BaheeDetails>> {
     try {
-      console.log('🔄 Updating Bahee Details:', { id, data });
       return await apiService.put<ApiResponse<BaheeDetails>>(`/bahee-details/${id}`, data);
     } catch (error: any) {
       console.error('❌ Update Bahee Details Error:', error);
@@ -59,7 +55,6 @@ class BaheeApiService {
 
   async deleteBaheeDetails(id: string): Promise<ApiResponse<any>> {
     try {
-      console.log('🗑️ Deleting Bahee Details:', id);
       return await apiService.delete<ApiResponse<any>>(`/bahee-details/${id}`);
     } catch (error: any) {
       console.error('❌ Delete Bahee Details Error:', error);
@@ -70,7 +65,6 @@ class BaheeApiService {
   // Bahee Entries methods
   async createBaheeEntry(data: BaheeEntryCreateRequest): Promise<ApiResponse<BaheeEntry>> {
     try {
-      console.log('🔥 Creating Bahee Entry:', data);
       return await apiService.post<ApiResponse<BaheeEntry>>('/bahee-entries', data);
     } catch (error: any) {
       console.error('❌ Bahee Entry Creation Error:', error);
@@ -84,7 +78,6 @@ class BaheeApiService {
 
   async getAllBaheeEntries(): Promise<ApiResponse<BaheeEntry[]>> {
     try {
-      console.log('📋 Fetching All Bahee Entries');
       return await apiService.get<ApiResponse<BaheeEntry[]>>('/bahee-entries');
     } catch (error: any) {
       console.error('❌ Fetch Bahee Entries Error:', error);
@@ -94,7 +87,6 @@ class BaheeApiService {
 
   async getBaheeEntriesByHeader(baheeType: string, headerName: string): Promise<ApiResponse<BaheeEntry[]>> {
     try {
-      console.log('📋 Fetching Bahee Entries by Header:', { baheeType, headerName });
       return await apiService.get<ApiResponse<BaheeEntry[]>>(`/bahee-entries/${baheeType}/${headerName}`);
     } catch (error: any) {
       console.error('❌ Fetch Bahee Entries by Header Error:', error);
@@ -104,7 +96,6 @@ class BaheeApiService {
 
   async updateBaheeEntry(id: string, data: Partial<BaheeEntry>): Promise<ApiResponse<BaheeEntry>> {
     try {
-      console.log('🔄 Updating Bahee Entry:', { id, data });
       return await apiService.put<ApiResponse<BaheeEntry>>(`/bahee-entries/${id}`, data);
     } catch (error: any) {
       console.error('❌ Update Bahee Entry Error:', error);
@@ -114,7 +105,6 @@ class BaheeApiService {
 
   async deleteBaheeEntry(id: string): Promise<ApiResponse<any>> {
     try {
-      console.log('🗑️ Deleting Bahee Entry:', id);
       return await apiService.delete<ApiResponse<any>>(`/bahee-entries/${id}`);
     } catch (error: any) {
       console.error('❌ Delete Bahee Entry Error:', error);

@@ -158,9 +158,9 @@ const DMCAPolicy = () => {
                   </p>
                   <div className="bg-white p-3 rounded border text-sm">
                     <p><strong>DMCA Agent for VigatBahee.com</strong></p>
-                    <p><strong>Email:</strong> dmca@vigatbahee.com</p>
-                    <p><strong>Phone:</strong> +91-XXXXXXXXXX</p>
-                    <p><strong>Address:</strong> VigatBahee.com, Baldev Nagar, Jodhpur, Rajasthan - 342003, India</p>
+                    <p><strong>Email:</strong> dudaram656@gmail.com</p>
+                    <p><strong>Phone:</strong> +91-958749072</p>
+                    <p><strong>Address:</strong>VigatBahee.com, Baldev Nagar, Jodhpur, Rajasthan - 342003, India</p>
                   </div>
                 </div>
               </div>
@@ -223,7 +223,7 @@ const DMCAPolicy = () => {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-800 mb-2">Counter-Notice Process</h3>
                   <ol className="text-sm text-gray-700 space-y-1">
-                    <li>1. Submit complete counter-notice to: <strong>dmca@vigatbahee.com</strong></li>
+                    <li>1. Submit complete counter-notice to: <strong>dudaram656@gmail.com</strong></li>
                     <li>2. We forward your counter-notice to the original complainant</li>
                     <li>3. We wait 10-14 business days for any legal action</li>
                     <li>4. If no legal action is taken, we may restore the content</li>
@@ -335,7 +335,7 @@ const DMCAPolicy = () => {
                   <div>
                     <h4 className="font-medium text-gray-800 mb-2">Copyright Infringement Reports</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Email:</strong> <a href="mailto:dmca@vigatbahee.com" className="text-blue-600 hover:text-blue-800">dmca@vigatbahee.com</a></p>
+                      <p><strong>Email:</strong> <a href="mailto:dudaram656@gmail.com" className="text-blue-600 hover:text-blue-800">dudaram656@gmail.com</a></p>
                       <p><strong>Subject Line:</strong> "DMCA Takedown Notice - [Your Company/Name]"</p>
                       <p><strong>Response Time:</strong> 24-48 hours</p>
                     </div>
@@ -344,8 +344,8 @@ const DMCAPolicy = () => {
                   <div>
                     <h4 className="font-medium text-gray-800 mb-2">Legal Department</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Email:</strong> <a href="mailto:legal@vigatbahee.com" className="text-blue-600 hover:text-blue-800">legal@vigatbahee.com</a></p>
-                      <p><strong>Phone:</strong> +91-XXXXXXXXXX</p>
+                      <p><strong>Email:</strong> <a href="mailto:dudsoffice656@gmail.com" className="text-blue-600 hover:text-blue-800">dudsoffice656@gmail.com</a></p>
+                      <p><strong>Phone:</strong> +91-9587449072</p>
                       <p><strong>Hours:</strong> Mon-Fri, 9 AM - 6 PM IST</p>
                     </div>
                   </div>

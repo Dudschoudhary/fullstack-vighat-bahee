@@ -172,7 +172,7 @@ const Login: React.FC = () => {
         
         switch (status) {
           case 401:
-            throw new Error('Invalid email or password. Please check your credentials.');
+            throw new Error('Invalid email or password');
           case 400:
             throw new Error(message || 'Please fill all required fields correctly.');
           case 429:
@@ -193,7 +193,7 @@ const Login: React.FC = () => {
   // REGISTER HANDLER
   const handleRegister = async (registerData: RegisterData) => {
     try {
-      await apiService.post('/register', {
+      await apiService.post('/register', {  
         username: registerData.username.toLowerCase().trim(),
         email: registerData.email.toLowerCase().trim(),
         fullname: registerData.fullname.trim(),

@@ -150,11 +150,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           r.headerName === selectedSpecificBahee.name
         );
       });
-      console.log(`✅ Filtering for specific bahee: ${selectedSpecificBahee.name}`, {
-        totalData: data.length,
-        filteredCount: filtered.length,
-        selectedBahee: selectedSpecificBahee
-      });
     } 
     // ✅ Priority 2: If baheeId is provided but no specific selection
     else if (selectedBaheeId) {
@@ -164,13 +159,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           r.baheeType === targetBahee.baheeType && 
           r.headerName === targetBahee.name
         );
-        console.log(`✅ Filtering for target bahee: ${targetBahee.name}`, filtered.length);
       }
     }
     // ✅ Priority 3: Filter by bahee type only
     else if (selectedBaheeType !== "") {
       filtered = data.filter((r) => r.baheeType === selectedBaheeType);
-      console.log(`✅ Filtering for bahee type: ${selectedBaheeType}`, filtered.length);
     }
 
     // ✅ Apply search filter on already filtered data
@@ -187,14 +180,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       );
     }
 
-    console.log(`✅ Final filtered data:`, {
-      originalCount: data.length,
-      filteredCount: filtered.length,
-      selectedBahee: selectedSpecificBahee?.name,
-      selectedType: selectedBaheeType,
-      searchText
-    });
-
     setFilteredData(filtered);
     setPagination((prev) => ({ ...prev, current: 1 }));
   }, [data, selectedBaheeType, selectedBaheeId, searchText, baheeDetails, selectedSpecificBahee]);
@@ -206,7 +191,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // ✅ Fixed: Better bahee type change handling
   const handleBaheeTypeChange = (value: string) => {
-    console.log(`🔄 Bahee type changing from "${selectedBaheeType}" to "${value}"`);
     
     // Clear current selections first
     setSelectedSpecificBahee(null);
@@ -246,7 +230,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // ✅ Fixed: Better specific bahee selection
   const handleSelectSpecificBahee = (bahee: BaheeDetails) => {
-    console.log(`✅ Selecting specific bahee:`, bahee);
     setSelectedSpecificBahee(bahee);
     setSearchText(""); // Clear search when selecting specific bahee
     message.success(`${bahee.name} की बही चुनी गई`);
@@ -860,7 +843,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           </div>
         </div>
       </div>
-
+      <BulkEntryUpload/>
       <Footer/>
 
       {/* All modals remain the same... */}

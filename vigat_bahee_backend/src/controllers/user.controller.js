@@ -53,8 +53,6 @@ export const registerUser = asyncHandler(async (req, res) => {
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password, remember } = req.body;
 
-  console.log("Login attempt:", { email, remember });
-
   if (!email || !password) {
     throw new ApiError(400, "Email और password दोनों required हैं");
   }
@@ -64,14 +62,12 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    console.log("User not found with email:", email);
     throw new ApiError(401, "Invalid email or password");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   
   if (!isPasswordValid) {
-    console.log("Password validation failed for user:", user.email);
     throw new ApiError(401, "Invalid email or password");
   }
 
@@ -87,7 +83,6 @@ export const loginUser = asyncHandler(async (req, res) => {
     email: user.email,
     fullname: user.fullname,
     phone: user.phone,
-    createdAt: user.createdAt
   };
 
   const cookieOptions = {
@@ -107,7 +102,7 @@ export const loginUser = asyncHandler(async (req, res) => {
       message: "User logged in successfully",
       token: accessToken,
       user: loggedInUser,
-      isTemporaryPassword: isTemporaryPassword
+      // isTemporaryPassword: isTemporaryPassword
     });
 });
 
@@ -237,8 +232,6 @@ export const forgotPassword = async (req, res) => {
 export const changePassword = asyncHandler(async (req, res) => {
   const { currentPassword, newPassword } = req.body;
 
-  console.log("Change password request for user:", req.user?._id);
-
   if (!currentPassword || !newPassword) {
     throw new ApiError(400, "Current password and new password are required");
   }
@@ -255,17 +248,12 @@ export const changePassword = asyncHandler(async (req, res) => {
 
   const isCurrentPasswordValid = await user.isPasswordCorrect(currentPassword);
   if (!isCurrentPasswordValid) {
-    console.log("Current password verification failed");
     throw new ApiError(401, "Current password is incorrect");
   }
-
-  console.log("Current password verified");
 
   user.password = newPassword;
   user.isTemporaryPassword = false;
   await user.save();
-
-  console.log("Password changed successfully");
 
   res.status(200).json({
     success: true,
@@ -286,11 +274,6 @@ export const logoutUser = asyncHandler(async (req, res) => {
 export const debugUsers = asyncHandler(async (req, res) => {
   try {
     const allUsers = await User.find({}, 'email username fullname createdAt').sort({ createdAt: -1 });
-    
-    console.log("📋 All users in database:");
-    allUsers.forEach((user, index) => {
-      console.log(`${index + 1}. ${user.email} | ${user.username} | ${user.fullname}`);
-    });
     
     res.status(200).json({
       success: true,

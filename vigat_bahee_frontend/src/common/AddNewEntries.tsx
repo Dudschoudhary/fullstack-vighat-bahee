@@ -59,7 +59,6 @@ const AddNewEntries: React.FC = () => {
   // Debounced handlers
   const debouncedUpdateDetailsForm = useMemo(
     () => debounce((field: string, value: string) => {
-      console.log(`🔄 Debounced Details Update - ${field}:`, value);
       setDetailsForm(prev => ({ ...prev, [field]: value }));
       if (field === 'date') {
         if (isValidDate(value)) {
@@ -80,12 +79,10 @@ const AddNewEntries: React.FC = () => {
     const loadBaheeDetails = async () => {
       try {
         setLoading(true);
-        console.log('🔄 Loading Bahee Details...');
         const response = await baheeApiService.getAllBaheeDetails();
 
         if (response.success && response.data) {
           setAllSavedBaheeDetails(response.data);
-          console.log('✅ Loaded Bahee Details:', response.data);
         }
       } catch (error) {
         console.error('❌ Error loading bahee details:', error);
@@ -105,13 +102,11 @@ const AddNewEntries: React.FC = () => {
       };
       setDetailsForm(formData);
       setLocalDetailsForm(formData);
-      console.log('📋 Using existing bahee data:', passedExisting);
     } else {
       // ✅ Set accurate tithi for today's date
       const todayTithi = getAccurateHinduTithi(getTodayDate());
       setLocalDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
       setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
-      console.log('✅ Today\'s accurate tithi:', todayTithi);
     }
 
     const disableAmountTypes = ['odhawani', 'mahera', 'anya'];
@@ -120,7 +115,6 @@ const AddNewEntries: React.FC = () => {
 
   // Handle bahee details form changes with debouncing
   const handleChangeBaheeDetails = useCallback((field: string, value: string) => {
-    console.log(`⌨️ Details Input Change - ${field}:`, value);
     setLocalDetailsForm(prev => ({ ...prev, [field]: value }));
     setDetailsError('');
 
@@ -130,7 +124,6 @@ const AddNewEntries: React.FC = () => {
         const calculatedTithi = getAccurateHinduTithi(value);
         setLocalDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
         setDateError('');
-        console.log(`✅ Accurate tithi for ${value}:`, calculatedTithi);
       } else {
         setDateError('भविष्य की तारीख का चयन नहीं किया जा सकता।');
       }
@@ -157,7 +150,6 @@ const AddNewEntries: React.FC = () => {
     try {
       setDetailsLoading(true);
       setDetailsError('');
-      console.log('💾 Saving Bahee Details...');
 
       const detailsData: BaheeDetailsCreateRequest = {
         baheeType: selectedBaheeType,
@@ -171,7 +163,6 @@ const AddNewEntries: React.FC = () => {
 
       if (response.success && response.data) {
         setThisTypeBaheeDetails(response.data);
-        console.log('✅ Bahee Details Saved:', response.data);
 
         const updatedResponse = await baheeApiService.getAllBaheeDetails();
         if (updatedResponse.success && updatedResponse.data) {
@@ -194,7 +185,6 @@ const AddNewEntries: React.FC = () => {
     try {
       setEntryLoading(true);
       setSuccessMessage('');
-      console.log('💾 Saving Entry...');
 
       const response = await baheeApiService.createBaheeEntry(entryData);
 
@@ -215,7 +205,6 @@ const AddNewEntries: React.FC = () => {
 
   const handleNavigateToTable = () => {
     if (thisTypeBaheeDetails && thisTypeBaheeDetails.id) {
-      console.log('Navigating to table with bahee details:', thisTypeBaheeDetails);
       navigate('/bahee-layout', {
         state: {
           selectedBaheeId: thisTypeBaheeDetails.id,

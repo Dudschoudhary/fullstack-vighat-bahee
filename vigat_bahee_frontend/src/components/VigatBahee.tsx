@@ -65,13 +65,11 @@ const VigatBahee = () => {
     try {
       setLoading(true);
       setError('');
-      console.log('🔄 Loading Bahee Details from API...');
 
       const response = await baheeApiService.getAllBaheeDetails();
 
       if (response.success && response.data) {
         const rawData = (response.data as any).baheeDetails_ids || [];
-        console.log('📦 Raw API Data:', rawData);
 
         const processedData = rawData.map((item: any, index: number) => {
           const processed = {
@@ -93,7 +91,6 @@ const VigatBahee = () => {
           return processed;
         }).filter((item: any) => item.id && item.name);
 
-        console.log('✅ Processed Data:', processedData);
 
         setSavedHeaders(processedData);
         localStorage.setItem('baheeDetailsSavedArr', JSON.stringify({
@@ -112,14 +109,11 @@ const VigatBahee = () => {
         const fallbackData = saved.baheeDetails_ids || [];
 
         if (fallbackData.length > 0) {
-          console.log('📦 Using fallback data:', fallbackData);
           setSavedHeaders(fallbackData);
         } else {
-          console.log('📦 No fallback data available');
           setSavedHeaders([]);
         }
       } catch (e) {
-        console.error('❌ Error parsing fallback data:', e);
         setSavedHeaders([]);
       }
     } finally {
@@ -163,7 +157,6 @@ const VigatBahee = () => {
   // ✅ MODIFIED: Handle first select change with custom input logic
   const handleFirstSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
-    console.log('🔥 First select changed to:', selectedValue);
     setFirstSelectValue(selectedValue);
 
     if (selectedValue !== '') {
@@ -186,7 +179,6 @@ const VigatBahee = () => {
 
   const handleSecondSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
-    console.log('🔥 Second select changed to:', selectedId);
 
     setSecondSelectValue(selectedId);
 
@@ -201,7 +193,6 @@ const VigatBahee = () => {
 
   const handleThirdSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
-    console.log('🔥 Third select changed to:', selectedValue);
     setThirdSelectValue(selectedValue);
 
     if (selectedValue !== '') {
@@ -215,7 +206,6 @@ const VigatBahee = () => {
 
   // ✅ MODIFIED: Clear all selections including custom input
   const handleClearSelection = () => {
-    console.log('🧹 Clearing all selections...');
     setFirstSelectValue('');
     setSecondSelectValue('');
     setThirdSelectValue('');
@@ -225,13 +215,6 @@ const VigatBahee = () => {
 
   // ✅ MODIFIED: Handle submit with custom bahee type
   const handleSubmit = () => {
-    console.log('🚀 Submit clicked with values:', {
-      first: firstSelectValue,
-      second: secondSelectValue,
-      third: thirdSelectValue,
-      customType: customBaheeType
-    });
-
     // Create state object to preserve current selections
     const currentSelections = {
       previousFirstSelect: firstSelectValue,
@@ -267,7 +250,6 @@ const VigatBahee = () => {
       const selectedBahee = savedHeaders.find(h => h.id === secondSelectValue);
 
       if (selectedBahee) {
-        console.log('✅ Found selected bahee:', selectedBahee);
 
         const navigationState = {
           selectedBaheeId: selectedBahee.id,
@@ -278,7 +260,6 @@ const VigatBahee = () => {
           ...currentSelections
         };
 
-        console.log('🎯 Navigating with state:', navigationState);
 
         navigate('/bahee-layout', {
           state: navigationState,
@@ -320,16 +301,6 @@ const VigatBahee = () => {
   const isAnySelected = firstSelectValue !== '' || secondSelectValue !== '' || thirdSelectValue !== '';
   const isCustomInputComplete = showCustomInput && customBaheeType.trim().length > 0;
   const canSubmit = (isAnySelected && !showCustomInput) || isCustomInputComplete;
-
-  console.log('🔍 Current selections:', {
-    first: firstSelectValue,
-    second: secondSelectValue,
-    third: thirdSelectValue,
-    showCustomInput,
-    customBaheeType,
-    isAnySelected: isAnySelected,
-    canSubmit
-  });
 
   // Robust grouping with comprehensive validation
   const groupedByType: Record<string, BaheeDetails[]> = savedHeaders.reduce((acc, cur) => {

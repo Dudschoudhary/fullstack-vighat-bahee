@@ -11,7 +11,6 @@ export const verifyEmailConfig = async () => {
     });
 
     await transporter.verify();
-    console.log('Email configuration verified successfully');
     return true;
   } catch (error) {
     console.error('Email configuration failed:', error);
@@ -54,7 +53,6 @@ export const sendTempPasswordEmail = async (email, fullname, tempPassword) => {
     };
 
     const result = await transporter.sendMail(mailOptions);
-    console.log('Email sent successfully:', result.messageId);
     return result;
   } catch (error) {
     console.error('Email sending failed:', error);
