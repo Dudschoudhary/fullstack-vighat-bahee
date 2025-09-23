@@ -843,7 +843,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           </div>
         </div>
       </div>
-      <BulkEntryUpload/>
       <Footer/>
 
       {/* All modals remain the same... */}
