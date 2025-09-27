@@ -1,4 +1,3 @@
-// components/AddNewEntries.tsx
 import React, { useState, useEffect, useCallback, useMemo, type ChangeEvent, type FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CustomVigatBaheeLogo from './CustomVigatBaheeLogo';
@@ -9,7 +8,7 @@ import 'react-transliterate/dist/index.css';
 // Import services and utilities
 import baheeApiService from '../services/baheeApiService';
 import { debounce } from '../utils/debounce';
-import { getAccurateHinduTithi, getTodayDate, isValidDate } from '../utils/hinduCalendar'; // ✅ Updated import
+import { getAccurateHinduTithi, getTodayDate, isValidDate } from '../utils/hinduCalendar';
 import Loader from '../common/Loader';
 import EntryForm from '../components/EntryForm';
 import type {
@@ -29,14 +28,16 @@ const AddNewEntries: React.FC = () => {
   const selectedBaheeTypeName = state?.baheeTypeName || '';
   const passedExisting = state?.existingBaheeData;
 
-  // State management
+  const initialToggleFromVigatBahee = state?.initialUparnetToggle || false;
+
   const [allSavedBaheeDetails, setAllSavedBaheeDetails] = useState<BaheeDetails[]>([]);
   const [thisTypeBaheeDetails, setThisTypeBaheeDetails] = useState<BaheeDetails | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
   const [entryLoading, setEntryLoading] = useState<boolean>(false);
 
-  // Local state for immediate UI feedback
+  const [uparnetToggle, setUparnetToggle] = useState<boolean>(initialToggleFromVigatBahee);
+
   const [localDetailsForm, setLocalDetailsForm] = useState({ 
     name: '', 
     date: getTodayDate(), 
@@ -56,13 +57,15 @@ const AddNewEntries: React.FC = () => {
   // ✅ Get max date (today) for date input
   const maxDate = getTodayDate();
 
+  // ✅ Check if current bahee is "anya" type
+  const isAnyaBahee = selectedBaheeType === 'anya';
+
   // Debounced handlers
   const debouncedUpdateDetailsForm = useMemo(
     () => debounce((field: string, value: string) => {
       setDetailsForm(prev => ({ ...prev, [field]: value }));
       if (field === 'date') {
         if (isValidDate(value)) {
-          // ✅ Using accurate Hindu calendar function
           const calculatedTithi = getAccurateHinduTithi(value);
           setDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
           setDateError('');
@@ -103,15 +106,20 @@ const AddNewEntries: React.FC = () => {
       setDetailsForm(formData);
       setLocalDetailsForm(formData);
     } else {
-      // ✅ Set accurate tithi for today's date
       const todayTithi = getAccurateHinduTithi(getTodayDate());
       setLocalDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
       setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
     }
 
-    const disableAmountTypes = ['odhawani', 'mahera', 'anya'];
+    // ✅ FIXED: Remove 'anya' from hardcoded disabled types
+    const disableAmountTypes = ['odhawani', 'mahera'];
     setIsAmountDisabled(disableAmountTypes.includes(selectedBaheeType));
-  }, [selectedBaheeType, passedExisting]);
+    
+    // ✅ Set toggle state from route params for "anya" bahee
+    if (selectedBaheeType === 'anya') {
+      setUparnetToggle(initialToggleFromVigatBahee);
+    }
+  }, [selectedBaheeType, passedExisting, initialToggleFromVigatBahee]);
 
   // Handle bahee details form changes with debouncing
   const handleChangeBaheeDetails = useCallback((field: string, value: string) => {
@@ -120,7 +128,6 @@ const AddNewEntries: React.FC = () => {
 
     if (field === 'date') {
       if (isValidDate(value)) {
-        // ✅ Using accurate Hindu calendar calculation
         const calculatedTithi = getAccurateHinduTithi(value);
         setLocalDetailsForm(prev => ({ ...prev, tithi: calculatedTithi }));
         setDateError('');
@@ -131,6 +138,11 @@ const AddNewEntries: React.FC = () => {
 
     debouncedUpdateDetailsForm(field, value);
   }, [debouncedUpdateDetailsForm]);
+
+  // ✅ Handle toggle change - यह function रखा गया है par EntryForm में toggle show नहीं होता
+  const handleToggleChange = (enabled: boolean) => {
+    setUparnetToggle(enabled);
+  };
 
   // Bahee details save handler
   const handleBaheeDetailsSave = async (e: FormEvent) => {
@@ -172,7 +184,7 @@ const AddNewEntries: React.FC = () => {
     } catch (error: any) {
       console.error('❌ Bahee Details Save Error:', error);
       if (error.message.includes('Network Error')) {
-        setDetailsError('please try again');
+        setDetailsError('कृपया पुनः प्रयास करें');
       } else {
         setDetailsError(error.message || 'कुछ गलत हुआ है।');
       }
@@ -254,6 +266,18 @@ const AddNewEntries: React.FC = () => {
                 </h2>
               </div>
             </div>
+
+            {isAnyaBahee && (
+              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <span className="text-blue-600">ℹ️</span>
+                  <p className="text-sm text-blue-800">
+                    <strong>नोट:</strong> अन्य विगत के लिए ऊपर नेत field की setting VigatBahee page से control होती है। 
+                    Current Setting: <strong>{uparnetToggle ? 'Enabled' : 'Disabled'}</strong>
+                  </p>
+                </div>
+              </div>
+            )}
 
             {detailsLoading && (
               <div className="mb-4">
@@ -360,11 +384,11 @@ const AddNewEntries: React.FC = () => {
 
             <div className="bg-pink-700 rounded-lg shadow-md p-6 mb-6">
               <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-              <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-              <h1 className="text-lg  font-bold text-blue-700 text-center sm:text-left">
-                  नई Entries जोड़ें
-                </h1>
-                  </div>
+                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                  <h1 className="text-lg font-bold text-blue-700 text-center sm:text-left">
+                    नई Entries जोड़ें
+                  </h1>
+                </div>
 
                 <div className="flex items-center gap-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
@@ -372,6 +396,18 @@ const AddNewEntries: React.FC = () => {
                       {thisTypeBaheeDetails.baheeTypeName} — {thisTypeBaheeDetails.name}
                     </h2>
                   </div>
+                  
+                  {/* ✅ Show current toggle status for "anya" bahee */}
+                  {isAnyaBahee && (
+                    <div className={`px-3 py-1 rounded-lg text-sm font-medium ${
+                      uparnetToggle 
+                        ? 'bg-green-100 text-green-700 border border-green-200' 
+                        : 'bg-red-100 text-red-700 border border-red-200'
+                    }`}>
+                      ऊपर नेत: {uparnetToggle ? 'Enabled' : 'Disabled'}
+                    </div>
+                  )}
+                  
                   <button
                     onClick={handleNavigateToTable}
                     disabled={entryLoading}
@@ -383,11 +419,15 @@ const AddNewEntries: React.FC = () => {
               </div>
             </div>
 
+            {/* ✅ EntryForm - WITHOUT toggle UI (केवल state pass करते हैं) */}
             <EntryForm
               thisTypeBaheeDetails={thisTypeBaheeDetails}
               isAmountDisabled={isAmountDisabled}
               entryLoading={entryLoading}
               onSubmit={handleEntrySubmit}
+              isAnyaBahee={isAnyaBahee}
+              uparnetToggle={uparnetToggle}
+              onToggleChange={handleToggleChange}
             />
           </>
         )}

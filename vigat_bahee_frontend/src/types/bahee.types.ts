@@ -39,7 +39,7 @@ export interface BaheeDetails {
     baheeType: string;
     baheeTypeName: string;
     name: string;
-    date: string;
+    date: any;
     tithi: string;
   }
   
@@ -74,4 +74,5 @@ export interface BaheeDetails {
     baheeType?: string;
     baheeTypeName?: string;
     existingBaheeData?: BaheeDetails;
+    initialUparnetToggle?: any;
   }

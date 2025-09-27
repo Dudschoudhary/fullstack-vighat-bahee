@@ -177,15 +177,15 @@ export const createBaheeEntry = async (req, res) => {
       });
     }
 
-    const disableAmountTypes = ['odhawani', 'mahera', 'anya'];
+    const disableAmountTypes = ['odhawani', 'mahera'];
     const isAmountRequired = !disableAmountTypes.includes(baheeType);
     
-    if (isAmountRequired && !amount) {
-      return res.status(400).json({
-        success: false,
-        message: 'ऊपर नेत दर्ज करें।'
-      });
-    }
+    // if (isAmountRequired && !amount) {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: 'ऊपर नेत दर्ज करें।'
+    //   });
+    // }
 
     const baheeDetailsExist = await BaheeDetails.findOne({
       baheeType,

@@ -39,28 +39,29 @@ const VigatBahee = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
-  // ✅ NEW: Custom input states for "अन्य विगत"
+  // ✅ Custom input states for "अन्य विगत"
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customBaheeType, setCustomBaheeType] = useState('');
+
+  // ✅ NEW: Toggle state for Vigat Bahee main page - यहाँ है toggle!
+  const [showToggleInVigatBahee, setShowToggleInVigatBahee] = useState(false);
+  const [vigatBaheeToggle, setVigatBaheeToggle] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
 
-  // ✅ FIXED: Restore previous selections when coming back
+  // Restore previous selections when coming back
   useEffect(() => {
     const savedState = location.state;
     if (savedState?.returnFromBaheeLayout) {
-      // Restore previous selections when returning from bahee-layout
       if (savedState.previousFirstSelect) setFirstSelectValue(savedState.previousFirstSelect);
       if (savedState.previousSecondSelect) setSecondSelectValue(savedState.previousSecondSelect);
       if (savedState.previousThirdSelect) setThirdSelectValue(savedState.previousThirdSelect);
-
-      // Clear the state to prevent re-triggering
       window.history.replaceState({}, document.title, window.location.pathname);
     }
   }, [location.state]);
 
-  // Enhanced data loading with better processing
+  // Enhanced data loading
   const loadBaheeDetails = async () => {
     try {
       setLoading(true);
@@ -91,7 +92,6 @@ const VigatBahee = () => {
           return processed;
         }).filter((item: any) => item.id && item.name);
 
-
         setSavedHeaders(processedData);
         localStorage.setItem('baheeDetailsSavedArr', JSON.stringify({
           ...response.data,
@@ -107,7 +107,6 @@ const VigatBahee = () => {
       try {
         const saved = JSON.parse(localStorage.getItem('baheeDetailsSavedArr') || '{}');
         const fallbackData = saved.baheeDetails_ids || [];
-
         if (fallbackData.length > 0) {
           setSavedHeaders(fallbackData);
         } else {
@@ -154,7 +153,7 @@ const VigatBahee = () => {
     };
   }, []);
 
-  // ✅ MODIFIED: Handle first select change with custom input logic
+  // ✅ Handle first select change with custom input and toggle logic
   const handleFirstSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedValue = e.target.value;
     setFirstSelectValue(selectedValue);
@@ -163,31 +162,37 @@ const VigatBahee = () => {
       setSecondSelectValue('');
       setThirdSelectValue('');
 
-      // ✅ NEW: Show custom input for "अन्य विगत"
+      // ✅ Show custom input and toggle for "अन्य विगत"
       if (selectedValue === 'anya') {
         setShowCustomInput(true);
+        setShowToggleInVigatBahee(true);
         setCustomBaheeType('');
+        setVigatBaheeToggle(false); // Default disabled
       } else {
         setShowCustomInput(false);
+        setShowToggleInVigatBahee(false);
         setCustomBaheeType('');
+        setVigatBaheeToggle(false);
       }
     } else {
       setShowCustomInput(false);
+      setShowToggleInVigatBahee(false);
       setCustomBaheeType('');
+      setVigatBaheeToggle(false);
     }
   };
 
   const handleSecondSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selectedId = e.target.value;
-
     setSecondSelectValue(selectedId);
 
     if (selectedId !== '') {
       setFirstSelectValue('');
       setThirdSelectValue('');
-      // ✅ Hide custom input when other selections are made
       setShowCustomInput(false);
+      setShowToggleInVigatBahee(false);
       setCustomBaheeType('');
+      setVigatBaheeToggle(false);
     }
   };
 
@@ -198,24 +203,39 @@ const VigatBahee = () => {
     if (selectedValue !== '') {
       setFirstSelectValue('');
       setSecondSelectValue('');
-      // ✅ Hide custom input when other selections are made
+      
+      // ✅ Show toggle for "anya" in third select too
+      if (selectedValue === 'anya') {
+        setShowToggleInVigatBahee(true);
+        setVigatBaheeToggle(false); // Default disabled
+      } else {
+        setShowToggleInVigatBahee(false);
+        setVigatBaheeToggle(false);
+      }
+      
       setShowCustomInput(false);
       setCustomBaheeType('');
     }
   };
 
-  // ✅ MODIFIED: Clear all selections including custom input
+  // Clear all selections including custom input and toggle
   const handleClearSelection = () => {
     setFirstSelectValue('');
     setSecondSelectValue('');
     setThirdSelectValue('');
     setShowCustomInput(false);
+    setShowToggleInVigatBahee(false);
     setCustomBaheeType('');
+    setVigatBaheeToggle(false);
   };
 
-  // ✅ MODIFIED: Handle submit with custom bahee type
+  // ✅ Handle toggle change in main page
+  const handleVigatBaheeToggleChange = (checked: boolean) => {
+    setVigatBaheeToggle(checked);
+  };
+
+  // ✅ Handle submit with toggle state passing
   const handleSubmit = () => {
-    // Create state object to preserve current selections
     const currentSelections = {
       previousFirstSelect: firstSelectValue,
       previousSecondSelect: secondSelectValue,
@@ -223,13 +243,15 @@ const VigatBahee = () => {
     };
 
     if (firstSelectValue !== '') {
-      // ✅ NEW: Handle custom bahee type for "अन्य विगत"
+      // Handle custom bahee type for "अन्य विगत"
       if (firstSelectValue === 'anya' && customBaheeType.trim()) {
         navigate('/new-bahee', {
           state: {
             baheeType: 'anya',
             baheeTypeName: customBaheeType.trim(),
             customBaheeTypeName: customBaheeType.trim(),
+            // ✅ Pass toggle state from VigatBahee page
+            initialUparnetToggle: vigatBaheeToggle,
             ...currentSelections
           }
         });
@@ -250,7 +272,6 @@ const VigatBahee = () => {
       const selectedBahee = savedHeaders.find(h => h.id === secondSelectValue);
 
       if (selectedBahee) {
-
         const navigationState = {
           selectedBaheeId: selectedBahee.id,
           baheeType: selectedBahee.baheeType,
@@ -259,7 +280,6 @@ const VigatBahee = () => {
           autoNavigateToInterface: true,
           ...currentSelections
         };
-
 
         navigate('/bahee-layout', {
           state: navigationState,
@@ -289,6 +309,8 @@ const VigatBahee = () => {
           state: {
             baheeType: thirdSelectValue,
             baheeTypeName: getBaheeTypeName(thirdSelectValue),
+            // ✅ Pass toggle state for "anya" type
+            initialUparnetToggle: thirdSelectValue === 'anya' ? vigatBaheeToggle : undefined,
             ...currentSelections
           }
         });
@@ -297,7 +319,7 @@ const VigatBahee = () => {
     }
   };
 
-  // ✅ MODIFIED: Check if any selection is made including custom input
+  // Check if any selection is made including custom input and toggle
   const isAnySelected = firstSelectValue !== '' || secondSelectValue !== '' || thirdSelectValue !== '';
   const isCustomInputComplete = showCustomInput && customBaheeType.trim().length > 0;
   const canSubmit = (isAnySelected && !showCustomInput) || isCustomInputComplete;
@@ -334,7 +356,7 @@ const VigatBahee = () => {
     <>
       <div className="w-full min-h-screen bg-gray-50">
         <div className="max-w-6xl mx-auto p-3 sm:p-6 lg:p-8">
-          {/* Header with Profile - FIXED: Mobile sticky header */}
+          {/* Header with Profile */}
           <div className="sticky top-0 z-50 bg-white shadow-md rounded-lg mb-4 sm:mb-6 p-3 lg:p-0 lg:bg-transparent lg:shadow-none lg:static">
             <div className="flex justify-between items-center">
               <VigatBaheeLayout />
@@ -343,7 +365,6 @@ const VigatBahee = () => {
           </div>
 
           <div className="bg-white rounded-xl shadow-lg p-3 sm:p-6 lg:p-8">
-
             {/* Loading indicator for refresh */}
             {loading && savedHeaders.length > 0 && (
               <div className="mb-4">
@@ -375,8 +396,7 @@ const VigatBahee = () => {
                   value={firstSelectValue}
                   onChange={handleFirstSelectChange}
                   disabled={secondSelectValue !== '' || thirdSelectValue !== '' || loading}
-                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${secondSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                    }`}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${secondSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
                 >
                   <option value="">नई बही जोड़ें +</option>
                   <option value="vivah">विवाह की विगत जोड़े +</option>
@@ -386,7 +406,7 @@ const VigatBahee = () => {
                   <option value="anya">अन्य विगत जोड़े +</option>
                 </select>
 
-                {/* ✅ NEW: Custom Input Box for "अन्य विगत" */}
+                {/* ✅ Custom Input Box for "अन्य विगत" */}
                 {showCustomInput && (
                   <div className="mt-3 animate-fade-in">
                     <label className="block text-sm font-medium text-red-600 mb-2">
@@ -442,8 +462,7 @@ const VigatBahee = () => {
                   value={secondSelectValue}
                   onChange={handleSecondSelectChange}
                   disabled={firstSelectValue !== '' || thirdSelectValue !== '' || loading}
-                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                    }`}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || thirdSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
                 >
                   <option value="">
                     {savedHeaders.length === 0 ? 'कोई बही उपलब्ध नहीं' : 'बही का विवरण देखे'}
@@ -501,8 +520,7 @@ const VigatBahee = () => {
                   value={thirdSelectValue}
                   onChange={handleThirdSelectChange}
                   disabled={firstSelectValue !== '' || secondSelectValue !== '' || loading}
-                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || secondSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''
-                    }`}
+                  className={`w-full px-3 py-2 sm:py-3 border border-gray-300 rounded-lg bg-white text-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${firstSelectValue !== '' || secondSelectValue !== '' || loading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
                 >
                   <option value="">बही प्रकार चुनें</option>
                   {typeOrder.map(type => (
@@ -515,7 +533,45 @@ const VigatBahee = () => {
               </div>
             </div>
 
-            {/* ✅ MODIFIED: Enhanced buttons logic for custom input */}
+            {/* ✅ Toggle Button Section - केवल यहाँ VigatBahee page पर */}
+            {showToggleInVigatBahee && (
+              <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-fade-in">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h3 className="text-lg font-semibold text-blue-800">ऊपर नेत सेटिंग</h3>
+                    <p className="text-sm text-blue-600">
+                      इस बही के लिए ऊपर नेत फील्ड की default setting चुनें
+                    </p>
+                  </div>
+                  <label className="flex items-center cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={vigatBaheeToggle}
+                      onChange={(e) => handleVigatBaheeToggleChange(e.target.checked)}
+                      className="sr-only"
+                    />
+                    <div className={`relative inline-block w-14 h-8 transition-colors duration-200 ease-in-out rounded-full ${
+                      vigatBaheeToggle ? 'bg-green-500' : 'bg-gray-300'
+                    }`}>
+                      <div className={`absolute top-1 left-1 w-6 h-6 bg-white rounded-full transition-transform duration-200 ease-in-out ${
+                        vigatBaheeToggle ? 'transform translate-x-6' : ''
+                      }`}></div>
+                    </div>
+                    <span className={`ml-3 font-medium ${vigatBaheeToggle ? 'text-green-700' : 'text-gray-600'}`}>
+                      {vigatBaheeToggle ? 'Enable' : 'Disable'}
+                    </span>
+                  </label>
+                </div>
+                <div className="mt-2 text-xs text-gray-600">
+                  {vigatBaheeToggle 
+                    ? '✅ ऊपर नेत field enabled रहेगा' 
+                    : '❌ ऊपर नेत field disabled रहेगा (बाद में entries में बदला जा सकता है)'
+                  }
+                </div>
+              </div>
+            )}
+
+            {/* Enhanced buttons logic for custom input and toggle */}
             {canSubmit && (
               <div className="mt-6 space-y-3 sm:space-y-0 sm:flex sm:flex-row sm:items-center sm:justify-center sm:gap-4 animate-fade-in">
                 <button
@@ -602,4 +658,5 @@ const VigatBahee = () => {
     </>
   );
 };
+
 export default VigatBahee;
