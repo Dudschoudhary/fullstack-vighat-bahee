@@ -409,7 +409,7 @@ const VigatBahee = () => {
                 {/* ✅ Custom Input Box for "अन्य विगत" */}
                 {showCustomInput && (
                   <div className="mt-3 animate-fade-in">
-                    <label className="text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
+                    <label className="text-lg sm:text-base lg:text-lg font-medium text-blue-700 mb-2 YatraOne-Regular">
                       अपना विगत प्रकार लिखें:
                     </label>
                     <ReactTransliterate

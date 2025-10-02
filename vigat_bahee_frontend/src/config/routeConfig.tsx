@@ -1,65 +1,77 @@
-// src/router/index.js or router.js
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import VigatBahee from "../components/VigatBahee";
 import VigatBaheeLayout from "../components/VigatBaheeLayout";
 import AddNewEntries from "../common/AddNewEntries";
 import Login from "../components/Login";
-import AboutUs from "../google adsense/AboutUs"
-import PrivacyPolicy from "../google adsense/ PrivacyPolicy";
+import AboutUs from "../google adsense/AboutUs";
 import TermsAndConditions from "../google adsense/TermsAndConditions";
 import ContactUs from "../google adsense/ContactUs";
 import Footer from "../google adsense/Footer";
 import DMCAPolicy from "../google adsense/DMCAPolicy";
+import PrivacyPolicy from "../google adsense/ PrivacyPolicy";
 
-// Define the routes
+interface RouteProps {
+  element: React.ReactElement;
+}
+
+const isAuthenticated = () => {
+  return !!localStorage.getItem("token");
+};
+
+const ProtectedRoute: React.FC<RouteProps> = ({ element }) => {
+  return isAuthenticated() ? element : <Navigate to="/login" replace />;
+};
+
+const PublicRoute: React.FC<RouteProps> = ({ element }) => {
+  return isAuthenticated() ? <Navigate to="/bahee" replace /> : element;
+};
 
 const router = createBrowserRouter([
   {
     path: "/",
-    // element: <VigatBahee />,
     children: [
       {
         path: "/bahee",
-        element: <VigatBahee/>
+        element: <ProtectedRoute element={<VigatBahee />} />,
       },
       {
         path: "/bahee-layout",
-        element: <VigatBaheeLayout/>
+        element: <ProtectedRoute element={<VigatBaheeLayout />} />,
       },
       {
         path: "/new-bahee",
-        element: <AddNewEntries/>
+        element: <ProtectedRoute element={<AddNewEntries />} />,
       },
       {
         path: "/login",
-        element: <Login/>
+        element: <PublicRoute element={<Login />} />,
       },
       {
         path: "/about-us",
-        element: <AboutUs/>
+        element: <ProtectedRoute element={<AboutUs />} />,
       },
       {
         path: "/privacy-policy",
-        element: <PrivacyPolicy/>
+        element: <ProtectedRoute element={<PrivacyPolicy />} />,
       },
       {
         path: "/terms-and-conditions",
-        element: <TermsAndConditions/>
+        element: <ProtectedRoute element={<TermsAndConditions />} />,
       },
       {
         path: "/contact",
-        element: <ContactUs/>
+        element: <ProtectedRoute element={<ContactUs />} />,
       },
       {
         path: "/footer",
-        element: <Footer/>
+        element: <ProtectedRoute element={<Footer />} />,
       },
       {
         path: "/dmca-policy",
-        element: <DMCAPolicy/>
-      }
-    ]
-  }
+        element: <ProtectedRoute element={<DMCAPolicy />} />,
+      },
+    ],
+  },
 ]);
 
 export default router;

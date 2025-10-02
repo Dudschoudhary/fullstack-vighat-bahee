@@ -458,7 +458,7 @@ const Login: React.FC = () => {
                 className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
                 tabIndex={-1}
               >
-                {showPwd ? <FaEyeSlash className="w-5 h-5"/> : <FaRegEye className="w-5 h-5"/>}
+                {showPwd ? <FaRegEye className="w-5 h-5"/> : <FaEyeSlash className="w-5 h-5"/>}
               </button>
               {errors.password && (
                 <p className="text-red-600 text-sm mt-1">{errors.password}</p>
