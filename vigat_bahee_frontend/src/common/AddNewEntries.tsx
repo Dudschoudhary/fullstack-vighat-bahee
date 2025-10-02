@@ -267,18 +267,6 @@ const AddNewEntries: React.FC = () => {
               </div>
             </div>
 
-            {isAnyaBahee && (
-              <div className="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <div className="flex items-center gap-2">
-                  <span className="text-blue-600">ℹ️</span>
-                  <p className="text-sm text-blue-800">
-                    <strong>नोट:</strong> अन्य विगत के लिए ऊपर नेत field की setting VigatBahee page से control होती है। 
-                    Current Setting: <strong>{uparnetToggle ? 'Enabled' : 'Disabled'}</strong>
-                  </p>
-                </div>
-              </div>
-            )}
-
             {detailsLoading && (
               <div className="mb-4">
                 <Loader
@@ -396,17 +384,6 @@ const AddNewEntries: React.FC = () => {
                       {thisTypeBaheeDetails.baheeTypeName} — {thisTypeBaheeDetails.name}
                     </h2>
                   </div>
-                  
-                  {/* ✅ Show current toggle status for "anya" bahee */}
-                  {isAnyaBahee && (
-                    <div className={`px-3 py-1 rounded-lg text-sm font-medium ${
-                      uparnetToggle 
-                        ? 'bg-green-100 text-green-700 border border-green-200' 
-                        : 'bg-red-100 text-red-700 border border-red-200'
-                    }`}>
-                      ऊपर नेत: {uparnetToggle ? 'Enabled' : 'Disabled'}
-                    </div>
-                  )}
                   
                   <button
                     onClick={handleNavigateToTable}

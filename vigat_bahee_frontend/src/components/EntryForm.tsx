@@ -278,7 +278,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
               
               {/* Dynamic helper text */}
               {isAnyaBahee && !uparnetToggle && (
-                <span className="text-orange-600 text-xs ml-2">(VigatBahee page से disabled)</span>
+                <span className="text-orange-600 text-xs ml-2">(इस बही के लिए लागू नहीं है।)</span>
               )}
               {!isAnyaBahee && isAmountDisabled && (
                 <span className="text-orange-600 text-xs ml-2">(इस बही प्रकार के लिए लागू नहीं)</span>

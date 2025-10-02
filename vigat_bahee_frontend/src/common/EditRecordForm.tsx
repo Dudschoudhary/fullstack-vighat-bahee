@@ -104,7 +104,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
   return (
     <div>
       {/* ✅ NEW: Toggle for "anya" bahee type */}
-      {isAnyaBahee && (
+      {/* {isAnyaBahee && (
         <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center justify-between">
             <div>
@@ -133,7 +133,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
             </label>
           </div>
         </div>
-      )}
+      )} */}
 
       <Form form={form} layout="vertical" name="editRecordForm" preserve={false}>
         <Row gutter={[16, 12]}>
@@ -142,7 +142,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
               label={
                 <span>
                   जाति 
-                  <span className="text-blue-500 text-xs ml-2">*</span>
+                  
                 </span>
               }
               name="cast"
@@ -157,7 +157,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
               label={
                 <span>
                   नाम 
-                  <span className="text-blue-500 text-xs ml-2">*</span>
+                  
                 </span>
               }
               name="name"
@@ -172,7 +172,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
               label={
                 <span>
                   पिता का नाम 
-                  <span className="text-blue-500 text-xs ml-2">*</span>
+                  
                 </span>
               }
               name="fathername"
@@ -187,7 +187,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
               label={
                 <span>
                   गाँव का नाम 
-                  <span className="text-blue-500 text-xs ml-2">*</span>
+                  
                 </span>
               }
               name="address"
@@ -224,7 +224,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
                   <span>ऊपर नेत</span>
                   {/* ✅ Show appropriate helper text */}
                   {isAnyaBahee && !uparnetToggle && (
-                    <span className="text-orange-600 text-xs">(Toggle से enable करें)</span>
+                    <span className="text-orange-600 text-xs">(इस बही प्रकार के लिए लागू नहीं)</span>
                   )}
                   {!isAnyaBahee && isUparnetDisabled && (
                     <span className="text-orange-600 text-xs">(इस बही प्रकार के लिए लागू नहीं)</span>

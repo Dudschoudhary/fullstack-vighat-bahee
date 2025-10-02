@@ -45,7 +45,7 @@ const VigatBahee = () => {
 
   // ✅ NEW: Toggle state for Vigat Bahee main page - यहाँ है toggle!
   const [showToggleInVigatBahee, setShowToggleInVigatBahee] = useState(false);
-  const [vigatBaheeToggle, setVigatBaheeToggle] = useState(false);
+  const [vigatBaheeToggle, setVigatBaheeToggle] = useState(true);
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -167,7 +167,7 @@ const VigatBahee = () => {
         setShowCustomInput(true);
         setShowToggleInVigatBahee(true);
         setCustomBaheeType('');
-        setVigatBaheeToggle(false); // Default disabled
+        setVigatBaheeToggle(true); // Default disabled
       } else {
         setShowCustomInput(false);
         setShowToggleInVigatBahee(false);
@@ -409,7 +409,7 @@ const VigatBahee = () => {
                 {/* ✅ Custom Input Box for "अन्य विगत" */}
                 {showCustomInput && (
                   <div className="mt-3 animate-fade-in">
-                    <label className="block text-sm font-medium text-red-600 mb-2">
+                    <label className="text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
                       अपना विगत प्रकार लिखें:
                     </label>
                     <ReactTransliterate
@@ -423,11 +423,11 @@ const VigatBahee = () => {
                         fontFamily: 'inherit'
                       }}
                     />
-                    {customBaheeType.trim().length > 0 && (
+                    {/* {customBaheeType.trim().length > 0 && (
                       <div className="mt-2 text-xs text-green-600">
                         ✓ आपका विगत प्रकार: <strong>{customBaheeType}</strong>
                       </div>
-                    )}
+                    )} */}
                   </div>
                 )}
               </div>
@@ -538,10 +538,7 @@ const VigatBahee = () => {
               <div className="mt-6 p-4 bg-blue-50 border border-blue-200 rounded-lg animate-fade-in">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h3 className="text-lg font-semibold text-blue-800">ऊपर नेत सेटिंग</h3>
-                    <p className="text-sm text-blue-600">
-                      इस बही के लिए ऊपर नेत फील्ड की default setting चुनें
-                    </p>
+                    <h3 className="font-semibold text-blue-800">ऊपर नेत <span className='text-red-700 test-[8px]'>(क्या आपके इस बही के लिए ऊपर नेट की Entries रहेगी ?)</span></h3>
                   </div>
                   <label className="flex items-center cursor-pointer">
                     <input
@@ -558,15 +555,9 @@ const VigatBahee = () => {
                       }`}></div>
                     </div>
                     <span className={`ml-3 font-medium ${vigatBaheeToggle ? 'text-green-700' : 'text-gray-600'}`}>
-                      {vigatBaheeToggle ? 'Enable' : 'Disable'}
+                      {vigatBaheeToggle ? 'हाँ' : 'नहीं'}
                     </span>
                   </label>
-                </div>
-                <div className="mt-2 text-xs text-gray-600">
-                  {vigatBaheeToggle 
-                    ? '✅ ऊपर नेत field enabled रहेगा' 
-                    : '❌ ऊपर नेत field disabled रहेगा (बाद में entries में बदला जा सकता है)'
-                  }
                 </div>
               </div>
             )}

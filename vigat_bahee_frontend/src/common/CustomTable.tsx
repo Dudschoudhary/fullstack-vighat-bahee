@@ -509,9 +509,8 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           // ✅ Enhanced display for anya bahee entries
           if (record.baheeType === 'anya' && Number(value) === 0) {
             return (
-              <span className="text-orange-600 text-xs">
+              <span className="text-xs">
                 ₹0 <br />
-                <em>(Toggle disabled)</em>
               </span>
             );
           }
