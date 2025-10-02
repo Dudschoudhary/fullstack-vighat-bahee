@@ -7,24 +7,24 @@ interface ConfirmModalProps {
   open: boolean;
   title: string;
   content: string;
-  onConfirm: () => void;
   onCancel: () => void;
   loading?: boolean;
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
+  onOk: () => void; 
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
   open,
   title,
   content,
-  onConfirm,
   onCancel,
   loading = false,
   confirmText = "Yes",
   cancelText = "No",
-  danger = false
+  danger = false,
+  onOk
 }) => {
   return (
     <Modal
@@ -38,6 +38,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
       }
       onCancel={onCancel}
+      onOk={onOk}
       width={400}
       centered
       footer={[
@@ -49,7 +50,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
           type="primary"
           danger={danger}
           loading={loading}
-          onClick={onConfirm}
+          onClick={onOk}
           className={danger ? "bg-red-500 hover:bg-red-600" : ""}
         >
           {confirmText}
