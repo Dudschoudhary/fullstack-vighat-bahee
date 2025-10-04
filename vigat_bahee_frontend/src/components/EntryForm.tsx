@@ -129,17 +129,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
           amount: finalAmount
         };
 
-        // ✅ Enhanced logging for debugging
-        console.log('📝 Creating Entry with:', {
-          baheeType: entryData.baheeType,
-          isAnyaBahee,
-          uparnetToggle,
-          finalAmount,
-          logic: isAnyaBahee 
-            ? `Anya bahee: toggle ${uparnetToggle ? 'enabled' : 'disabled'} → amount ${finalAmount}`
-            : `Regular bahee: amount ${finalAmount}`
-        });
-
         await onSubmit(entryData);
         handleReset();
       } catch (error) {

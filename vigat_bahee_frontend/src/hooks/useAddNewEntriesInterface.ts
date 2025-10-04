@@ -400,7 +400,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
     return returnNetLogs.find(log => log.forKey === recordKey) || null;
   }, [returnNetLogs]);
 
-  // ✅ Return enhanced hook interface
   return {
     // State
     data,
