@@ -112,7 +112,7 @@ export const getAccurateHinduTithi = (gregorianDate: string): string => {
 };
 
 // Get today's date in YYYY-MM-DD format
-export const getTodayDate = () => {
+export const getTodayDate = (): string[] => {
     const today = new Date();
     return today.toISOString().split('T');
 };

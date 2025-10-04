@@ -106,7 +106,7 @@ const AddNewEntries: React.FC = () => {
       setDetailsForm(formData);
       setLocalDetailsForm(formData);
     } else {
-      const todayTithi = getAccurateHinduTithi(getTodayDate());
+      const todayTithi = getAccurateHinduTithi(getTodayDate()[0]);
       setLocalDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
       setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
     }
@@ -149,12 +149,12 @@ const AddNewEntries: React.FC = () => {
     e.preventDefault();
     const nameTrim = detailsForm.name.trim();
 
-    if (!nameTrim || !detailsForm.date.trim() || !detailsForm.tithi.trim()) {
+    if (!nameTrim || !detailsForm.date[0].trim() || !detailsForm.tithi.trim()) {
       setDetailsError('सभी विवरण अनिवार्य हैं।');
       return;
     }
 
-    if (!isValidDate(detailsForm.date)) {
+    if (!isValidDate(detailsForm.date[0])) {
       setDetailsError('कृपया आज या इससे पहले की तारीख चुनें।');
       return;
     }
@@ -304,7 +304,7 @@ const AddNewEntries: React.FC = () => {
                       type="date"
                       value={localDetailsForm.date}
                       onChange={(e) => handleChangeBaheeDetails('date', e.target.value)}
-                      max={maxDate}
+                      // max={maxDate}
                       className={`w-full h-12 px-3 rounded-xl border bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition ${
                         dateError ? 'border-red-500 focus-visible:ring-red-600' : 'border-gray-300 focus-visible:ring-blue-600'
                       }`}

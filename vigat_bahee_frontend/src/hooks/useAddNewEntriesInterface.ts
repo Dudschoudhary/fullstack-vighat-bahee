@@ -88,7 +88,7 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
           }));
 
           // ✅ FIXED: Filter out invalid entries
-          const validEntries = formattedEntries.filter(entry => 
+          const validEntries = formattedEntries.filter((entry:any)=> 
             entry.name && entry.name.trim() !== ''
           );
 

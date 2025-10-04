@@ -9,6 +9,11 @@ interface LoaderProps {
   fullScreen?: boolean;
   className?: string;
 }
+interface SizeMap {
+  small: number;
+  medium: number;
+  large: number;
+}
 
 const Loader: React.FC<LoaderProps> = ({
   size = 'medium',
@@ -17,13 +22,13 @@ const Loader: React.FC<LoaderProps> = ({
   fullScreen = false,
   className = ''
 }) => {
-  const sizeMap = {
+  const sizeMap:SizeMap = {
     small: 30,
     medium: 50,
     large: 80
   };
 
-  const loaderSize = sizeMap[size];
+  const loaderSize:any = sizeMap[size];
 
   const content = (
     <div className={`flex flex-col items-center justify-center space-y-4 ${className}`}>

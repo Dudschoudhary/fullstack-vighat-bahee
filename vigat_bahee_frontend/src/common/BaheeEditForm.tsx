@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, DatePicker } from 'antd';
 import { ReactTransliterate } from 'react-transliterate';
-import type { BaheeDetails } from '../types';
+import type { BaheeDetails } from '../types/bahee.types';
 
 interface Props {
   form: any;

@@ -13,7 +13,7 @@ interface BaheeDetails {
   baheeType: string;
   baheeTypeName: string;
   name: string;
-  date: string;
+  date: any;
   tithi: string;
   createdAt: string;
   baheeDetails_ids: any

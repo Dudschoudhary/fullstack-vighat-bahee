@@ -19,7 +19,7 @@ export interface BaheeDetails {
   baheeType: string;
   baheeTypeName: string;
   name: string;
-  date: string;
+  date: any;
   tithi: string;
   createdAt: string;
 }
@@ -28,7 +28,7 @@ export interface ReturnNetLog {
   forKey: string;
   baheeType: string;
   name: string;
-  date: string;
+  date: any;
   description: string;
   confirmToggle: boolean;
   createdAt: string;

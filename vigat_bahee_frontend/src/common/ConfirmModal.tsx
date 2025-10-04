@@ -6,13 +6,16 @@ import { ExclamationCircleOutlined } from '@ant-design/icons';
 interface ConfirmModalProps {
   open: boolean;
   title: string;
-  content: string;
+  content: any;
   onCancel: () => void;
   loading?: boolean;
   confirmText?: string;
   cancelText?: string;
   danger?: boolean;
-  onOk: () => void; 
+  onOk?: () => void;
+  okText?: string;
+  okType?: string;
+  confirmLoading: boolean;
 }
 
 const ConfirmModal: React.FC<ConfirmModalProps> = ({
@@ -41,6 +44,7 @@ const ConfirmModal: React.FC<ConfirmModalProps> = ({
       onOk={onOk}
       width={400}
       centered
+      okText={''}
       footer={[
         <Button key="cancel" onClick={onCancel}>
           {cancelText}

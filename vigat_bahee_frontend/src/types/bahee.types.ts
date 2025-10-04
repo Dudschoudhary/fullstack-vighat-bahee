@@ -4,7 +4,7 @@ export interface BaheeDetails {
     baheeType: string;
     baheeTypeName: string;
     name: string;
-    date: string;
+    date: any;
     tithi: string;
     createdAt?: string;
     updatedAt?: string;
@@ -30,7 +30,7 @@ export interface BaheeDetails {
   export interface ApiResponse<T = any> {
     success: boolean;
     message?: string;
-    data?: T;
+    data?: any;
     error?: string;
     baheeDetails_ids?:string
   }

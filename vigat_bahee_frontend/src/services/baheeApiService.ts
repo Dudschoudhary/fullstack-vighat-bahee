@@ -1,12 +1,12 @@
 // services/baheeApiService.ts
 import apiService from '../api/apiService';
+import type { ReturnNetLog } from '../types/addNewEntriesInterface.types';
 import type {
   BaheeDetails,
   BaheeEntry,
   ApiResponse,
   BaheeDetailsCreateRequest,
   BaheeEntryCreateRequest,
-  ReturnNetLog
 } from '../types/bahee.types';
 
 class BaheeApiService {
@@ -131,6 +131,19 @@ class BaheeApiService {
     } catch (error: any) {
       console.error('❌ Create Return Net Log Error:', error);
       throw new Error('Failed to create return net log');
+    }
+  }
+
+  async addReturnNetLog(data: ReturnNetLog): Promise<ApiResponse<ReturnNetLog>> {
+    try {
+      // Backend API call (if you have endpoint)
+      // return await apiService.post<ApiResponse<ReturnNetLog>>('/return-net-logs', data);
+      
+      // For now, same as createReturnNetLog
+      return await this.createReturnNetLog(data);
+    } catch (error: any) {
+      console.error('❌ Add Return Net Log Error:', error);
+      throw new Error('Failed to add return net log');
     }
   }
 }

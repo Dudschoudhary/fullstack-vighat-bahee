@@ -232,13 +232,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       return;
     }
     
-    console.log('🔍 Opening Edit for Record:', {
-      key: record.key,
-      baheeType: record.baheeType,
-      uparnet: record.uparnet,
-      isAnyaBahee: record.baheeType === 'anya'
-    });
-    
     setCurrent(record);
     setEditOpen(true);
     form.setFieldsValue({
@@ -282,13 +275,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           aavta,
           uparnet,
         };
-
-        console.log('💾 Saving Updated Entry:', {
-          key: updatedEntry.key,
-          originalUparnet: current.uparnet,
-          newUparnet: uparnet,
-          baheeType: updatedEntry.baheeType
-        });
 
         const success = await updateEntry(updatedEntry);
         if (success) {
@@ -1020,6 +1006,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               placeholder="नाम दर्ज करें"
               className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm"
               style={{ height: 40 }}
+              {...({} as any)}
             />
           </Form.Item>
           <Form.Item name="date" label="तारीख" rules={[{ required: true, message: "तारीख चुनें" }]}>
@@ -1031,6 +1018,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
               lang="hi"
               placeholder="विवरण लिखें..."
               className="w-full"
+              {...({} as any)}
             />
           </Form.Item>
           <Form.Item
