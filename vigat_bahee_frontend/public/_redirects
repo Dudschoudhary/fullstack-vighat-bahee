@@ -1,0 +1,11 @@
+# Redirect from old page to new page
+/old-page   /new-page   301
+
+# Rewrite all requests to index.html (SPA support)
+/*   /index.html   200
+
+# Force HTTPS
+http://example.com/*   https://example.com/:splat   301!
+
+# Redirect with parameters
+/blog/:year/:month/:title   /blog/:title   301
