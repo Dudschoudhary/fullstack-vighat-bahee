@@ -15,7 +15,7 @@ dotenv.config();
         })
 
         app.listen(process.env.PORT, () => {
-            console.log("server running on PORT...")
+            console.log("server running on PORT...", process.env.PORT)
         })
     } catch (error){
         console.log("Error",error.message)

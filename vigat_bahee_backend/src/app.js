@@ -13,6 +13,13 @@ app.use(cors({
     credentials: true
 }));
 
+app.get("/", (req, res) => {
+    res.status(200).json({
+        success: true,
+        message: "You are live"
+    })
+})
+
 app.use(urlencoded({extended: true} ))
 app.use(cookieParser());
 
