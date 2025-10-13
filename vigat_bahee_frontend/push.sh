@@ -1,2 +1,2 @@
-docker tag vb-fe <name of image>
-docker push <name of image>
+docker tag vb-fe <name of image>: tag
+docker push <name of image>: tag
