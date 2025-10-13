@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaUser, FaKey, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
+import { FaKey, FaSignOutAlt, FaChevronDown } from 'react-icons/fa';
 import PasswordChangeModal from './PasswordChangeModal';
 import apiService from '../api/apiService';
 

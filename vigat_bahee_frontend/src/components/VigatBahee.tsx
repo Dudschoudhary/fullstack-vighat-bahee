@@ -39,6 +39,8 @@ const VigatBahee = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>('');
 
+  console.log(error)
+
   // ✅ Custom input states for "अन्य विगत"
   const [showCustomInput, setShowCustomInput] = useState(false);
   const [customBaheeType, setCustomBaheeType] = useState('');

@@ -25,7 +25,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
   onReset,
   isAnyaBahee = false,
   uparnetToggle = false,
-  onToggleChange
 }) => {
   const [localFormData, setLocalFormData] = useState<FormData>({
     sno: '',
@@ -172,7 +171,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
               style={{ fontSize: '16px', fontFamily: 'inherit' }}
               disabled={entryLoading}
               maxOptions={3}
-              minMatchLength={2}
             />
             {errors.caste && <p className="text-red-500 text-sm mt-1">{errors.caste}</p>}
           </div>
@@ -191,7 +189,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
               style={{ fontSize: '16px', fontFamily: 'inherit' }}
               disabled={entryLoading}
               maxOptions={3}
-              minMatchLength={2}
             />
             {errors.name && <p className="text-red-500 text-sm mt-1">{errors.name}</p>}
           </div>
@@ -210,7 +207,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
               style={{ fontSize: '16px', fontFamily: 'inherit' }}
               disabled={entryLoading}
               maxOptions={3}
-              minMatchLength={2}
             />
             {errors.fatherName && <p className="text-red-500 text-sm mt-1">{errors.fatherName}</p>}
           </div>
@@ -229,7 +225,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
               style={{ fontSize: '16px', fontFamily: 'inherit' }}
               disabled={entryLoading}
               maxOptions={3}
-              minMatchLength={2}
             />
             {errors.villageName && <p className="text-red-500 text-sm mt-1">{errors.villageName}</p>}
           </div>

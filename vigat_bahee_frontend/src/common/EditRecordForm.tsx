@@ -59,7 +59,6 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
   form,
   isAnyaBahee = false,
   currentRecord,
-  onToggleChange
 }) => {
   // ✅ NEW: Toggle state for "anya" bahee entries
   const [uparnetToggle, setUparnetToggle] = useState<boolean>(true);
@@ -75,17 +74,6 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
   }, [initialValues, form, isAnyaBahee, currentRecord]);
 
   // ✅ NEW: Handle toggle change
-  const handleToggleChange = (checked: boolean) => {
-    setUparnetToggle(checked);
-    if (onToggleChange) {
-      onToggleChange(checked);
-    }
-    
-    // Clear uparnet field when disabled
-    if (!checked) {
-      form.setFieldValue('uparnet', 0);
-    }
-  };
 
   // ✅ FIXED: Check if uparnet should be disabled
   const getUparnetDisabledState = () => {

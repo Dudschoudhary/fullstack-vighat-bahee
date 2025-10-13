@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import CustomVigatBaheeLogo from '../common/CustomVigatBaheeLogo';
 import Footer from './Footer';
 

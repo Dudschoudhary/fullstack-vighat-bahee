@@ -1,4 +1,3 @@
-import React from 'react';
 import CustomVigatBaheeLogo from '../common/CustomVigatBaheeLogo';
 import Footer from './Footer';
 
