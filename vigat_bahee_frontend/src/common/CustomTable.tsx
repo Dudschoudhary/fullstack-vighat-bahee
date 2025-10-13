@@ -24,8 +24,6 @@ import TransliterateSearch from "../components/TransliterateSearch";
 import BaheeEditForm from "../common/BaheeEditForm";
 import type { DataType, BaheeDetails } from "../types/addNewEntriesInterface.types";
 import Loader from "./Loader";
-import CustomVigatBaheeLogo from "./CustomVigatBaheeLogo";
-import Footer from "../google adsense/Footer";
 
 const { Option } = Select;
 const { TextArea } = Input;
@@ -54,7 +52,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     deleteEntry,
     updateBaheeDetails,
     addReturnNetLog,
-    getReturnNetLogForRecord,
     selectedBaheeDetails,
   } = useAddNewEntriesInterface(currentBaheeType, selectedBaheeId);
 
@@ -411,11 +408,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     } finally {
       setReturnSaving(false);
     }
-  };
-
-  // Legacy helper (kept)
-  const goToBaheeList = (bahee: BaheeDetails) => {
-    handleSelectSpecificBahee(bahee);
   };
 
   // Highlight helper

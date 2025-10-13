@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useMemo, type ChangeEvent, type FormEvent } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import CustomVigatBaheeLogo from './CustomVigatBaheeLogo';
 import { IoMdArrowRoundBack } from "react-icons/io";
@@ -30,13 +30,15 @@ const AddNewEntries: React.FC = () => {
 
   const initialToggleFromVigatBahee = state?.initialUparnetToggle || false;
 
-  const [allSavedBaheeDetails, setAllSavedBaheeDetails] = useState<BaheeDetails[]>([]);
+  const [allSavedBaheeDetails, setAllSavedBaheeDetails] = useState<BaheeDetails[]>([]); 
   const [thisTypeBaheeDetails, setThisTypeBaheeDetails] = useState<BaheeDetails | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [detailsLoading, setDetailsLoading] = useState<boolean>(false);
   const [entryLoading, setEntryLoading] = useState<boolean>(false);
-
+  
   const [uparnetToggle, setUparnetToggle] = useState<boolean>(initialToggleFromVigatBahee);
+  
+  console.log(allSavedBaheeDetails)
 
   const [localDetailsForm, setLocalDetailsForm] = useState({ 
     name: '', 
@@ -55,7 +57,6 @@ const AddNewEntries: React.FC = () => {
   const [isAmountDisabled, setIsAmountDisabled] = useState<boolean>(false);
 
   // ✅ Get max date (today) for date input
-  const maxDate = getTodayDate();
 
   // ✅ Check if current bahee is "anya" type
   const isAnyaBahee = selectedBaheeType === 'anya';
@@ -292,7 +293,7 @@ const AddNewEntries: React.FC = () => {
                       className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base placeholder-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
                       disabled={detailsLoading}
                       maxOptions={3}
-                      showCurrentWordAsLastOption={false}
+                      showCurrentWordAsLastSuggestion={false}
                     />
                   </div>
 

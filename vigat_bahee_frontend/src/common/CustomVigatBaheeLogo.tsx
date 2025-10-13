@@ -1,5 +1,5 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FaArrowLeft, FaHome } from 'react-icons/fa';
+import { FaHome } from 'react-icons/fa';
 import baheeLogo from '../assets/images/vigat-bahee.png';
 
 const CustomVigatBaheeLogo = () => {
@@ -12,9 +12,7 @@ const CustomVigatBaheeLogo = () => {
     navigate('/bahee');
   };
 
-  const handleHome = () => {
-    navigate('/bahee');
-  };
+
 
   // Show different button based on current page
   const isOnBaheePage = location.pathname === '/bahee';
