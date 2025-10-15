@@ -1,1 +1,1 @@
-docker run -d -p 5173:5001 vb-fe
+docker run -d -p 5173:5173 vb-fe

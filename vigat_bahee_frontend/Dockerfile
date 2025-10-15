@@ -22,7 +22,7 @@ COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
 # Expose Nginx default port
-EXPOSE 5001
+EXPOSE 5173
 
 # Start nginx
 CMD ["nginx", "-g", "daemon off;"]
