@@ -287,22 +287,6 @@ const EntryForm: React.FC<EntryFormProps> = ({
               ref={fileInputRef}
               className="hidden"
             />
-            
-            <button
-              type="button"
-              onClick={() => fileInputRef.current?.click()}
-              className="bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition-colors focus:ring-2 focus:ring-green-500 focus:ring-offset-2 shadow-lg hover:shadow-xl transform hover:scale-105 flex items-center gap-2"
-            >
-              📄 Page Read (OCR)
-            </button>
-            
-            <button
-              type="button"
-              onClick={handleReset}
-              className="bg-gray-500 hover:bg-gray-600 text-white font-medium py-2 px-4 rounded-lg transition-colors"
-            >
-              🔄 Clear All
-            </button>
           </div>
         </div>
 
