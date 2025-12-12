@@ -1,10 +1,12 @@
 import PersonalbaheeModal from "../models/personalbahee.modal.js";
-import BaheeDetails from '../models/bahee.modal.js';
-
+import { User } from "../models/user.model.js";
 
 export const personalCreateBaheeEntry = async (req, res) => {
-  try {
-    
+  console.log("dudaram Received Data:", req.body);  
+
+  const user_id = req.body.user_id;
+
+  try {    
     const { 
       baheeType, 
       baheeTypeName, 
@@ -14,26 +16,37 @@ export const personalCreateBaheeEntry = async (req, res) => {
       fatherName, 
       villageName, 
       income, 
-      amount 
+      amount,
+      user_id
     } = req.body;
 
-    
-    if (!baheeType || !baheeTypeName || !headerName || !caste || !name || !fatherName || !villageName || !income) {
+    // console.log("dudaram Received Data:", req.body);  
+
+    const missing = [];
+    if (!baheeType) missing.push('baheeType');
+    if (!baheeTypeName) missing.push('baheeTypeName');
+    if (!headerName) missing.push('headerName');
+    if (!caste) missing.push('caste');
+    if (!name) missing.push('name');
+    if (!fatherName) missing.push('fatherName');
+    if (!villageName) missing.push('villageName');
+    if (!income && income !== 0) missing.push('income');
+
+    if (missing.length > 0) {
+      console.error('❌ Missing fields:', missing);
       return res.status(400).json({
         success: false,
-        message: 'सभी आवश्यक फील्ड भरें।'
+        message: 'सभी आवश्यक फील्ड भरें।',
+        missingFields: missing
       });
     }
-
+    
     const disableAmountTypes = ['odhawani', 'mahera'];
     const isAmountRequired = !disableAmountTypes.includes(baheeType);
-    
-    // if (isAmountRequired && !amount) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'ऊपर नेत दर्ज करें।'
-    //   });
-    // }
+
+    // const user_id = req.body.user_id;
+
+    console.log("dudaram user_id:", user_id);
 
     const baheeEntry = new PersonalbaheeModal({
       baheeType: baheeType.trim(),
@@ -45,9 +58,11 @@ export const personalCreateBaheeEntry = async (req, res) => {
       villageName: villageName.trim(),
       income: parseFloat(income),
       amount: isAmountRequired ? parseFloat(amount) : null,
-      // user_id
+      // user_id: user_id
     });
 
+
+    console.log("dudaram Saving Entry:", baheeEntry);
     await baheeEntry.save();
 
     res.status(201).json({
@@ -57,6 +72,7 @@ export const personalCreateBaheeEntry = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('❌ Backend Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -64,10 +80,15 @@ export const personalCreateBaheeEntry = async (req, res) => {
     });
   }
 };
-
 export const getPersonalAllBaheeEntries = async (req, res) => {
+
+  console.log("dudaram req.body:", req.body);
+  // const user_id = req.user._id
+
+
   try {
     const entries = await PersonalbaheeModal.find().sort({ createdAt: -1 });
+    console.log("dudaram  Entries:", JSON.stringify(entries, null, 2));
     
     res.status(200).json({
       success: true,

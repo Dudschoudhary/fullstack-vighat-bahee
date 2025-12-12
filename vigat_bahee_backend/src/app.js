@@ -28,7 +28,7 @@ app.use(express.static("public"));
 
 app.use(userRouter);
 app.use(baheeRouter)
-app.use("/api",personalbaheeRouter)
+app.use(personalbaheeRouter)
 
 
 export default app;

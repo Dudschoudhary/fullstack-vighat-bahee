@@ -112,10 +112,10 @@ export const getAccurateHinduTithi = (gregorianDate: string): string => {
 };
 
 // Get today's date in YYYY-MM-DD format
-export const getTodayDate = (): string[] => {
-    const today = new Date();
-    return today.toISOString().split('T');
-};
+export function getTodayDate(): string {
+    const d = new Date();
+    return d.toISOString().split("T")[0];
+  }
 
 // Validate if date is today or in past
 export const isValidDate = (selectedDate: string): boolean => {

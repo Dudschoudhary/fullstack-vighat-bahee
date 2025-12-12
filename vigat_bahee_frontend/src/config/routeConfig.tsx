@@ -9,6 +9,8 @@ import ContactUs from "../google adsense/ContactUs";
 import Footer from "../google adsense/Footer";
 import DMCAPolicy from "../google adsense/DMCAPolicy";
 import PrivacyPolicy from "../google adsense/ PrivacyPolicy";
+import PersonalEntryForm from "../components/PersonalEntryForm";
+import ViewEntriesByType from "../components/ViewEntriesByType";
 
 interface RouteProps {
   element: React.ReactElement;
@@ -41,6 +43,14 @@ const router = createBrowserRouter([
       {
         path: "/new-bahee",
         element: <ProtectedRoute element={<AddNewEntries />} />,
+      },
+      {
+        path: "/personal-bahee",
+        element: <ProtectedRoute element={<PersonalEntryForm />} />,
+      },
+      {
+        path: "/view-entries",
+        element: <ProtectedRoute element={<ViewEntriesByType />} />,
       },
       {
         path: "/login",

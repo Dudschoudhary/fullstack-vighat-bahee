@@ -1,4 +1,3 @@
-// services/baheeApiService.ts
 import apiService from '../api/apiService';
 import type { ReturnNetLog } from '../types/addNewEntriesInterface.types';
 import type {
@@ -7,18 +6,16 @@ import type {
   BaheeEntryCreateRequest,
 } from '../types/bahee.types';
 
-class BaheeApiService {
-  // Bahee Details methods
-  // Bahee Entries methods
+class PersonalBaheeApiService {
   async personalCreateBaheeEntry(data: BaheeEntryCreateRequest): Promise<ApiResponse<BaheeEntry>> {
     try {
       return await apiService.post<ApiResponse<BaheeEntry>>('/personalbahee', data);
     } catch (error: any) {
       console.error('❌ Bahee Entry Creation Error:', error);
       if (error.response) {
-        throw new Error(error.response.data?.message || 'Failed to create bahee entry');
+        throw new Error(error.response.data?.message || 'Failed to create personal bahee entry');
       } else {
-        throw new Error('Failed to create bahee entry');
+        throw new Error('Failed to creat personal bahee entry');
       }
     }
   }
@@ -59,10 +56,8 @@ class BaheeApiService {
     }
   }
 
-  // Return Net Logs methods (placeholder - you may need to implement backend)
   async getAllReturnNetLogs(): Promise<ApiResponse<ReturnNetLog[]>> {
     try {
-      // For now, get from localStorage
       const logs = JSON.parse(localStorage.getItem('returnNetLogs') || '[]');
       return { success: true, data: logs };
     } catch (error: any) {
@@ -73,7 +68,6 @@ class BaheeApiService {
 
   async createReturnNetLog(data: ReturnNetLog): Promise<ApiResponse<ReturnNetLog>> {
     try {
-      // For now, this is a placeholder - you may need to implement backend endpoint
       return { success: true, data };
     } catch (error: any) {
       console.error('❌ Create Return Net Log Error:', error);
@@ -83,10 +77,6 @@ class BaheeApiService {
 
   async addReturnNetLog(data: ReturnNetLog): Promise<ApiResponse<ReturnNetLog>> {
     try {
-      // Backend API call (if you have endpoint)
-      // return await apiService.post<ApiResponse<ReturnNetLog>>('/return-net-logs', data);
-      
-      // For now, same as createReturnNetLog
       return await this.createReturnNetLog(data);
     } catch (error: any) {
       console.error('❌ Add Return Net Log Error:', error);
@@ -95,4 +85,4 @@ class BaheeApiService {
   }
 }
 
-export default new BaheeApiService();
+export default new PersonalBaheeApiService();

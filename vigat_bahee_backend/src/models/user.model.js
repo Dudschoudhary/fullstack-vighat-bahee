@@ -39,13 +39,17 @@ const userSchema = new Schema(
       trim: true,
       match: /^[0-9]{10,15}$/,
     },
-    isTemporaryPassword: {
+  isTemporaryPassword: {
       type: Boolean,
       default: false,
     },
     baheeDetails_ids:[{
         type: Schema.Types.ObjectId,
         ref: "BaheeDetails"
+      }],
+      PersonalbaheeModal_ids:[{
+        type: Schema.Types.ObjectId,
+        ref: "PersonalbaheeModal"
       }]
   },
   {

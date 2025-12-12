@@ -64,6 +64,8 @@ export const createBaheeDetails = async (req, res) => {
 export const getAllBaheeDetails = async (req, res) => {
   try {
     const user_id = req.user._id
+
+    console.log("dudaram user_id:", user_id);
     const baheeDetails = await User.findById(user_id).populate("baheeDetails_ids")
     
     res.status(200).json({

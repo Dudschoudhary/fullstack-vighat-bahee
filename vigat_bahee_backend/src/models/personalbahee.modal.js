@@ -1,5 +1,5 @@
 // models/BaheeEntry.js
-import mongoose from 'mongoose';
+import mongoose, {Schema} from 'mongoose';
 
 const personalBaheeEntrySchema = new mongoose.Schema({
   baheeType: {
@@ -48,7 +48,11 @@ const personalBaheeEntrySchema = new mongoose.Schema({
   amount: {
     type: Number,
     default: null
-  }
+  },
+  user_id:{
+      type: Schema.Types.ObjectId,
+      ref: "User"
+    }
 }, {
   timestamps: true
 });

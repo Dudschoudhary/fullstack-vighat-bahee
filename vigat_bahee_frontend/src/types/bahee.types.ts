@@ -75,4 +75,5 @@ export interface BaheeDetails {
     baheeTypeName?: string;
     existingBaheeData?: BaheeDetails;
     initialUparnetToggle?: any;
+    fromThirdSelector?: boolean;
   }
