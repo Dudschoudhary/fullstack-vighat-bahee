@@ -62,13 +62,13 @@ export const loginUser = asyncHandler(async (req, res) => {
   });
 
   if (!user) {
-    throw new ApiError(401, "Invalid email or password");
+    throw new ApiError(401, "कृपया सही ईमेल और पासवर्ड दर्ज करें");
   }
 
   const isPasswordValid = await user.isPasswordCorrect(password);
   
   if (!isPasswordValid) {
-    throw new ApiError(401, "Invalid email or password");
+    throw new ApiError(401, "कृपया सही ईमेल और पासवर्ड दर्ज करें");
   }
 
   const accessToken = user.generateAccessToken();
@@ -263,8 +263,12 @@ export const changePassword = asyncHandler(async (req, res) => {
 
 export const logoutUser = asyncHandler(async (req, res) => {
   res
+    .clearCookie("accessToken", { 
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict'
+    })
     .status(200)
-    .clearCookie("accessToken")
     .json({
       success: true,
       message: "User logged out successfully"

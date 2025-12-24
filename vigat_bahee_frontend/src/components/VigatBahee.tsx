@@ -362,7 +362,7 @@ const VigatBahee = () => {
               {/* First Select */}
               <div className="w-full lg:w-80">
                 <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                  नई बही का प्रकार चुनें
+                नई बही बनाएं
                 </label>
                 <select
                   value={firstSelectValue}
@@ -419,7 +419,7 @@ const VigatBahee = () => {
               {/* Second Select */}
               <div className="w-full lg:w-80">
                 <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                  मौजूदा बही चुनें
+                  मौजूदा बही देखें
                   {savedHeaders.length > 0 && (
                     <span className="text-xs text-green-600 ml-1">({savedHeaders.length} बही मिली)</span>
                   )}
@@ -480,7 +480,7 @@ const VigatBahee = () => {
               {/* Third Select */}
               <div className="w-full lg:w-80">
                 <label className="block text-lg sm:text-base lg:text-lg font-medium text-red-700 mb-2 YatraOne-Regular">
-                  प्रकार अनुसार चुनें
+                आपके द्वारा डाली गई बही देखें 
                 </label>
                 <select
                   value={thirdSelectValue}
@@ -492,7 +492,6 @@ const VigatBahee = () => {
                   {typeOrder.map(type => (
                     <option key={type} value={type}>
                       {getBaheeTypeName(type)}
-                      {groupedByType[type] && ` (${groupedByType[type].length})`}
                     </option>
                   ))}
                 </select>
@@ -552,7 +551,7 @@ const VigatBahee = () => {
 
             {savedHeaders.length > 0 && (
               <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">बही सारांश</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">बही विवरण</h3>
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 text-center">
                   {typeOrder.map(type => (
                     <div key={type} className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">

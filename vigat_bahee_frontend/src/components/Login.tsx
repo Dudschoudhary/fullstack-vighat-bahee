@@ -140,9 +140,14 @@ const Login: React.FC = () => {
       }
 
       if (response.token && response.user) {
+        const tokenExpiry = remember 
+        ? 7 * 24 * 60 * 60 * 1000  // 7 days
+        : 24 * 60 * 60 * 1000;     // 1 day
+      
         // Store auth data directly in localStorage
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
+        localStorage.setItem('tokenExpiry', (Date.now() + tokenExpiry).toString());
         
         if (response.isTemporaryPassword) {
           localStorage.setItem('isTemporaryPassword', 'true');
@@ -172,7 +177,7 @@ const Login: React.FC = () => {
         
         switch (status) {
           case 401:
-            throw new Error('Invalid email or password');
+            throw new Error('कृपया सही ईमेल और पासवर्ड दर्ज करें');
           case 400:
             throw new Error(message || 'Please fill all required fields correctly.');
           case 429:

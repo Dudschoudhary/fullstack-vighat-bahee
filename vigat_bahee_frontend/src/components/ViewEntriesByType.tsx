@@ -797,7 +797,7 @@ const saveEdit = async () => {
         content={
           deleteModal.record ? (
             <div className="space-y-2">
-              <p>क्या आप वाकई इस Entry को हटाना चाहते हैं?</p>
+              <p>क्या आप <span className="text-red-600 font-bold">{deleteModal.record.name}</span> की इस Entry को हटाना चाहते हैं?</p>
               <div className="bg-gray-50 p-3 rounded-lg mt-3">
                 <p className="font-semibold">{deleteModal.record.name}</p>
                 <p className="text-sm text-gray-600">पिता: {deleteModal.record.fathername}</p>

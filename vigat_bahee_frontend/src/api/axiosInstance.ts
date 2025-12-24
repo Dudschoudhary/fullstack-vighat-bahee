@@ -22,7 +22,16 @@ axiosInstance.interceptors.request.use(
 
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => Promise.reject(error)
+  (error) => {
+    // ✅ Token expired/invalid पर auto-logout
+    if (error.response?.status === 401) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("user"); // अगर user data save है
+      // React Router use कर रहे हो तो:
+      window.location.href = "/login"; // या useNavigate()
+    }
+    return Promise.reject(error);
+  }
 );
 
 export default axiosInstance;
