@@ -1,52 +1,34 @@
-import PersonalbaheeModal from "../models/personalbahee.modal.js";
-import { User } from "../models/user.model.js";
+import PersonalbaheeModal from '../models/personalbahee.modal.js';
 
+// CREATE
 export const personalCreateBaheeEntry = async (req, res) => {
-  console.log("dudaram Received Data:", req.body);  
+  try {
 
-  const user_id = req.body.user_id;
-
-  try {    
-    const { 
-      baheeType, 
-      baheeTypeName, 
-      headerName, 
-      caste, 
-      name, 
-      fatherName, 
-      villageName, 
-      income, 
-      amount,
-      user_id
-    } = req.body;
-
-    // console.log("dudaram Received Data:", req.body);  
-
-    const missing = [];
-    if (!baheeType) missing.push('baheeType');
-    if (!baheeTypeName) missing.push('baheeTypeName');
-    if (!headerName) missing.push('headerName');
-    if (!caste) missing.push('caste');
-    if (!name) missing.push('name');
-    if (!fatherName) missing.push('fatherName');
-    if (!villageName) missing.push('villageName');
-    if (!income && income !== 0) missing.push('income');
-
-    if (missing.length > 0) {
-      console.error('❌ Missing fields:', missing);
-      return res.status(400).json({
+    if (!req.user) {
+      return res.status(401).json({
         success: false,
-        message: 'सभी आवश्यक फील्ड भरें।',
-        missingFields: missing
+        message: 'Unauthorized: req.user missing'
       });
     }
-    
+
+    const user_id = req.user._id; // ✅ अब safe है
+
+    const {
+      baheeType,
+      baheeTypeName,
+      headerName,
+      caste,
+      name,
+      fatherName,
+      villageName,
+      income,
+      amount
+    } = req.body;
+
+    // ... (same validation)
+
     const disableAmountTypes = ['odhawani', 'mahera'];
     const isAmountRequired = !disableAmountTypes.includes(baheeType);
-
-    // const user_id = req.body.user_id;
-
-    console.log("dudaram user_id:", user_id);
 
     const baheeEntry = new PersonalbaheeModal({
       baheeType: baheeType.trim(),
@@ -58,11 +40,9 @@ export const personalCreateBaheeEntry = async (req, res) => {
       villageName: villageName.trim(),
       income: parseFloat(income),
       amount: isAmountRequired ? parseFloat(amount) : null,
-      // user_id: user_id
+      user_id
     });
 
-
-    console.log("dudaram Saving Entry:", baheeEntry);
     await baheeEntry.save();
 
     res.status(201).json({
@@ -70,9 +50,8 @@ export const personalCreateBaheeEntry = async (req, res) => {
       message: 'Entry successfully added!',
       data: baheeEntry
     });
-
   } catch (error) {
-    console.error('❌ Backend Error:', error);
+    console.error('personalCreateBaheeEntry Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
@@ -80,25 +59,25 @@ export const personalCreateBaheeEntry = async (req, res) => {
     });
   }
 };
+
 export const getPersonalAllBaheeEntries = async (req, res) => {
-
-  console.log("dudaram req.body:", req.body);
-  // const user_id = req.user._id
-
-
   try {
-    const entries = await PersonalbaheeModal.find().sort({ createdAt: -1 });
-    console.log("dudaram  Entries:", JSON.stringify(entries, null, 2));
-    
+    const user_id = req.user._id;
+
+    const entries = await PersonalbaheeModal.find({ user_id }).sort({
+      createdAt: -1,
+    });
+
     res.status(200).json({
       success: true,
-      data: entries
+      data: entries,
     });
   } catch (error) {
+    console.error('getPersonalAllBaheeEntries Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -106,20 +85,24 @@ export const getPersonalAllBaheeEntries = async (req, res) => {
 export const getPersonalBaheeEntriesByHeader = async (req, res) => {
   try {
     const { baheeType, headerName } = req.params;
-    const entries = await PersonalbaheeModal.find({ 
-      baheeType, 
-      headerName 
+    const user_id = req.user._id;
+
+    const entries = await PersonalbaheeModal.find({
+      user_id,
+      baheeType,
+      headerName,
     }).sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
-      data: entries
+      data: entries,
     });
   } catch (error) {
+    console.error('getPersonalBaheeEntriesByHeader Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -127,31 +110,33 @@ export const getPersonalBaheeEntriesByHeader = async (req, res) => {
 export const personalUpdateBaheeEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
-    
-    const updatedEntry = await PersonalbaheeModal.findByIdAndUpdate(
-      id, 
-      updateData, 
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedEntry) {
+    const user_id = req.user._id;
+
+    const existing = await PersonalbaheeModal.findOne({ _id: id, user_id });
+    if (!existing) {
       return res.status(404).json({
         success: false,
-        message: 'Entry not found'
+        message: 'Entry not found या access denied',
       });
     }
-    
+
+    const updatedEntry = await PersonalbaheeModal.findByIdAndUpdate(
+      id,
+      req.body,
+      { new: true, runValidators: true }
+    );
+
     res.status(200).json({
       success: true,
       message: 'Entry अपडेट हो गई।',
-      data: updatedEntry
+      data: updatedEntry,
     });
   } catch (error) {
+    console.error('personalUpdateBaheeEntry Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
@@ -159,25 +144,30 @@ export const personalUpdateBaheeEntry = async (req, res) => {
 export const personalDeleteBaheeEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    
-    const deletedEntry = await PersonalbaheeModal.findByIdAndDelete(id);
-    
+    const user_id = req.user._id;
+
+    const deletedEntry = await PersonalbaheeModal.findOneAndDelete({
+      _id: id,
+      user_id,
+    });
+
     if (!deletedEntry) {
       return res.status(404).json({
         success: false,
-        message: 'Entry not found'
+        message: 'Entry not found या access denied',
       });
     }
-    
+
     res.status(200).json({
       success: true,
-      message: 'Entry डिलीट हो गई।'
+      message: 'Entry डिलीट हो गई।',
     });
   } catch (error) {
+    console.error('personalDeleteBaheeEntry Error:', error);
     res.status(500).json({
       success: false,
       message: 'Server error',
-      error: error.message
+      error: error.message,
     });
   }
 };
