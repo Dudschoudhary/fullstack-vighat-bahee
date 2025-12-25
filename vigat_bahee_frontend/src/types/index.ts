@@ -37,9 +37,16 @@ export interface User {
     message: string;
   }
   
-  export type Mode = 'login' | 'register' | 'forgot-password';
+  export type Mode = 'login' | 'register' | 'forgot-password' | 'reset-password';
   
   export interface FormErrors { 
     [key: string]: string | undefined; 
   }
+
+  export interface ResetPasswordData {
+    token: string;
+    newPassword: string;
+    confirmPassword: string;
+  }
+  
   

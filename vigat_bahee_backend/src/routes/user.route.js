@@ -7,7 +7,7 @@ import {
   changePassword, 
   logoutUser,
   debugUsers,
-  testEmail
+  resetPassword,
 } from "../controllers/user.controller.js";
 import { authMiddleware } from '../middleware/auth.middleware.js'
 
@@ -22,7 +22,7 @@ router.get('/login', (req, res) => {
   
   if (token) {
     try {
-      jwt.verify(token, process.env.JWT_SECRET);
+      jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       return res.redirect('/dashboard');
     } catch (error) {
     }
@@ -56,6 +56,11 @@ router.post('/change-password', authMiddleware, changePassword);
 router.post('/logout', authMiddleware, logoutUser);
 
 router.get('/debug-users', debugUsers);
-router.get('/test-email', testEmail);
+// router.get('/test-email', testEmail);
+
+// router.post('/forgot-password', forgotPassword);
+
+// 2. Reset Password Route (Token Verify)
+router.post('/reset-password', resetPassword);
 
 export default router;

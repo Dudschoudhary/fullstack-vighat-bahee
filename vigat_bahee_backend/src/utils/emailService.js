@@ -1,61 +1,32 @@
 import nodemailer from 'nodemailer';
 
-export const verifyEmailConfig = async () => {
-  try {
-    const transporter = nodemailer.createTransporter({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+const transporter = nodemailer.createTransport({
+  host: process.env.SMTP_HOST,
+  port: Number(process.env.SMTP_PORT || 587),
+  secure: false, // 587 + STARTTLS
+  auth: {
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
+  },
+});
 
-    await transporter.verify();
-    return true;
-  } catch (error) {
-    console.error('Email configuration failed:', error);
-    return false;
-  }
-};
+export const sendResetPasswordEmail = async (email, token) => {
+  console.log("teja..",process.env.SMTP_HOST)
+  const resetUrl = `${process.env.FRONTEND_URL}/login?token=${token}`;
 
-export const sendTempPasswordEmail = async (email, fullname, tempPassword) => {
-  try {
-    const transporter = nodemailer.createTransporter({
-      service: 'gmail',
-      auth: {
-        user: process.env.EMAIL_USER,
-        pass: process.env.EMAIL_PASS
-      }
-    });
+  console.log('Sending reset email to:', email, 'via', process.env.SMTP_HOST);
 
-    const mailOptions = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'आपका Temporary Password - Vigat Bahee',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-          <h2 style="color: #4F46E5;">नमस्कार ${fullname},</h2>
-          <p>आपका temporary password नीचे दिया गया है:</p>
-          <div style="background-color: #F3F4F6; padding: 15px; border-radius: 8px; margin: 20px 0;">
-            <h3 style="color: #1F2937; text-align: center; font-size: 24px; letter-spacing: 2px;">
-              ${tempPassword}
-            </h3>
-          </div>
-          <p><strong>महत्वपूर्ण:</strong></p>
-          <ul>
-            <li>यह temporary password है</li>
-            <li>Login करने के बाद तुरंत अपना password बदल दें</li>
-            <li>सुरक्षा के लिए यह email को किसी के साथ share न करें</li>
-          </ul>
-          <p>धन्यवाद,<br>Vigat Bahee Team</p>
-        </div>
-      `
-    };
-
-    const result = await transporter.sendMail(mailOptions);
-    return result;
-  } catch (error) {
-    console.error('Email sending failed:', error);
-    throw new Error(`Email sending failed: ${error.message}`);
-  }
+  await transporter.sendMail({
+    from: process.env.SMTP_FROM,
+    to: email,
+    subject: 'Reset Your VigatBahee Password',
+    html: `
+      <h2>Password Reset</h2>
+      <p>Click below to reset your password:</p>
+      <a href="${resetUrl}" style="background:#6366f1;color:white;padding:12px 24px;text-decoration:none;border-radius:6px;">
+        Reset Password
+      </a>
+      <p>Link expires in 15 minutes.</p>
+    `,
+  });
 };

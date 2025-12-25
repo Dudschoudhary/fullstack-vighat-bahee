@@ -38,19 +38,28 @@ const userSchema = new Schema(
       required: true,
       trim: true,
       match: /^[0-9]{10,15}$/,
+    }
+    ,
+    resetPasswordToken: {
+      type: String,
+      default: undefined
     },
-  isTemporaryPassword: {
+    resetPasswordExpiry: {
+      type: Date,
+      default: undefined
+    },
+    isTemporaryPassword: {
       type: Boolean,
       default: false,
     },
-    baheeDetails_ids:[{
-        type: Schema.Types.ObjectId,
-        ref: "BaheeDetails"
-      }],
-      PersonalbaheeModal_ids:[{
-        type: Schema.Types.ObjectId,
-        ref: "PersonalbaheeModal"
-      }]
+    baheeDetails_ids: [{
+      type: Schema.Types.ObjectId,
+      ref: "BaheeDetails"
+    }],
+    PersonalbaheeModal_ids: [{
+      type: Schema.Types.ObjectId,
+      ref: "PersonalbaheeModal"
+    }]
   },
   {
     timestamps: true,
@@ -60,7 +69,7 @@ const userSchema = new Schema(
 // Password hash करने के लिए pre middleware
 userSchema.pre("save", async function (next) {
   if (!this.isModified("password")) return next();
-  
+
   try {
     this.password = await bcrypt.hash(this.password, 10);
     next();
@@ -70,7 +79,7 @@ userSchema.pre("save", async function (next) {
 });
 
 // Password compare करने का method
-userSchema.methods.isPasswordCorrect = async function(password) {
+userSchema.methods.isPasswordCorrect = async function (password) {
   try {
     return await bcrypt.compare(password, this.password);
   } catch (error) {
@@ -79,7 +88,7 @@ userSchema.methods.isPasswordCorrect = async function(password) {
 };
 
 // JWT token generate करने का method
-userSchema.methods.generateAccessToken = function() {
+userSchema.methods.generateAccessToken = function () {
   try {
     return jwt.sign(
       {

@@ -1,5 +1,5 @@
-// src/components/Login.tsx - Without Auth Context
-import React, { useState, useCallback } from 'react';
+// src/components/Login.tsx - Complete with Reset Password Flow
+import React, { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import vigatBaheeLogo from '../assets/images/vigat-bahee.png';
@@ -7,7 +7,7 @@ import { FaRegEye, FaEyeSlash, FaSignInAlt, FaCheckCircle } from 'react-icons/fa
 import * as yup from 'yup';
 import apiService from '../api/apiService';
 import Loader from '../common/Loader';
-import type { ApiError, AuthResponse, FormErrors, LoginData, Mode, RegisterData } from '../types';
+import type { ApiError, AuthResponse, FormErrors, LoginData, Mode, RegisterData, ResetPasswordData } from '../types';
 
 // Validation schemas
 const loginSchema = yup.object({
@@ -38,6 +38,19 @@ const registerSchema = yup.object({
     .min(6, 'Password must be at least 6 characters'),
 });
 
+const resetPasswordSchema = yup.object({
+  newPassword: yup.string()
+    .required('New password is required')
+    .min(8, 'Password must be at least 8 characters')
+    .matches(
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/,
+      'Password must contain uppercase, lowercase, number and special character'
+    ),
+  confirmPassword: yup.string()
+    .required('Confirm password is required')
+    .oneOf([yup.ref('newPassword')], 'Passwords must match'),
+});
+
 const Login: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -49,16 +62,32 @@ const Login: React.FC = () => {
     username: '', fullname: '', email: '', phone: '', password: '',
   });
   const [forgotEmail, setForgotEmail] = useState<string>('');
+  const [resetToken, setResetToken] = useState<string>('');
+  const [newPassword, setNewPassword] = useState<string>('');
+  const [confirmPassword, setConfirmPassword] = useState<string>('');
   const [errors, setErrors] = useState<FormErrors>({});
   const [loading, setLoading] = useState(false);
   const [remember, setRemember] = useState(false);
   const [showPwd, setShowPwd] = useState(false);
+  const [showNewPwd, setShowNewPwd] = useState(false);
+  const [showConfirmPwd, setShowConfirmPwd] = useState(false);
   const [apiError, setApiError] = useState<string>('');
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [loginSuccess, setLoginSuccess] = useState(false);
 
+  // Check URL for reset token
+  useEffect(() => {
+    const urlParams = new URLSearchParams(location.search);
+    const token = urlParams.get('token');
+    if (token && mode !== 'reset-password') {
+      setResetToken(token);
+      setMode('reset-password');
+      setSuccessMessage('Please enter your new password to complete reset.');
+    }
+  }, [location.search, mode]);
+
   // Check if user is already logged in
-  React.useEffect(() => {
+  useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       navigate('/bahee', { replace: true });
@@ -93,6 +122,18 @@ const Login: React.FC = () => {
       clearFieldError(field);
     }, [mode, clearFieldError]);
 
+  // Handle reset password input changes
+  const handleResetInputChange = useCallback((field: 'newPassword' | 'confirmPassword') => 
+    (e: ChangeEvent<HTMLInputElement>) => {
+      const value = e.target.value;
+      if (field === 'newPassword') {
+        setNewPassword(value);
+      } else {
+        setConfirmPassword(value);
+      }
+      clearFieldError(field);
+    }, [clearFieldError]);
+
   // Validation function
   const validateForm = async (): Promise<boolean> => {
     let data, schema;
@@ -103,9 +144,12 @@ const Login: React.FC = () => {
     } else if (mode === 'register') {
       data = register;
       schema = registerSchema;
-    } else {
+    } else if (mode === 'forgot-password') {
       data = { email: forgotEmail };
       schema = forgotPasswordSchema;
+    } else {
+      data = { newPassword, confirmPassword };
+      schema = resetPasswordSchema;
     }
 
     try {
@@ -117,12 +161,54 @@ const Login: React.FC = () => {
         const validationErrors: FormErrors = {};
         err.inner.forEach(error => {
           if (error.path) {
-            validationErrors[error.path] = error.message;
+            validationErrors[error.path as keyof FormErrors] = error.message;
           }
         });
         setErrors(validationErrors);
       }
       return false;
+    }
+  };
+
+  // RESET PASSWORD HANDLER
+  const handleResetPassword = async () => {
+    if (!resetToken) {
+      throw new Error('Reset token is missing. Please request a new reset link.');
+    }
+
+    try {
+      await apiService.post('/reset-password', {
+        token: resetToken,
+        newPassword,
+        confirmPassword: newPassword
+      } as ResetPasswordData);
+      
+      setSuccessMessage('Password reset successful! You can now login with your new password.');
+      
+      // Clear reset states
+      setTimeout(() => {
+        setMode('login');
+        setResetToken('');
+        setNewPassword('');
+        setConfirmPassword('');
+        setErrors({});
+      }, 2500);
+      
+    } catch (error: any) {
+      const apiError = error as ApiError;
+      
+      if (apiError.response?.status === 400) {
+        const message = apiError.response.data?.message || 'Invalid or expired token';
+        setErrors({ 
+          newPassword: message,
+          confirmPassword: message
+        });
+        setApiError(message);
+      } else if (apiError.response?.status === 404) {
+        setApiError('No account found with this reset link.');
+      } else {
+        throw error;
+      }
     }
   };
 
@@ -141,10 +227,9 @@ const Login: React.FC = () => {
 
       if (response.token && response.user) {
         const tokenExpiry = remember 
-        ? 7 * 24 * 60 * 60 * 1000  // 7 days
-        : 24 * 60 * 60 * 1000;     // 1 day
+          ? 7 * 24 * 60 * 60 * 1000  // 7 days
+          : 24 * 60 * 60 * 1000;     // 1 day
       
-        // Store auth data directly in localStorage
         localStorage.setItem('token', response.token);
         localStorage.setItem('user', JSON.stringify(response.user));
         localStorage.setItem('tokenExpiry', (Date.now() + tokenExpiry).toString());
@@ -245,25 +330,29 @@ const Login: React.FC = () => {
       await apiService.post('/forgot-password', {
         email: email.toLowerCase().trim()
       });
-      
-      setSuccessMessage('Temporary password sent to your email! Please check your inbox.');
-      
+  
+      setSuccessMessage('Reset link sent to your email! Please check your inbox.');
+  
       setTimeout(() => {
         setMode('login');
         setSuccessMessage('');
       }, 3000);
-      
+  
     } catch (error: any) {
       const apiError = error as ApiError;
-      
+  
       if (apiError.response?.status === 404) {
         setErrors({ email: 'No account found with this email address.' });
+      } else if (apiError.code === 'ERR_NETWORK' || apiError.message === 'Network Error') {
+        // yahan user-friendly message
+        throw new Error('Server se connect nahi ho pa रहा. Backend chal raha hai kya? URL / port check karein.');
       } else {
         const message = apiError.response?.data?.message || apiError.message || 'Failed to send reset email';
         throw new Error(message);
       }
     }
   };
+  
 
   // Form submission handler
   const onSubmit = async (e: FormEvent) => {
@@ -283,6 +372,8 @@ const Login: React.FC = () => {
         await handleRegister(register);
       } else if (mode === 'forgot-password') {
         await handleForgotPassword(forgotEmail);
+      } else if (mode === 'reset-password') {
+        await handleResetPassword();
       }
     } catch (error) {
       setApiError(error instanceof Error ? error.message : 'An unexpected error occurred');
@@ -306,6 +397,9 @@ const Login: React.FC = () => {
       });
     } else if (newMode === 'forgot-password') {
       setForgotEmail('');
+    } else if (newMode === 'reset-password') {
+      setNewPassword('');
+      setConfirmPassword('');
     }
   }, [clearMessages]);
 
@@ -327,7 +421,9 @@ const Login: React.FC = () => {
           text={
             mode === 'login' ? 'Signing you in...' :
             mode === 'register' ? 'Creating your account...' :
-            'Sending reset email...'
+            mode === 'forgot-password' ? 'Sending reset link...' :
+            mode === 'reset-password' ? 'Resetting your password...' :
+            'Processing...'
           }
           colors={["#6366f1", "#8b5cf6", "#ec4899", "#f59e0b"]}
         />
@@ -341,6 +437,7 @@ const Login: React.FC = () => {
             {mode === 'login' && 'Sign in to your account'}
             {mode === 'register' && 'Create a new account'}
             {mode === 'forgot-password' && 'Reset your password'}
+            {mode === 'reset-password' && 'Set New Password'}
           </h2>
           <p className="mt-2 text-sm text-gray-600">
             {mode === 'login' && (
@@ -365,7 +462,7 @@ const Login: React.FC = () => {
                 </button>
               </>
             )}
-            {mode === 'forgot-password' && (
+            {(mode === 'forgot-password' || mode === 'reset-password') && (
               <>Remember your password?{' '}
                 <button 
                   onClick={() => switchMode('login')}
@@ -381,7 +478,7 @@ const Login: React.FC = () => {
 
         {/* Success Message with Animation */}
         {(successMessage || loginSuccess) && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded flex items-center">
+          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg flex items-center animate-fade-in">
             {loginSuccess && (
               <FaCheckCircle className="text-green-600 mr-3 text-lg animate-bounce" />
             )}
@@ -391,12 +488,17 @@ const Login: React.FC = () => {
 
         {/* Error Message */}
         {apiError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
             {apiError}
           </div>
         )}
 
         <form onSubmit={onSubmit} className="space-y-6">
+          {/* Reset Token Hidden Input */}
+          {mode === 'reset-password' && (
+            <input type="hidden" name="resetToken" value={resetToken} />
+          )}
+
           {mode === 'register' && (
             <>
               <Input 
@@ -404,7 +506,7 @@ const Login: React.FC = () => {
                 placeholder="Username" 
                 value={register.username}
                 onChange={handleInputChange('username')} 
-                error={errors.username} 
+                error={errors.username as string} 
                 rounded="t-md"
                 autoComplete="username"
               />
@@ -413,7 +515,7 @@ const Login: React.FC = () => {
                 placeholder="Full Name" 
                 value={register.fullname}
                 onChange={handleInputChange('fullname')} 
-                error={errors.fullname} 
+                error={errors.fullname as string} 
                 rounded="none"
                 autoComplete="name"
               />
@@ -426,7 +528,7 @@ const Login: React.FC = () => {
             placeholder="Email address" 
             value={currentData.email}
             onChange={handleInputChange('email')} 
-            error={errors.email}
+            error={errors.email as string}
             rounded={mode === 'register' ? 'none' : 't-md'}
             autoComplete="email"
           />
@@ -438,37 +540,57 @@ const Login: React.FC = () => {
               placeholder="Phone Number (10-15 digits)" 
               value={register.phone}
               onChange={handleInputChange('phone')} 
-              error={errors.phone} 
+              error={errors.phone as string} 
               rounded="none"
               autoComplete="tel"
             />
           )}
 
-          {mode !== 'forgot-password' && (
-            <div className="relative">
-              <input
-                id="password"
-                type={showPwd ? 'text' : 'password'}
-                placeholder="Password"
-                value={currentData.password}
-                onChange={handleInputChange('password')}
-                autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
-                className={`block w-full px-3 py-2 border ${
-                  errors.password ? 'border-red-300' : 'border-gray-300'
-                } rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm`}
+          {/* Password Fields */}
+          {mode !== 'forgot-password' && mode !== 'reset-password' && (
+            <PasswordInput
+              id="password"
+              placeholder="Password"
+              value={currentData.password}
+              onChange={handleInputChange('password')}
+              showPwd={showPwd}
+              setShowPwd={setShowPwd}
+              error={errors.password as string}
+              autoComplete={mode === 'login' ? 'current-password' : 'new-password'}
+            />
+          )}
+
+          {/* Reset Password Fields */}
+          {mode === 'reset-password' && (
+            <>
+              <PasswordInput
+                id="newPassword"
+                placeholder="New Password"
+                value={newPassword}
+                onChange={handleResetInputChange('newPassword')}
+                showPwd={showNewPwd}
+                setShowPwd={setShowNewPwd}
+                error={errors.newPassword as string}
+                autoComplete="new-password"
+                rounded="t-md"
               />
-              <button 
-                type="button"
-                onClick={() => setShowPwd(prev => !prev)}
-                className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700"
-                tabIndex={-1}
-              >
-                {showPwd ? <FaRegEye className="w-5 h-5"/> : <FaEyeSlash className="w-5 h-5"/>}
-              </button>
-              {errors.password && (
-                <p className="text-red-600 text-sm mt-1">{errors.password}</p>
-              )}
-            </div>
+              
+              <PasswordInput
+                id="confirmPassword"
+                placeholder="Confirm New Password"
+                value={confirmPassword}
+                onChange={handleResetInputChange('confirmPassword')}
+                showPwd={showConfirmPwd}
+                setShowPwd={setShowConfirmPwd}
+                error={errors.confirmPassword as string}
+                autoComplete="new-password"
+                rounded="b-md"
+              />
+              
+              <div className="text-xs text-gray-500 p-3 bg-gray-50 rounded-md border">
+                Password must contain: 1 uppercase, 1 lowercase, 1 number, 1 special character (min 8 chars)
+              </div>
+            </>
           )}
 
           {mode === 'login' && (
@@ -478,7 +600,7 @@ const Login: React.FC = () => {
                   type="checkbox" 
                   checked={remember}
                   onChange={e => setRemember(e.target.checked)}
-                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded"
+                  className="h-4 w-4 text-indigo-600 border-gray-300 rounded focus:ring-indigo-500"
                 />
                 <span>Remember me</span>
               </label>
@@ -494,8 +616,9 @@ const Login: React.FC = () => {
 
           <button 
             type="submit" 
-            disabled={loading}
-            className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            // disabled={loading || !resetToken}
+            disabled={loading || (mode === 'reset-password' && !resetToken)}
+            className="w-full flex items-center justify-center py-2 px-4 border border-transparent rounded-md text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
           >
             {!loading && (
               <>
@@ -503,6 +626,7 @@ const Login: React.FC = () => {
                 {mode === 'login' && 'Sign in'}
                 {mode === 'register' && 'Register'}
                 {mode === 'forgot-password' && 'Send Reset Link'}
+                {mode === 'reset-password' && 'Reset Password'}
               </>
             )}
             {loading && 'Processing...'}
@@ -513,7 +637,49 @@ const Login: React.FC = () => {
   );
 };
 
-// Input component
+// Enhanced Password Input Component
+interface PasswordInputProps extends React.InputHTMLAttributes<HTMLInputElement> {
+  error?: string;
+  showPwd: boolean;
+  setShowPwd: (show: boolean) => void;
+  rounded?: 't-md' | 'b-md' | 'none';
+}
+
+const PasswordInput: React.FC<PasswordInputProps> = ({ 
+  error, 
+  showPwd, 
+  setShowPwd, 
+  rounded = 'none', 
+  className, 
+  ...rest 
+}) => (
+  <div className="relative">
+    <input 
+      {...rest}
+      type={showPwd ? 'text' : 'password'}
+      className={`block w-full px-3 py-2 pr-12 border ${
+        error ? 'border-red-300 bg-red-50' : 'border-gray-300'
+      } ${
+        rounded === 't-md' ? 'rounded-t-md' : 
+        rounded === 'b-md' ? 'rounded-b-md' : 
+        'rounded-md'
+      } focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-colors ${className || ''}`}
+    />
+    <button 
+      type="button"
+      onClick={() => setShowPwd(!showPwd)}
+      className="absolute inset-y-0 right-2 flex items-center text-gray-500 hover:text-gray-700 p-1"
+      tabIndex={-1}
+    >
+      {showPwd ? <FaRegEye className="w-5 h-5"/> : <FaEyeSlash className="w-5 h-5"/>}
+    </button>
+    {error && (
+      <p className="text-red-600 text-sm mt-1">{error}</p>
+    )}
+  </div>
+);
+
+// Simple Input Component
 interface FieldProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: string; 
   rounded?: 't-md' | 'b-md' | 'none';

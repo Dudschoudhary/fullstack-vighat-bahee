@@ -7,7 +7,7 @@ export const redirectIfAuthenticated = (req, res, next) => {
                   req.headers.cookie?.split('token=')[1]?.split(';')[0];
     
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       if (decoded) {
         return res.status(302).json({ 
           success: false, 
@@ -29,7 +29,7 @@ export const redirectIfAuthenticatedHTML = (req, res, next) => {
     const token = req.cookies.token;
     
     if (token) {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       if (decoded) {
         return res.redirect('/bahee');
       }
