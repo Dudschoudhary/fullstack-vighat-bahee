@@ -12,6 +12,9 @@ export interface DataType {
   baheeTypeName?: string;
   headerName?: string; // Add this for linking with bahee details
   submittedAt?: string;
+  isLocked?: boolean;
+  lockDate?: string;
+  lockDescription?: string;
 }
 
 export interface BaheeDetails {

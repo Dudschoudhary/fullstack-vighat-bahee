@@ -7,9 +7,7 @@ import {
   EyeOutlined,
   FilterOutlined,
   UnorderedListOutlined,
-  RollbackOutlined,
   SaveOutlined,
-  LockOutlined,
   PlusOutlined,
 } from "@ant-design/icons";
 import type { TableProps, TablePaginationConfig } from "antd";
@@ -42,7 +40,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   const {
     data,
     baheeDetails,
-    lockedKeys,
     selectedBaheeType,
     setSelectedBaheeType,
     loading,
@@ -224,7 +221,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // ✅ UPDATED: Edit entry with proper bahee type detection
   const openEdit = (record: DataType) => {
-    if (lockedKeys[record.key]) {
+    if (record.isLocked ) {
       message.warning("यह प्रविष्टि लॉक है");
       return;
     }
@@ -339,7 +336,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // Delete entry
   const openDeleteModal = (record: DataType) => {
-    if (lockedKeys[record.key]) {
+    if (record.isLocked ) {
       message.warning("यह प्रविष्टि लॉक है");
       return;
     }
@@ -365,23 +362,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   const openViewModal = (record: DataType) => setViewModal({ open: true, record });
   const handleViewCancel = () => setViewModal({ open: false, record: null });
 
-  // Return Net
-  const openReturnNetModal = (record: DataType) => {
-    if (lockedKeys[record.key]) {
-      message.warning("यह प्रविष्टि लॉक है");
-      return;
-    }
-    setReturnTarget(record);
-    setReturnNetOpen(true);
-    setReturnSaving(false);
-    returnNetForm.resetFields();
-    returnNetForm.setFieldsValue({
-      name: record?.name || "",
-      date: dayjs(),
-      description: "",
-      confirmToggle: false,
-    });
-  };
 
   const handleReturnNetSave = async () => {
     try {
@@ -501,33 +481,39 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         width: 320,
         align: "center",
         render: (_, record) => {
-          const isLocked = !!lockedKeys[record.key];
+          // ✅ SOURCE OF TRUTH = DB
+          const isLocked = record.isLocked === true;
+
           return (
             <Space size="small">
-              <Tooltip title={isLocked ? "Locked: view only" : "बही का विवरण देखें"}>
+              <Tooltip title="रिकॉर्ड देखें">
                 <Button
                   type="primary"
                   icon={<EyeOutlined />}
                   size="small"
                   onClick={() => openViewModal(record)}
-                  className="bg-green-500 hover:bg-green-600"
+                  className="bg-blue-500 hover:bg-green-600"
                 />
               </Tooltip>
 
-              <Tooltip title={isLocked ? "Locked: संपादन निष्क्रिय" : "संपादित करें"}>
+              <Tooltip title={isLocked ? "यह रिकॉर्ड लॉक है" : "संपादित करें"}>
                 <span>
                   <Button
                     type="primary"
                     icon={<EditOutlined />}
                     size="small"
                     onClick={() => openEdit(record)}
-                    className={isLocked ? "bg-gray-300 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"}
                     disabled={isLocked}
+                    className={
+                      isLocked
+                        ? "bg-gray-300 cursor-not-allowed"
+                        : "bg-blue-500 hover:bg-blue-600"
+                    }
                   />
                 </span>
               </Tooltip>
 
-              <Tooltip title={isLocked ? "Locked: हटाना निष्क्रिय" : "हटाएं"}>
+              <Tooltip title={isLocked ? "यह रिकॉर्ड लॉक है" : "हटाएं"}>
                 <span>
                   <Button
                     type="primary"
@@ -540,7 +526,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 </span>
               </Tooltip>
 
-              <Tooltip title={isLocked ? "Locked: प्रवेश बंद" : "वापस डाला गया नेत"}>
+              {/* <Tooltip title={isLocked ? "Locked" : "वापस डाला गया नेत"}>
                 <span>
                   <Button
                     type="default"
@@ -552,13 +538,14 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                     {isLocked ? "Locked" : "वापस डाला गया नेत"}
                   </Button>
                 </span>
-              </Tooltip>
+              </Tooltip> */}
             </Space>
           );
         },
-      },
+      }
+      
     ],
-    [searchText, pagination.current, pagination.pageSize, lockedKeys]
+    [searchText, pagination.current, pagination.pageSize]
   );
 
   // ✅ Fixed: Pagination calculation for current page
@@ -776,7 +763,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           }}
           scroll={{ x: 1100 }}
           size="middle"
-          rowClassName={(record) => (lockedKeys[record.key] ? "opacity-60" : "")}
+          rowClassName={(record) => (record.isLocked ? "opacity-60" : "")}
           locale={{
             emptyText:
               filteredData.length === 0
@@ -863,10 +850,6 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           initialValues={current || undefined}
           isAnyaBahee={current?.baheeType === 'anya'}
           currentRecord={current}
-          onToggleChange={(enabled) => {
-            console.log('🔄 Toggle changed in edit form:', enabled);
-            // Optional: Handle toggle change if needed
-          }}
         />
       </CommonModal>
 
@@ -895,46 +878,81 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
       {/* View Record Modal */}
       <CommonModal
-        open={viewModal.open}
-        title="रिकॉर्ड विवरण"
-        onOk={() => handleViewCancel()}
-        onCancel={handleViewCancel}
-        okText="बंद करें"
-        cancelButtonProps={{ style: { display: 'none' } }}
-        width={600}
-      >
-        {viewModal.record && (
-          <div className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <strong>जाति:</strong> {viewModal.record.cast}
-              </div>
-              <div>
-                <strong>नाम:</strong> {viewModal.record.name}
-              </div>
-              <div>
-                <strong>पिता का नाम:</strong> {viewModal.record.fathername}
-              </div>
-              <div>
-                <strong>गाँव का नाम:</strong> {viewModal.record.address}
-              </div>
-              <div>
-                <strong>आवता:</strong> ₹{viewModal.record.aavta?.toLocaleString()}
-              </div>
-              <div>
-                <strong>ऊपर नेत:</strong> 
-                {viewModal.record.baheeType === 'anya' && Number(viewModal.record.uparnet) === 0 ? (
-                  <span className="text-orange-600 ml-1">
-                    ₹0 (Toggle disabled)
-                  </span>
-                ) : (
-                  <span className="ml-1">₹{viewModal.record.uparnet?.toLocaleString()}</span>
-                )}
-              </div>
-            </div>
+  open={viewModal.open}
+  title="रिकॉर्ड विवरण"
+  onOk={() => handleViewCancel()}
+  onCancel={handleViewCancel}
+  okText="बंद करें"
+  cancelButtonProps={{ style: { display: 'none' } }}
+  width={600}
+>
+  {viewModal.record && (
+    <div className="space-y-4">
+      {/* 🔹 BASIC DETAILS */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <strong>जाति:</strong> {viewModal.record.cast}
+        </div>
+        <div>
+          <strong>नाम:</strong> {viewModal.record.name}
+        </div>
+        <div>
+          <strong>पिता का नाम:</strong> {viewModal.record.fathername}
+        </div>
+        <div>
+          <strong>गाँव का नाम:</strong> {viewModal.record.address}
+        </div>
+        <div>
+          <strong>आवता:</strong> ₹{viewModal.record.aavta?.toLocaleString()}
+        </div>
+        <div>
+          <strong>ऊपर नेत:</strong>{" "}
+          {viewModal.record.baheeType === "anya" &&
+          Number(viewModal.record.uparnet) === 0 ? (
+            <span className="text-orange-600 ml-1">
+              ₹0 (Toggle disabled)
+            </span>
+          ) : (
+            <span className="ml-1">
+              ₹{viewModal.record.uparnet?.toLocaleString()}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* 🔒 ONLY IF ENTRY IS LOCKED */}
+      {viewModal.record.isLocked && (
+        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <h4 className="font-semibold text-red-700 mb-2">
+            🔒 लॉक जानकारी
+          </h4>
+
+          <div className="space-y-1 text-sm">
+            <p>
+              <strong>बही (विवाह):</strong>{" "}
+              <span className="text-blue-700">
+                {viewModal.record.baheeTypeName}
+              </span>
+            </p>
+
+            <p>
+              <strong>लॉक तारीख:</strong>{" "}
+              {viewModal.record.lockDate
+                ? dayjs(viewModal.record.lockDate).format("DD-MM-YYYY")
+                : "-"}
+            </p>
+
+            <p>
+              <strong>विवरण:</strong>{" "}
+              {viewModal.record.lockDescription || "-"}
+            </p>
           </div>
-        )}
-      </CommonModal>
+        </div>
+      )}
+    </div>
+  )}
+</CommonModal>
+
 
       {/* Bahee View Modal */}
       <CommonModal

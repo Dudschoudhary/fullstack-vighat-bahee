@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Form, InputNumber, Row, Col } from "antd";
-import { ReactTransliterate } from 'react-transliterate';
-import 'react-transliterate/dist/index.css';
+import { Form, InputNumber, Row, Col, Input, DatePicker } from "antd";
+import { ReactTransliterate } from "react-transliterate";
+import "react-transliterate/dist/index.css";
 
 export interface EditValues {
   cast: string;
@@ -10,161 +10,94 @@ export interface EditValues {
   address: string;
   aavta: number;
   uparnet: number;
+  isLocked?: boolean;
 }
 
 interface EditRecordFormProps {
   initialValues?: Partial<EditValues>;
-  form: any; // AntD FormInstance
-  // ✅ NEW: Add props for toggle functionality
+  form: any;
   isAnyaBahee?: boolean;
   currentRecord?: any;
-  onToggleChange?: (enabled: boolean) => void;
 }
 
-const parseMoney = (v: any) => Number((v || "").toString().replace(/[₹,\s]/g, ""));
+const parseMoney = (v: any) =>
+  Number((v || "").toString().replace(/[₹,\s]/g, ""));
 
-// Custom Transliterate Input Component for Antd Form
+/* Transliterate Input */
 const TransliterateFormInput: React.FC<{
   value?: string;
   onChange?: (value: string) => void;
   placeholder?: string;
   className?: string;
-}> = ({ value = "", onChange, placeholder, className = "" }) => {
-  return (
-    <ReactTransliterate
-      value={value}
-      onChangeText={(text: string) => onChange?.(text)}
-      lang="hi"
-      placeholder={placeholder}
-      className={`ant-input ${className}`}
-      style={{
-        width: '100%',
-        height: '32px',
-        padding: '4px 11px',
-        fontSize: '14px',
-        lineHeight: '1.5715',
-        color: 'rgba(0, 0, 0, 0.85)',
-        backgroundColor: '#fff',
-        border: '1px solid #d9d9d9',
-        borderRadius: '6px',
-        transition: 'all 0.2s',
-        fontFamily: 'inherit'
-      }}
-    />
-  );
-};
+}> = ({ value = "", onChange, placeholder, className = "" }) => (
+  <ReactTransliterate
+    value={value}
+    onChangeText={(text: string) => onChange?.(text)}
+    lang="hi"
+    placeholder={placeholder}
+    className={`ant-input ${className}`}
+  />
+);
 
-const EditRecordForm: React.FC<EditRecordFormProps> = ({ 
-  initialValues, 
+const EditRecordForm: React.FC<EditRecordFormProps> = ({
+  initialValues,
   form,
   isAnyaBahee = false,
   currentRecord,
 }) => {
-  // ✅ NEW: Toggle state for "anya" bahee entries
   const [uparnetToggle, setUparnetToggle] = useState<boolean>(true);
+
+  const [isLocked, setIsLocked] = useState<boolean>(false);
 
   useEffect(() => {
     form.setFieldsValue(initialValues || {});
-    
-    // ✅ NEW: Set toggle based on current record uparnet value
+
     if (isAnyaBahee && currentRecord) {
-      const hasUparnet = currentRecord.uparnet > 0;
-      setUparnetToggle(hasUparnet);
+      setUparnetToggle(currentRecord.uparnet > 0);
     }
-  }, [initialValues, form, isAnyaBahee, currentRecord]);
 
-  // ✅ NEW: Handle toggle change
+    // 🔒 lock sync
+    if (currentRecord?.isLocked !== undefined) {
+      setIsLocked(currentRecord.isLocked);
+      form.setFieldValue("isLocked", currentRecord.isLocked);
+    }
+  }, [initialValues, currentRecord, form, isAnyaBahee]);
 
-  // ✅ FIXED: Check if uparnet should be disabled
+  const handleLockToggle = (checked: boolean) => {
+    setIsLocked(checked);
+    form.setFieldValue("isLocked", checked);
+  };
+
   const getUparnetDisabledState = () => {
-    if (isAnyaBahee) {
-      return !uparnetToggle; // For anya bahee, disabled based on toggle
-    }
-    
-    // ✅ FIXED: For other bahee types, check if they should be disabled
-    const baheeType = currentRecord?.baheeType?.toLowerCase() || '';
-    const disabledTypes = ['odhawani', 'mahera']; // Remove 'anya' from here
-    return disabledTypes.includes(baheeType);
+    if (isAnyaBahee) return !uparnetToggle;
+    const baheeType = currentRecord?.baheeType?.toLowerCase() || "";
+    return ["odhawani", "mahera"].includes(baheeType);
   };
 
   const isUparnetDisabled = getUparnetDisabledState();
 
+
   return (
     <div>
-      {/* ✅ NEW: Toggle for "anya" bahee type */}
-      {/* {isAnyaBahee && (
-        <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg">
-          <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-base font-semibold text-blue-800">ऊपर नेत एडिट सेटिंग</h3>
-              <p className="text-sm text-blue-600">
-                ऊपर नेत फील्ड को enable/disable करें
-              </p>
-            </div>
-            <label className="flex items-center cursor-pointer">
-              <input
-                type="checkbox"
-                checked={uparnetToggle}
-                onChange={(e) => handleToggleChange(e.target.checked)}
-                className="sr-only"
-              />
-              <div className={`relative inline-block w-12 h-6 transition-colors duration-200 ease-in-out rounded-full ${
-                uparnetToggle ? 'bg-green-500' : 'bg-gray-300'
-              }`}>
-                <div className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full transition-transform duration-200 ease-in-out ${
-                  uparnetToggle ? 'transform translate-x-6' : ''
-                }`}></div>
-              </div>
-              <span className={`ml-2 text-sm font-medium ${uparnetToggle ? 'text-green-700' : 'text-gray-600'}`}>
-                {uparnetToggle ? 'Enable' : 'Disable'}
-              </span>
-            </label>
-          </div>
-        </div>
-      )} */}
-
-      <Form form={form} layout="vertical" name="editRecordForm" preserve={false}>
+      <Form form={form} layout="vertical" preserve={false}>
         <Row gutter={[16, 12]}>
           <Col xs={24} md={12}>
-            <Form.Item
-              label={
-                <span>
-                  जाति 
-                  
-                </span>
-              }
-              name="cast"
-              rules={[{ required: true, message: "जाति दर्ज करें" }]}
-            >
+            <Form.Item name="cast" label="जाति" rules={[{ required: true }]}>
               <TransliterateFormInput placeholder="ब्राह्मण" />
             </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
-            <Form.Item
-              label={
-                <span>
-                  नाम 
-                  
-                </span>
-              }
-              name="name"
-              rules={[{ required: true, message: "नाम दर्ज करें" }]}
-            >
+            <Form.Item name="name" label="नाम" rules={[{ required: true }]}>
               <TransliterateFormInput placeholder="रमेश" />
             </Form.Item>
           </Col>
 
           <Col xs={24} md={12}>
             <Form.Item
-              label={
-                <span>
-                  पिता का नाम 
-                  
-                </span>
-              }
               name="fathername"
-              rules={[{ required: true, message: "पिता का नाम दर्ज करें" }]}
+              label="पिता का नाम"
+              rules={[{ required: true }]}
             >
               <TransliterateFormInput placeholder="सुरेश" />
             </Form.Item>
@@ -172,74 +105,145 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
 
           <Col xs={24} md={12}>
             <Form.Item
-              label={
-                <span>
-                  गाँव का नाम 
-                  
-                </span>
-              }
               name="address"
-              rules={[{ required: true, message: "गाँव का नाम दर्ज करें" }]}
+              label="गाँव का नाम"
+              rules={[{ required: true }]}
             >
               <TransliterateFormInput placeholder="जयपुर" />
             </Form.Item>
           </Col>
 
-          {/* Always side-by-side on all screens */}
-          <Col xs={12} md={12}>
-            <Form.Item
-              label="आवता"
-              name="aavta"
-              rules={[
-                { required: true, message: "आवता दर्ज करें" },
-                { type: "number", message: "सही संख्या दर्ज करें" },
-              ]}
-            >
+          <Col xs={12}>
+            <Form.Item name="aavta" label="आवता" rules={[{ required: true }]}>
               <InputNumber
                 className="w-full"
                 min={0}
-                formatter={(v) => `₹ ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
+                formatter={(v) => `₹ ${v}`}
                 parser={parseMoney}
-                placeholder="आवता"
               />
             </Form.Item>
           </Col>
 
-          <Col xs={12} md={12}>
+          <Col xs={12}>
             <Form.Item
-              label={
-                <div className="flex items-center gap-2">
-                  <span>ऊपर नेत</span>
-                  {/* ✅ Show appropriate helper text */}
-                  {isAnyaBahee && !uparnetToggle && (
-                    <span className="text-orange-600 text-xs">(इस बही प्रकार के लिए लागू नहीं)</span>
-                  )}
-                  {!isAnyaBahee && isUparnetDisabled && (
-                    <span className="text-orange-600 text-xs">(इस बही प्रकार के लिए लागू नहीं)</span>
-                  )}
-                </div>
-              }
               name="uparnet"
-              rules={[
-                { required: !isUparnetDisabled, message: "ऊपर नेत दर्ज करें" },
-                { type: "number", message: "सही संख्या दर्ज करें" },
-              ]}
+              label="ऊपर नेत"
+              rules={[{ required: !isUparnetDisabled }]}
             >
               <InputNumber
                 className="w-full"
                 min={0}
-                formatter={(v) => `₹ ${v}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")}
-                parser={parseMoney}
-                placeholder={isUparnetDisabled ? "लागू नहीं" : "ऊपर नेत"}
                 disabled={isUparnetDisabled}
-                style={{
-                  backgroundColor: isUparnetDisabled ? '#f5f5f5' : '#fff',
-                  cursor: isUparnetDisabled ? 'not-allowed' : 'default'
-                }}
+                formatter={(v) => `₹ ${v}`}
+                parser={parseMoney}
               />
             </Form.Item>
           </Col>
+
+
+          {/* 🔒 HIDDEN FIELD */}
+          <Form.Item name="isLocked" hidden>
+            <input />
+          </Form.Item>
         </Row>
+
+        {isLocked && (
+          <div className="mt-4 p-4 bg-gray-50 border rounded-lg">
+            <Row gutter={[16, 12]}>
+              <Col xs={24} md={12}>
+                <Form.Item
+                  label="लॉक तारीख"
+                  name="lockDate"
+                  rules={[{ required: true, message: "तारीख चुनें" }]}
+                >
+                  <DatePicker
+                    className="w-full"
+                    format="DD-MM-YYYY"
+                    disabled={!!currentRecord?.isLocked}
+                  />
+                </Form.Item>
+              </Col>
+
+              <Col xs={24}>
+                <Form.Item
+                  label="लॉक विवरण"
+                  name="lockDescription"
+                  rules={[{ required: true, message: "विवरण लिखें" }]}
+                >
+                  <Input.TextArea
+                    rows={3}
+                    placeholder="लॉक करने का कारण लिखें"
+                    disabled={!!currentRecord?.isLocked}
+                  />
+                </Form.Item>
+              </Col>
+            </Row>
+          </div>
+        )}
+
+
+        <div
+          style={{
+            marginTop: 24,
+            padding: 16,
+            border: "1px solid #e5e7eb",
+            borderRadius: 8,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            background: "#fafafa",
+          }}
+        >
+          <div>
+            <strong>रिकॉर्ड लॉक</strong>
+            <div style={{ fontSize: 12, color: "#6b7280" }}>
+              लॉक होने पर रिकॉर्ड edit नहीं किया जा सकेगा
+            </div>
+          </div>
+
+          <label style={{ display: "flex", alignItems: "center" }}>
+            <input
+              type="checkbox"
+              checked={isLocked}
+              onChange={(e) => handleLockToggle(e.target.checked)}
+              style={{ display: "none" }}
+            />
+
+            <div
+              style={{
+                width: 44,
+                height: 22,
+                borderRadius: 11,
+                background: isLocked ? "#ef4444" : "#22c55e",
+                position: "relative",
+                transition: "0.3s",
+              }}
+            >
+              <div
+                style={{
+                  width: 18,
+                  height: 18,
+                  background: "#fff",
+                  borderRadius: "50%",
+                  position: "absolute",
+                  top: 2,
+                  left: isLocked ? 24 : 2,
+                  transition: "0.3s",
+                }}
+              />
+            </div>
+
+            <span
+              style={{
+                marginLeft: 10,
+                fontWeight: 600,
+                color: isLocked ? "#ef4444" : "#16a34a",
+              }}
+            >
+              {isLocked ? "Locked" : "Unlocked"}
+            </span>
+          </label>
+        </div>
       </Form>
     </div>
   );

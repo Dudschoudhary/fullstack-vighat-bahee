@@ -9,7 +9,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   const [data, setData] = useState<DataType[]>([]);
   const [baheeDetails, setBaheeDetails] = useState<BaheeDetails[]>([]);
   const [returnNetLogs, setReturnNetLogs] = useState<ReturnNetLog[]>([]);
-  const [lockedKeys, setLockedKeys] = useState<Record<string, boolean>>({});
   const [selectedBaheeType, setSelectedBaheeType] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string>("");
@@ -84,6 +83,9 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
             baheeType: entry.baheeType || '',
             baheeTypeName: entry.baheeTypeName || entry.baheeType || '',
             headerName: entry.headerName || entry.baheeHeaderName || '',
+            isLocked: entry.isLocked === true,
+            lockDate: entry.lockDate || null,
+            lockDescription: entry.lockDescription || "",
             submittedAt: entry.submittedAt || entry.createdAt || new Date().toISOString()
           }));
 
@@ -132,18 +134,10 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
         setReturnNetLogs(returnNetLogs);
         
         // ✅ FIXED: Set locked keys properly
-        const lockedKeysMap: Record<string, boolean> = {};
-        returnNetLogs.forEach((log: ReturnNetLog) => {
-          if (log.forKey) {
-            lockedKeysMap[log.forKey] = true;
-          }
-        });
-        setLockedKeys(lockedKeysMap);
         
       } catch (returnNetError) {
         console.error('❌ Error loading return net logs:', returnNetError);
         setReturnNetLogs([]);
-        setLockedKeys({});
       }
 
       // ✅ FIXED: Set default bahee type with validation
@@ -162,7 +156,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       setData([]);
       setBaheeDetails([]);
       setReturnNetLogs([]);
-      setLockedKeys({});
     } finally {
       setLoading(false);
     }
@@ -200,46 +193,59 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   }, [loadAllData]);
 
   // ✅ FIXED: Enhanced update entry with better error handling
-  const updateEntry = useCallback(async (updatedEntry: DataType): Promise<boolean> => {
-    try {
-      setLoading(true);
-      // ✅ FIXED: Prepare data for API with proper field mapping
-      const updatePayload = {
-        caste: updatedEntry.cast,
-        name: updatedEntry.name,
-        fatherName: updatedEntry.fathername,
-        villageName: updatedEntry.address,
-        income: Number(updatedEntry.aavta),
-        amount: Number(updatedEntry.uparnet),
-        baheeType: updatedEntry.baheeType,
-        baheeTypeName: updatedEntry.baheeTypeName,
-        headerName: updatedEntry.headerName
-      };
-
-      const response = await baheeApiService.updateBaheeEntry(updatedEntry.key, updatePayload);
-      
-      if (response.success) {
-        // ✅ FIXED: Update local state optimistically
-        setData(prevData => 
-          prevData.map(row => 
-            row.key === updatedEntry.key ? { ...row, ...updatedEntry } : row
-          )
+  const updateEntry = useCallback(
+    async (updatedEntry: DataType): Promise<boolean> => {
+      try {
+        setLoading(true);
+  
+        const updatePayload = {
+          caste: updatedEntry.cast,
+          name: updatedEntry.name,
+          fatherName: updatedEntry.fathername,
+          villageName: updatedEntry.address,
+          income: Number(updatedEntry.aavta),
+          amount: Number(updatedEntry.uparnet),
+          baheeType: updatedEntry.baheeType,
+          baheeTypeName: updatedEntry.baheeTypeName,
+          headerName: updatedEntry.headerName,
+          isLocked: updatedEntry.isLocked,
+          lockDate: updatedEntry.lockDate,
+          lockDescription: updatedEntry.lockDescription,
+        };
+  
+        const response = await baheeApiService.updateBaheeEntry(
+          updatedEntry.key,
+          updatePayload
         );
-        
-        message.success("रिकॉर्ड सफलतापूर्वक अपडेट हो गया");
-        return true;
-      } else {
-        throw new Error(response.message || 'Update failed');
+  
+        if (response.success) {
+          setData(prevData =>
+            prevData.map(row =>
+              row.key === updatedEntry.key
+                ? { ...row, ...updatedEntry }
+                : row
+            )
+          );
+  
+          message.success("रिकॉर्ड सफलतापूर्वक अपडेट हो गया");
+          return true;
+        } else {
+          throw new Error(response.message || "Update failed");
+        }
+      } catch (error: any) {
+        console.error("❌ Error updating entry:", error);
+        message.error(
+          error?.response?.data?.message ||
+            error?.message ||
+            "रिकॉर्ड अपडेट करने में त्रुटि"
+        );
+        return false;
+      } finally {
+        setLoading(false);
       }
-    } catch (error: any) {
-      console.error('❌ Error updating entry:', error);
-      const errorMessage = error?.response?.data?.message || error?.message || 'रिकॉर्ड अपडेट करने में त्रुटि';
-      message.error(errorMessage);
-      return false;
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+    },
+    []
+  );
 
   // ✅ FIXED: Enhanced delete entry
   const deleteEntry = useCallback(async (entryKey: string): Promise<boolean> => {
@@ -339,11 +345,6 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
       // ✅ FIXED: Update local state regardless of API result
       setReturnNetLogs(prevLogs => [...prevLogs, newLog]);
       
-      // ✅ FIXED: Lock the entry immediately
-      if (logData.forKey) {
-        setLockedKeys(prev => ({ ...prev, [logData.forKey]: true }));
-      }
-      
       message.success("विवरण सुरक्षित कर दिया गया");
       return true;
     } catch (error: any) {
@@ -401,27 +402,21 @@ export const useAddNewEntriesInterface = (currentBaheeType?: string, selectedBah
   }, [returnNetLogs]);
 
   return {
-    // State
     data,
-    baheeDetails,
-    returnNetLogs,
-    lockedKeys,
-    selectedBaheeType,
-    setSelectedBaheeType,
-    loading,
-    error,
-    
-    // Computed
-    contextualBaheeDetails,
-    baheeTypeOptions,
-    selectedBaheeDetails,
-    
-    // Functions
-    updateEntry,
-    deleteEntry,
-    updateBaheeDetails,
-    addReturnNetLog,
-    getReturnNetLogForRecord,
-    loadAllData
+  baheeDetails,
+  returnNetLogs,
+  selectedBaheeType,
+  setSelectedBaheeType,
+  loading,
+  error,
+  contextualBaheeDetails,
+  baheeTypeOptions,
+  selectedBaheeDetails,
+  updateEntry,
+  deleteEntry,
+  updateBaheeDetails,
+  addReturnNetLog,
+  getReturnNetLogForRecord,
+  loadAllData
   };
 };

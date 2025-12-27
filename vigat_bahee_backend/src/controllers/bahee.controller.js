@@ -272,30 +272,52 @@ export const getBaheeEntriesByHeader = async (req, res) => {
 export const updateBaheeEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
-    
-    const updatedEntry = await BaheeEntry.findByIdAndUpdate(
-      id, 
-      updateData, 
-      { new: true, runValidators: true }
-    );
-    
-    if (!updatedEntry) {
+
+    const {
+      caste,
+      name,
+      fatherName,
+      villageName,
+      income,
+      amount,
+      isLocked,
+      lockDate,
+      lockDescription
+    } = req.body;
+
+    const entry = await BaheeEntry.findById(id);
+
+    if (!entry) {
       return res.status(404).json({
         success: false,
-        message: 'Entry not found'
+        message: "Entry not found"
       });
     }
-    
+
+    entry.caste = caste;
+    entry.name = name;
+    entry.fatherName = fatherName;
+    entry.villageName = villageName;
+    entry.income = income;
+    entry.amount = amount;
+    entry.isLocked = isLocked;
+
+    if (isLocked) {
+      entry.lockDate = lockDate || new Date();
+      entry.lockDescription = lockDescription || "";
+    }
+
+    await entry.save();
+
     res.status(200).json({
       success: true,
-      message: 'Entry अपडेट हो गई।',
-      data: updatedEntry
+      message: "Entry updated successfully",
+      data: entry
     });
   } catch (error) {
     res.status(500).json({
       success: false,
-      message: 'Server error',
+      message: "Server error",
       error: error.message
     });
   }

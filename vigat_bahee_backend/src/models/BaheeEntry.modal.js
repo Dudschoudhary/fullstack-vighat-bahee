@@ -48,7 +48,19 @@ const baheeEntrySchema = new mongoose.Schema({
   amount: {
     type: Number,
     default: null
-  }
+  },
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
+  lockDate: {
+    type: Date,
+    default: null
+  },
+  lockDescription: {
+    type: String,
+    default: ""
+  },
 }, {
   timestamps: true
 });
