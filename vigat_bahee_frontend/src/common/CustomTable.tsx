@@ -111,7 +111,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
   useEffect(() => {
     const targetId = (selectedBaheeId || idFromRoute || "").trim();
     if (!targetId || baheeDetails.length === 0) return;
-    
+
     const target = baheeDetails.find((b) => b.id === targetId);
     if (target) {
       setSelectedSpecificBahee(target);
@@ -136,17 +136,17 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
     if (selectedSpecificBahee) {
       filtered = data.filter((r) => {
         return (
-          r.baheeType === selectedSpecificBahee.baheeType && 
+          r.baheeType === selectedSpecificBahee.baheeType &&
           r.headerName === selectedSpecificBahee.name
         );
       });
-    } 
+    }
     // ✅ Priority 2: If baheeId is provided but no specific selection
     else if (selectedBaheeId) {
       const targetBahee = baheeDetails.find((b) => b.id === selectedBaheeId);
       if (targetBahee) {
-        filtered = data.filter((r) => 
-          r.baheeType === targetBahee.baheeType && 
+        filtered = data.filter((r) =>
+          r.baheeType === targetBahee.baheeType &&
           r.headerName === targetBahee.name
         );
       }
@@ -169,6 +169,12 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         (r.baheeTypeName && r.baheeTypeName.toLowerCase().includes(q))
       );
     }
+
+    filtered = [...filtered].sort(
+      (a, b) =>
+        new Date(a.submittedAt ?? 0).getTime() -
+        new Date(b.submittedAt ?? 0).getTime()
+    );
 
     setFilteredData(filtered);
     setPagination((prev) => ({ ...prev, current: 1 }));
@@ -221,11 +227,11 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // ✅ UPDATED: Edit entry with proper bahee type detection
   const openEdit = (record: DataType) => {
-    if (record.isLocked ) {
+    if (record.isLocked) {
       message.warning("यह प्रविष्टि लॉक है");
       return;
     }
-    
+
     setCurrent(record);
     setEditOpen(true);
     form.setFieldsValue({
@@ -249,7 +255,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       if (current?.baheeType === 'anya') {
         // For anya bahee, allow both values to be 0 if toggle is disabled
         const wasToggleDisabled = Number(current.uparnet || 0) === 0;
-        
+
         if (aavta === 0 && uparnet === 0 && !wasToggleDisabled) {
           message.error("आवता और ऊपर नेत दोनों एक साथ 0 नहीं हो सकते");
           return;
@@ -336,7 +342,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
   // Delete entry
   const openDeleteModal = (record: DataType) => {
-    if (record.isLocked ) {
+    if (record.isLocked) {
       message.warning("यह प्रविष्टि लॉक है");
       return;
     }
@@ -543,7 +549,7 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
           );
         },
       }
-      
+
     ],
     [searchText, pagination.current, pagination.pageSize]
   );
@@ -619,64 +625,89 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
               {selectedSpecificBahee && (
                 <div className="flex items-center gap-2 bg-white border border-green-300 rounded-lg px-3 py-1">
-                  <span className="text-green-700 text-sm font-bold">Select:</span>
+                  <span className="text-green-700 text-sm font-bold">Selected:</span>
                   <span className="text-green-800 font-bold">{selectedSpecificBahee.name}</span>
                 </div>
               )}
             </div>
 
             <div className="flex flex-col gap-2">
-              {(Array.isArray(contextualBaheeDetails) ? contextualBaheeDetails : [contextualBaheeDetails]).map((bd) => (
-                <div
-                  key={bd.id}
-                  className={`border rounded-lg px-4 py-2 flex items-center justify-between gap-4 transition-all duration-200 ${
-                    selectedSpecificBahee?.id === bd.id
-                      ? "bg-green-50 border-green-300 shadow-md"
-                      : "bg-white border-blue-200 hover:border-blue-300"
-                  }`}
-                >
-                  <div className="flex items-center gap-4 overflow-x-auto" style={{ whiteSpace: "nowrap" }}>
-                    <span className="text-lg">{selectedSpecificBahee?.id === bd.id ? "✅" : "🕉️"}</span>
-                    <span className="text-lg">
-                      <b>{bd.name}</b>
-                    </span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-sm">तारीख: {formatDate(bd.date)}</span>
-                    <span className="text-gray-400">|</span>
-                    <span className="text-sm">तिथि: {bd.tithi}</span>
+              {(Array.isArray(contextualBaheeDetails)
+                ? contextualBaheeDetails
+                : [contextualBaheeDetails]
+              ).map((bd) => {
+                const isSelected = selectedSpecificBahee?.id === bd.id;
+
+                return (
+                  <div
+                    key={bd.id}
+                    onClick={() => handleSelectSpecificBahee(bd)} // ✅ FULL ROW CLICK
+                    className={`
+          cursor-pointer
+          border rounded-lg px-4 py-2
+          flex items-center justify-between gap-4
+          transition-all duration-200
+          ${isSelected
+                        ? "bg-green-50 border-green-400 shadow-md"
+                        : "bg-white border-blue-200 hover:border-blue-400 hover:bg-blue-50"
+                      }
+        `}
+                  >
+                    {/* LEFT CONTENT */}
+                    <div
+                      className="flex items-center gap-4 overflow-x-auto"
+                      style={{ whiteSpace: "nowrap" }}
+                    >
+                      <span className="text-lg">
+                        {isSelected ? "✅" : "🕉️"}
+                      </span>
+
+                      <span className="text-lg font-semibold text-gray-800">
+                        {bd.name}
+                      </span>
+
+                      <span className="text-gray-400">|</span>
+
+                      <span className="text-sm text-gray-700">
+                        तारीख: {formatDate(bd.date)}
+                      </span>
+
+                      <span className="text-gray-400">|</span>
+
+                      <span className="text-sm text-gray-700">
+                        तिथि: {bd.tithi}
+                      </span>
+                    </div>
+
+                    {/* RIGHT ACTIONS */}
+                    <Space
+                      size="small"
+                      className="flex-shrink-0"
+                      onClick={(e) => e.stopPropagation()} // 🛑 prevent row click
+                    >
+                      <Button
+                        type="primary"
+                        icon={<EditOutlined />}
+                        size="small"
+                        onClick={() => openBaheeEdit(bd)}
+                        className="bg-blue-500 hover:bg-blue-600"
+                        title="संपादित करें"
+                      />
+
+                      <Button
+                        type={isSelected ? "primary" : "default"}
+                        icon={!isSelected ? <UnorderedListOutlined /> : undefined}
+                        size="small"
+                        className={isSelected ? "bg-green-600 hover:bg-green-700" : ""}
+                      >
+                        {isSelected ? "Selected" : "List"}
+                      </Button>
+                    </Space>
                   </div>
-                  <Space size="small" className="flex-shrink-0">
-                    <Button
-                      type="primary"
-                      icon={<EyeOutlined />}
-                      size="small"
-                      onClick={() => openBaheeView(bd)}
-                      className="bg-green-500 hover:bg-green-600 hidden"
-                      title="देखें"
-                    >
-                    </Button>
-                    <Button
-                      type="primary"
-                      icon={<EditOutlined />}
-                      size="small"
-                      onClick={() => openBaheeEdit(bd)}
-                      className="bg-blue-500 hover:bg-blue-600"
-                      title="संपादित करें"
-                    />
-                    <Button
-                      type={selectedSpecificBahee?.id === bd.id ? "primary" : "default"}
-                      icon={selectedSpecificBahee?.id === bd.id ? null : <UnorderedListOutlined />}
-                      size="small"
-                      onClick={() => handleSelectSpecificBahee(bd)}
-                      className={selectedSpecificBahee?.id === bd.id ? "bg-green-600 hover:bg-green-700" : ""}
-                      title={selectedSpecificBahee?.id === bd.id ? "चयनित बही" : "इस बही की entries देखें"}
-                    >
-                      {selectedSpecificBahee?.id === bd.id ? "Select" : "List"}
-                    </Button>
-                  </Space>
-                </div>
-              ))}
+                );
+              })}
             </div>
+
           </div>
         )}
 
@@ -770,10 +801,10 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
                 ? selectedSpecificBahee
                   ? `${selectedSpecificBahee.name} की कोई entries नहीं मिली`
                   : selectedBaheeType !== ""
-                  ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
-                  : searchText
-                  ? `"${searchText}" के लिए कोई परिणाम नहीं मिला`
-                  : "कोई डेटा उपलब्ध नहीं है"
+                    ? `${getDisplayName()} के लिए कोई रिकॉर्ड नहीं मिला`
+                    : searchText
+                      ? `"${searchText}" के लिए कोई परिणाम नहीं मिला`
+                      : "कोई डेटा उपलब्ध नहीं है"
                 : "कोई डेटा उपलब्ध नहीं है",
           }}
           loading={loading}
@@ -845,8 +876,8 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
         confirmLoading={loading}
       >
         {/* ✅ UPDATED: Pass enhanced props to EditRecordForm */}
-        <EditRecordForm 
-          form={form} 
+        <EditRecordForm
+          form={form}
           initialValues={current || undefined}
           isAnyaBahee={current?.baheeType === 'anya'}
           currentRecord={current}
@@ -878,80 +909,80 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
 
       {/* View Record Modal */}
       <CommonModal
-  open={viewModal.open}
-  title="रिकॉर्ड विवरण"
-  onOk={() => handleViewCancel()}
-  onCancel={handleViewCancel}
-  okText="बंद करें"
-  cancelButtonProps={{ style: { display: 'none' } }}
-  width={600}
->
-  {viewModal.record && (
-    <div className="space-y-4">
-      {/* 🔹 BASIC DETAILS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <div>
-          <strong>जाति:</strong> {viewModal.record.cast}
-        </div>
-        <div>
-          <strong>नाम:</strong> {viewModal.record.name}
-        </div>
-        <div>
-          <strong>पिता का नाम:</strong> {viewModal.record.fathername}
-        </div>
-        <div>
-          <strong>गाँव का नाम:</strong> {viewModal.record.address}
-        </div>
-        <div>
-          <strong>आवता:</strong> ₹{viewModal.record.aavta?.toLocaleString()}
-        </div>
-        <div>
-          <strong>ऊपर नेत:</strong>{" "}
-          {viewModal.record.baheeType === "anya" &&
-          Number(viewModal.record.uparnet) === 0 ? (
-            <span className="text-orange-600 ml-1">
-              ₹0 (Toggle disabled)
-            </span>
-          ) : (
-            <span className="ml-1">
-              ₹{viewModal.record.uparnet?.toLocaleString()}
-            </span>
-          )}
-        </div>
-      </div>
+        open={viewModal.open}
+        title="रिकॉर्ड विवरण"
+        onOk={() => handleViewCancel()}
+        onCancel={handleViewCancel}
+        okText="OK"
+        cancelButtonProps={{ style: { display: 'none' } }}
+        width={600}
+      >
+        {viewModal.record && (
+          <div className="space-y-4">
+            {/* 🔹 BASIC DETAILS */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <strong>जाति:</strong> {viewModal.record.cast}
+              </div>
+              <div>
+                <strong>नाम:</strong> {viewModal.record.name}
+              </div>
+              <div>
+                <strong>पिता का नाम:</strong> {viewModal.record.fathername}
+              </div>
+              <div>
+                <strong>गाँव का नाम:</strong> {viewModal.record.address}
+              </div>
+              <div>
+                <strong>आवता:</strong> ₹{viewModal.record.aavta?.toLocaleString()}
+              </div>
+              <div>
+                <strong>ऊपर नेत:</strong>{" "}
+                {viewModal.record.baheeType === "anya" &&
+                  Number(viewModal.record.uparnet) === 0 ? (
+                  <span className="text-orange-600 ml-1">
+                    ₹0 (Toggle disabled)
+                  </span>
+                ) : (
+                  <span className="ml-1">
+                    ₹{viewModal.record.uparnet?.toLocaleString()}
+                  </span>
+                )}
+              </div>
+            </div>
 
-      {/* 🔒 ONLY IF ENTRY IS LOCKED */}
-      {viewModal.record.isLocked && (
-        <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-          <h4 className="font-semibold text-red-700 mb-2">
-            🔒 लॉक जानकारी
-          </h4>
+            {/* 🔒 ONLY IF ENTRY IS LOCKED */}
+            {viewModal.record.isLocked && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <h4 className="font-semibold text-red-700 mb-2">
+                  🔒 लॉक जानकारी
+                </h4>
 
-          <div className="space-y-1 text-sm">
-            <p>
-              <strong>बही (विवाह):</strong>{" "}
-              <span className="text-blue-700">
-                {viewModal.record.baheeTypeName}
-              </span>
-            </p>
+                <div className="space-y-1 text-sm">
+                  <p>
+                    <strong>बही (विवाह):</strong>{" "}
+                    <span className="text-blue-700">
+                      {viewModal.record.baheeTypeName}
+                    </span>
+                  </p>
 
-            <p>
-              <strong>लॉक तारीख:</strong>{" "}
-              {viewModal.record.lockDate
-                ? dayjs(viewModal.record.lockDate).format("DD-MM-YYYY")
-                : "-"}
-            </p>
+                  <p>
+                    <strong>लॉक तारीख:</strong>{" "}
+                    {viewModal.record.lockDate
+                      ? dayjs(viewModal.record.lockDate).format("DD-MM-YYYY")
+                      : "-"}
+                  </p>
 
-            <p>
-              <strong>विवरण:</strong>{" "}
-              {viewModal.record.lockDescription || "-"}
-            </p>
+                  <p>
+                    <strong>विवरण:</strong>{" "}
+                    {viewModal.record.lockDescription || "-"}
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
-        </div>
-      )}
-    </div>
-  )}
-</CommonModal>
+        )}
+      </CommonModal>
 
 
       {/* Bahee View Modal */}
