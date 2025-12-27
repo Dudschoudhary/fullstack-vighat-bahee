@@ -549,27 +549,45 @@ const VigatBahee = () => {
               </div>
             )}
 
-            {savedHeaders.length > 0 && (
+            {savedHeaders.length > 0 ? (
               <div className="mt-6 sm:mt-8 p-3 sm:p-4 bg-blue-50 rounded-lg">
-                <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">बही विवरण</h3>
+                <h3 className="text-base sm:text-lg font-semibold text-blue-800 mb-3">
+                  बही विवरण
+                </h3>
+
                 <div className="grid grid-cols-2 md:grid-cols-5 gap-2 sm:gap-4 text-center">
                   {typeOrder.map(type => (
                     <div key={type} className="bg-white p-2 sm:p-3 rounded-lg shadow-sm">
                       <div className="text-lg sm:text-2xl font-bold text-blue-600">
                         {groupedByType[type]?.length || 0}
                       </div>
-                      <div className="text-xs text-gray-600">{getBaheeTypeName(type)}</div>
+                      <div className="text-xs text-gray-600">
+                        {getBaheeTypeName(type)}
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {savedHeaders.length > 0 && Object.values(groupedByType).flat().length !== savedHeaders.length && (
+                {Object.values(groupedByType).flat().length !== savedHeaders.length && (
                   <div className="mt-3 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
-                    ⚠️ कुछ डेटा वर्गीकृत नहीं है: {savedHeaders.length - Object.values(groupedByType).flat().length} items
+                    ⚠️ कुछ डेटा वर्गीकृत नहीं है:{" "}
+                    {savedHeaders.length - Object.values(groupedByType).flat().length} items
                   </div>
                 )}
               </div>
+            ) : (
+              /* ✅ Welcome Message when no data */
+              <div className="mt-10 text-center p-6 bg-gray-50 rounded-lg border border-dashed">
+                <h2 className="text-xl sm:text-2xl font-semibold  text-blue-700 tiroDevanagariSanskrit-Italic">
+                  🙏 विगत बही में आपका हार्दिक स्वागत एवं अभिनंदन है।
+                </h2>
+                <p className="mt-2 text-sm">
+                  अभी कोई बही विवरण उपलब्ध नहीं है।
+                  नई एंट्री जोड़ने के लिए <span className="font-medium text-red-600">“नई बही बनाएं”</span> पर क्लिक करें।
+                </p>
+              </div>
             )}
+
           </div>
         </div>
 

@@ -33,51 +33,55 @@ const router = createBrowserRouter([
     path: "/",
     children: [
       {
-        path: "/bahee",
+        index: true,
+        element: <Navigate to="/login" replace />,
+      },
+      {
+        path: "bahee",
         element: <ProtectedRoute element={<VigatBahee />} />,
       },
       {
-        path: "/bahee-layout",
+        path: "bahee-layout",
         element: <ProtectedRoute element={<VigatBaheeLayout />} />,
       },
       {
-        path: "/new-bahee",
+        path: "new-bahee",
         element: <ProtectedRoute element={<AddNewEntries />} />,
       },
       {
-        path: "/personal-bahee",
+        path: "personal-bahee",
         element: <ProtectedRoute element={<PersonalEntryForm />} />,
       },
       {
-        path: "/view-entries",
+        path: "view-entries",
         element: <ProtectedRoute element={<ViewEntriesByType />} />,
       },
       {
-        path: "/login",
+        path: "login",
         element: <PublicRoute element={<Login />} />,
       },
       {
-        path: "/about-us",
+        path: "about-us",
         element: <ProtectedRoute element={<AboutUs />} />,
       },
       {
-        path: "/privacy-policy",
+        path: "privacy-policy",
         element: <ProtectedRoute element={<PrivacyPolicy />} />,
       },
       {
-        path: "/terms-and-conditions",
+        path: "terms-and-conditions",
         element: <ProtectedRoute element={<TermsAndConditions />} />,
       },
       {
-        path: "/contact",
+        path: "contact",
         element: <ProtectedRoute element={<ContactUs />} />,
       },
       {
-        path: "/footer",
+        path: "footer",
         element: <ProtectedRoute element={<Footer />} />,
       },
       {
-        path: "/dmca-policy",
+        path: "dmca-policy",
         element: <ProtectedRoute element={<DMCAPolicy />} />,
       },
     ],
