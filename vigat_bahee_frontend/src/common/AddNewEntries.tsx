@@ -107,7 +107,7 @@ const AddNewEntries: React.FC = () => {
       setDetailsForm(formData);
       setLocalDetailsForm(formData);
     } else {
-      const todayTithi = getAccurateHinduTithi(getTodayDate()[0]);
+      const todayTithi = getAccurateHinduTithi(getTodayDate());
       setLocalDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
       setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
     }
@@ -328,11 +328,7 @@ const AddNewEntries: React.FC = () => {
                       disabled
                       readOnly
                     />
-                    {localDetailsForm.date === getTodayDate() && (
-                      <p className="text-xs text-green-600 mt-1">
-                        ✅ आज: कृष्ण नवमी, आश्विन
-                      </p>
-                    )}
+                    
                   </div>
                 </div>
 
