@@ -160,44 +160,57 @@ export const deleteBaheeDetails = async (req, res) => {
 // Bahee Entries Controllers
 export const createBaheeEntry = async (req, res) => {
   try {
-    const { 
-      baheeType, 
-      baheeTypeName, 
-      headerName, 
-      caste, 
-      name, 
-      fatherName, 
-      villageName, 
-      income, 
-      amount 
+    const {
+      baheeType,
+      baheeTypeName,
+      headerName,
+      caste,
+      name,
+      fatherName,
+      villageName,
+      income,
+      amount,
     } = req.body;
 
-    if (!baheeType || !baheeTypeName || !headerName || !caste || !name || !fatherName || !villageName || !income) {
+    // Required fields (villageName optional)
+    if (
+      !baheeType ||
+      !baheeTypeName ||
+      !headerName ||
+      !caste ||
+      !name ||
+      !fatherName
+    ) {
       return res.status(400).json({
         success: false,
-        message: 'सभी आवश्यक फील्ड भरें।'
+        message: 'सभी आवश्यक फील्ड भरें।',
       });
     }
 
     const disableAmountTypes = ['odhawani', 'mahera'];
     const isAmountRequired = !disableAmountTypes.includes(baheeType);
-    
-    // if (isAmountRequired && !amount) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: 'ऊपर नेत दर्ज करें।'
-    //   });
-    // }
+
+    // Safe numbers (empty → 0)
+    const safeIncome = Number(income || 0);
+    const safeAmount = Number(amount || 0);
+
+    // ❌ Both cannot be 0
+    if (safeIncome === 0 && safeAmount === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'आवता या ऊपर नेत में से कम से कम एक भरना आवश्यक है।',
+      });
+    }
 
     const baheeDetailsExist = await BaheeDetails.findOne({
       baheeType,
-      name: headerName
+      name: headerName,
     });
 
     if (!baheeDetailsExist) {
       return res.status(400).json({
         success: false,
-        message: 'बही विवरण नहीं मिला। कृपया पहले बही विवरण सेव करें।'
+        message: 'बही विवरण नहीं मिला। कृपया पहले बही विवरण सेव करें।',
       });
     }
 
@@ -208,25 +221,26 @@ export const createBaheeEntry = async (req, res) => {
       caste: caste.trim(),
       name: name.trim(),
       fatherName: fatherName.trim(),
-      villageName: villageName.trim(),
-      income: parseFloat(income),
-      amount: isAmountRequired ? parseFloat(amount) : null,
-      // user_id
+      villageName:
+        villageName && villageName.trim() !== '' ? villageName.trim() : '-', // ✅ default "-"
+      income: safeIncome,
+      amount: isAmountRequired ? safeAmount : 0,
     });
 
     await baheeEntry.save();
 
-    res.status(201).json({
+    return res.status(201).json({
       success: true,
       message: 'Entry successfully added!',
-      data: baheeEntry
+      data: baheeEntry,
     });
-
   } catch (error) {
-    res.status(500).json({
+    console.error('Create Bahee Entry Error:', error);
+
+    return res.status(500).json({
       success: false,
-      message: 'Server error',
-      error: error.message
+      message: 'Internal server error',
+      error: error.message,
     });
   }
 };

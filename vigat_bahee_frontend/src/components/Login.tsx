@@ -343,7 +343,7 @@ const Login: React.FC = () => {
   
       if (apiError.response?.status === 404) {
         setErrors({ email: 'No account found with this email address.' });
-      } else if (apiError.code === 'ERR_NETWORK' || apiError.message === 'Network Error') {
+      } else if (apiError.code === 'ERR_NETWORK' || apiError.message === 'कृपया कुछ समय बाद फिर से प्रयास करें।') {
         // yahan user-friendly message
         throw new Error('Server se connect nahi ho pa रहा. Backend chal raha hai kya? URL / port check karein.');
       } else {

@@ -19,7 +19,7 @@ class BaheeApiService {
       if (error.response) {
         throw new Error(error.response.data?.message || 'Failed to create bahee details');
       } else if (error.request) {
-        throw new Error('सर्वर से कनेक्शन नहीं हो पा रहा। कृपया सर्वर चालू करें।');
+        throw new Error('please wait');
       } else {
         throw new Error(error.message || 'Unknown error occurred');
       }

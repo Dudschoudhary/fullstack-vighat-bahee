@@ -1,2 +1,87 @@
 @import url("./styles/font.css");
 @import "tailwindcss";
+
+.ant-form-item-control-input{
+    border: 1px solid #d1d5dc;
+    border-radius: 8px;
+    padding: 12px 16px;
+    font-size: 16px;
+}
+
+.ant-form-item-control-input-content{
+    border: none;
+}
+
+.ant-input {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* 🔥 focus, active, hover sab remove */
+  .ant-input:focus,
+  .ant-input:active,
+  .ant-input:hover {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* AntD focus wrapper fix */
+  .ant-input-affix-wrapper:focus,
+  .ant-input-affix-wrapper-focused {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  .ant-input-number-input{
+    border: none !important;
+  }
+
+  /* ===== INPUT NUMBER COMPLETE BORDER REMOVE ===== */
+
+/* Main InputNumber box */
+.ant-input-number {
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+  }
+  
+  /* Hover / Focus state */
+  .ant-input-number:hover,
+  .ant-input-number-focused {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Inner input */
+  .ant-input-number-input {
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Remove handler (▲▼) border */
+  .ant-input-number-handler-wrap {
+    border: none !important;
+  }
+  
+  /* Remove handler buttons border */
+  .ant-input-number-handler {
+    border: none !important;
+  }
+  
+  /* Focus outline fix */
+  .ant-input-number-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* AntD status border (success / error) remove */
+  .ant-input-number-status-success,
+  .ant-input-number-status-error {
+    border: none !important;
+    box-shadow: none !important;
+  }
+  ant-input-number-input-wrap input {
+    width: 200px !important;
+  }
+  

@@ -193,19 +193,29 @@ const EntryForm: React.FC<EntryFormProps> = ({
   // ✅ Form validation with toggle logic
   const validateForm = (): FormErrors => {
     const newErrors: FormErrors = {};
+  
+    // Required text fields
     if (!formData.caste) newErrors.caste = 'जाति दर्ज करें';
     if (!formData.name) newErrors.name = 'नाम दर्ज करें';
     if (!formData.fatherName) newErrors.fatherName = 'पिता का नाम दर्ज करें';
-    if (!formData.villageName) newErrors.villageName = 'गाँव का नाम दर्ज करें';
-    if (!formData.income) newErrors.income = 'आवता दर्ज करें';
-    
-    const shouldValidateAmount = isAnyaBahee ? uparnetToggle : !isAmountDisabled;
-    if (shouldValidateAmount && !formData.amount) {
-      newErrors.amount = 'ऊपर नेत दर्ज करें';
+    // if (!formData.villageName) newErrors.villageName = 'गाँव का नाम दर्ज करें';
+  
+    // Empty => 0 (BEST PRACTICE)
+    const income = Number(formData.income?.trim() || 0);
+    const amount = Number(formData.amount?.trim() || 0);
+  
+    // ❌ Both cannot be 0
+    if (income === 0 && amount === 0) {
+      newErrors.income =
+        'आवता या ऊपर नेत में से कम से कम एक भरना आवश्यक है';
+      newErrors.amount =
+        'आवता या ऊपर नेत में से कम से कम एक भरना आवश्यक है';
     }
-    
+  
     return newErrors;
   };
+  
+  
 
   const handleReset = () => {
     const resetData = {
@@ -350,7 +360,7 @@ const EntryForm: React.FC<EntryFormProps> = ({
           {/* Village Name Field */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
-              गाँव का नाम <span className="text-red-500">*</span>
+              गाँव का नाम <span className="text-red-500"></span>
             </label>
             <ReactTransliterate
               value={localFormData.villageName}

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Form, InputNumber, Row, Col, Input, DatePicker } from "antd";
 import { ReactTransliterate } from "react-transliterate";
 import "react-transliterate/dist/index.css";
+import "../App.css";
 
 export interface EditValues {
   cast: string;
@@ -78,8 +79,8 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
 
 
   return (
-    <div>
-      <Form form={form} layout="vertical" preserve={false}>
+    <div className="exact-form-wrapper">
+      <Form form={form} layout="vertical" preserve={false} className="exact-form">
         <Row gutter={[16, 12]}>
           <Col xs={24} md={12}>
             <Form.Item name="cast" label="जाति" rules={[{ required: true }]}>
@@ -195,8 +196,8 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
           }}
         >
           <div>
-            <strong>रिकॉर्ड लॉक</strong>
-            <div style={{ fontSize: 12, color: "#6b7280" }}>
+            <strong className="text-red-600">रिकॉर्ड लॉक</strong>
+            <div className="text-md text-blue-700" >
               लॉक होने पर रिकॉर्ड edit नहीं किया जा सकेगा
             </div>
           </div>
@@ -240,7 +241,7 @@ const EditRecordForm: React.FC<EditRecordFormProps> = ({
                 color: isLocked ? "#ef4444" : "#16a34a",
               }}
             >
-              {isLocked ? "Locked" : "Unlocked"}
+              {isLocked ? "लॉक हटाएँ" : "लॉक करें"}
             </span>
           </label>
         </div>
