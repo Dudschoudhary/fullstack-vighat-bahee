@@ -1,5 +1,6 @@
 import AddNewEntriesInterface from "../common/CustomTable"
 import CustomVigatBaheeLogo from "../common/CustomVigatBaheeLogo"
+import Footer from "../google adsense/Footer"
 
 const VigatBaheeLayout = () => {
   return (
@@ -12,6 +13,7 @@ const VigatBaheeLayout = () => {
             <AddNewEntriesInterface/>
         </div>
       </div>
+        <Footer/>
     </>
   )
 }

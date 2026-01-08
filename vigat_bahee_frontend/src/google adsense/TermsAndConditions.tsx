@@ -12,14 +12,14 @@ const TermsAndConditions = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Terms and Conditions</h1>
             <p className="text-lg text-gray-600">
-              Effective Date: {new Date().toLocaleDateString()} | VigatBahee.com
+              Effective Date: {new Date().toLocaleDateString()} | vigatbahi.me
             </p>
           </div>
 
           {/* Introduction Banner */}
           <div className="bg-blue-600 text-white rounded-lg p-6 mb-8">
             <div className="text-center">
-              <h2 className="text-2xl font-bold mb-3">Welcome to VigatBahee.com</h2>
+              <h2 className="text-2xl font-bold mb-3">Welcome to vigatbahi.me</h2>
               <p className="text-blue-100">
                 Please read these Terms and Conditions carefully before using our digital gift registry platform. 
                 Your use of our service constitutes acceptance of these terms.
@@ -37,7 +37,7 @@ const TermsAndConditions = () => {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  These Terms and Conditions ("Terms") govern your access to and use of <strong>VigatBahee.com</strong> 
+                  These Terms and Conditions ("Terms") govern your access to and use of <strong>vigatbahi.me</strong> 
                   ("Platform," "Service," "we," "us," or "our"), a digital gift registry platform designed to help you 
                   manage and track gifts, monetary contributions, and guest information for your special occasions.
                 </p>
@@ -49,7 +49,7 @@ const TermsAndConditions = () => {
                 <div className="bg-yellow-50 p-4 rounded-lg border-l-4 border-yellow-400">
                   <p className="text-sm text-gray-700">
                     <strong>Important:</strong> These Terms constitute a legally binding agreement between you and 
-                    VigatBahee.com. Please ensure you understand all provisions before proceeding.
+                    vigatbahi.me. Please ensure you understand all provisions before proceeding.
                   </p>
                 </div>
               </div>
@@ -64,7 +64,7 @@ const TermsAndConditions = () => {
                 <div className="space-y-3 text-sm">
                   <div className="flex items-start space-x-3">
                     <span className="font-semibold text-green-800 min-w-fit">"Platform/Service"</span>
-                    <span className="text-gray-600">refers to the VigatBahee.com website, mobile applications, and all related digital services.</span>
+                    <span className="text-gray-600">refers to the vigatbahi.me website, mobile applications, and all related digital services.</span>
                   </div>
                   <div className="flex items-start space-x-3">
                     <span className="font-semibold text-green-800 min-w-fit">"User/You"</span>
@@ -129,7 +129,7 @@ const TermsAndConditions = () => {
               
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  VigatBahee.com provides a digital platform for managing gift registries and tracking contributions 
+                  vigatbahi.me provides a digital platform for managing gift registries and tracking contributions 
                   for special occasions, particularly focusing on Indian ceremonies and celebrations.
                 </p>
 
@@ -250,7 +250,7 @@ const TermsAndConditions = () => {
                 <div className="bg-green-50 p-5 rounded-lg">
                   <h3 className="font-semibold text-green-800 mb-3">Service Fees</h3>
                   <p className="text-sm text-gray-700 mb-3">
-                    Currently, VigatBahee.com offers free access to our basic service. If we introduce paid features 
+                    Currently, vigatbahi.me offers free access to our basic service. If we introduce paid features 
                     or premium services in the future:
                   </p>
                   <ul className="text-sm text-gray-700 space-y-1">
@@ -282,7 +282,7 @@ const TermsAndConditions = () => {
                 <div className="bg-purple-50 p-4 rounded-lg border-l-4 border-purple-500">
                   <h3 className="font-semibold text-purple-800 mb-3">Our Rights</h3>
                   <ul className="text-sm text-gray-700 space-y-2">
-                    <li>• VigatBahee.com and all its features are protected by copyright and trademark laws</li>
+                    <li>• vigatbahi.me and all its features are protected by copyright and trademark laws</li>
                     <li>• The Platform's design, functionality, and proprietary algorithms are our intellectual property</li>
                     <li>• You may not copy, modify, distribute, or reverse engineer any part of our Service</li>
                     <li>• Our brand name, logo, and related marks are registered trademarks</li>
@@ -381,7 +381,7 @@ const TermsAndConditions = () => {
                 <div className="bg-red-50 p-4 rounded-lg border border-red-200">
                   <h3 className="font-semibold text-red-800 mb-3">Limitation of Liability</h3>
                   <p className="text-sm text-gray-700 mb-3">
-                    To the maximum extent permitted by law, VigatBahee.com shall not be liable for:
+                    To the maximum extent permitted by law, vigatbahi.me shall not be liable for:
                   </p>
                   <ul className="text-sm text-gray-700 space-y-1">
                     <li>• Indirect, incidental, special, or consequential damages</li>
@@ -470,10 +470,10 @@ const TermsAndConditions = () => {
                     <h3 className="font-semibold text-gray-800 mb-3">General Support</h3>
                     <div className="space-y-2 text-sm">
                       <p>
-                        <strong>Email:</strong> <a href="mailto:dudaram656@gmail.com" className="text-blue-600 hover:text-blue-800">dudaram656@gmail.com</a>
+                        <strong>Email:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a>
                       </p>
                       <p>
-                        <strong>Phone:</strong> <a href="tel:+919587449072" className="text-blue-600 hover:text-blue-800">+91-9587449072</a>
+                        <strong>Phone:</strong> <a href="tel:+919468650730" className="text-blue-600 hover:text-blue-800">+91-9468650730</a>
                       </p>
                       <p>
                         <strong>Response Time:</strong> Within 24-48 hours
@@ -485,10 +485,10 @@ const TermsAndConditions = () => {
                     <h3 className="font-semibold text-gray-800 mb-3">Legal and Compliance</h3>
                     <div className="space-y-2 text-sm">
                       <p>
-                        <strong>Legal Email:</strong> <a href="mailto:dudsoffice656@gmail.com" className="text-blue-600 hover:text-blue-800">dudsoffice656@gmail.com</a>
+                        <strong>Legal Email:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a>
                       </p>
                       <p>
-                        <strong>Privacy Officer:</strong> <a href="mailto:privacy@vigatbahee.com" className="text-blue-600 hover:text-blue-800">privacy@vigatbahee.com</a>
+                        <strong>Privacy Officer:</strong> <a href="mailto:privacy@vigatbahi.me" className="text-blue-600 hover:text-blue-800">privacy@vigatbahi.me</a>
                       </p>
                       <p>
                         <strong>Business Hours:</strong> Mon-Fri, 9 AM - 6 PM IST
@@ -499,7 +499,7 @@ const TermsAndConditions = () => {
 
                 <div className="mt-6 pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    <strong>Registered Address:</strong> VigatBahee.com, Baldev Nagar,
+                    <strong>Registered Address:</strong> vigatbahi.me, Baldev Nagar,
                     Jodhpur, Rajasthan - 342003, India
                   </p>
                 </div>
@@ -512,7 +512,7 @@ const TermsAndConditions = () => {
             <div className="text-center">
               <h3 className="font-semibold text-blue-800 mb-2">Acknowledgment</h3>
               <p className="text-sm text-blue-700">
-                By using VigatBahee.com, you acknowledge that you have read, understood, and agree to be bound by these 
+                By using vigatbahi.me, you acknowledge that you have read, understood, and agree to be bound by these 
                 Terms and Conditions. Thank you for choosing our platform for your special occasions!
               </p>
             </div>

@@ -128,7 +128,7 @@ const ContactUs = () => {
                   <div>
                     <h3 className="font-medium text-gray-800">Email</h3>
                     <p className="text-gray-600">dudaram656@gmail.com</p>
-                    <p className="text-gray-600">dudsoffice656@gmail.com</p>
+                    <p className="text-gray-600">vigatbahi@gmail.com</p>
                   </div>
                 </div>
 
@@ -140,7 +140,7 @@ const ContactUs = () => {
                   </div>
                   <div>
                     <h3 className="font-medium text-gray-800">Phone</h3>
-                    <p className="text-gray-600">+9587449072</p>
+                    <p className="text-gray-600">+9468650730</p>
                   </div>
                 </div>
 

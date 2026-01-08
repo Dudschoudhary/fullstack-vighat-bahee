@@ -21,7 +21,7 @@ const DMCAPolicy = () => {
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-3">Copyright Protection Notice</h2>
               <p className="text-blue-100">
-                VigatBahee.com respects intellectual property rights and responds promptly to valid copyright 
+                vigatbahi.me respects intellectual property rights and responds promptly to valid copyright 
                 infringement notices in accordance with the Digital Millennium Copyright Act (DMCA).
               </p>
             </div>
@@ -37,7 +37,7 @@ const DMCAPolicy = () => {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  VigatBahee.com ("we," "us," or "our") is committed to respecting the intellectual property rights 
+                  vigatbahi.me ("we," "us," or "our") is committed to respecting the intellectual property rights 
                   of others. While our platform primarily serves as a digital gift registry for personal events, 
                   we recognize that users may upload various forms of content, and we take copyright protection seriously.
                 </p>
@@ -156,10 +156,10 @@ const DMCAPolicy = () => {
                     Send your complete DMCA takedown notice to our designated agent:
                   </p>
                   <div className="bg-white p-3 rounded border text-sm">
-                    <p><strong>DMCA Agent for VigatBahee.com</strong></p>
-                    <p><strong>Email:</strong> dudaram656@gmail.com</p>
+                    <p><strong>DMCA Agent for vigatbahi.me</strong></p>
+                    <p><strong>Email:</strong> vigatbahi@gmail.com</p>
                     <p><strong>Phone:</strong> +91-958749072</p>
-                    <p><strong>Address:</strong>VigatBahee.com, Baldev Nagar, Jodhpur, Rajasthan - 342003, India</p>
+                    <p><strong>Address:</strong>vigatbahi.me, Baldev Nagar, Jodhpur, Rajasthan - 342003, India</p>
                   </div>
                 </div>
               </div>
@@ -222,7 +222,7 @@ const DMCAPolicy = () => {
                 <div className="bg-blue-50 p-4 rounded-lg">
                   <h3 className="font-semibold text-blue-800 mb-2">Counter-Notice Process</h3>
                   <ol className="text-sm text-gray-700 space-y-1">
-                    <li>1. Submit complete counter-notice to: <strong>dudaram656@gmail.com</strong></li>
+                    <li>1. Submit complete counter-notice to: <strong>vigatbahi@gmail.com</strong></li>
                     <li>2. We forward your counter-notice to the original complainant</li>
                     <li>3. We wait 10-14 business days for any legal action</li>
                     <li>4. If no legal action is taken, we may restore the content</li>
@@ -241,7 +241,7 @@ const DMCAPolicy = () => {
                 <h3 className="font-semibold text-red-800 mb-3">Account Termination for Repeat Offenders</h3>
                 <div className="space-y-4">
                   <p className="text-sm text-gray-700">
-                    VigatBahee.com has adopted a policy of terminating accounts of users who are repeat copyright infringers:
+                    vigatbahi.me has adopted a policy of terminating accounts of users who are repeat copyright infringers:
                   </p>
                   <ul className="text-sm text-gray-700 space-y-2">
                     <li>• <strong>First Offense:</strong> Warning and content removal</li>
@@ -293,7 +293,7 @@ const DMCAPolicy = () => {
               
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  While DMCA is US law, VigatBahee.com respects copyright laws globally and operates under Indian copyright 
+                  While DMCA is US law, vigatbahi.me respects copyright laws globally and operates under Indian copyright 
                   law as well. Our platform serves users internationally, and we aim to comply with applicable copyright 
                   laws in all jurisdictions where we operate.
                 </p>
@@ -334,7 +334,7 @@ const DMCAPolicy = () => {
                   <div>
                     <h4 className="font-medium text-gray-800 mb-2">Copyright Infringement Reports</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Email:</strong> <a href="mailto:dudaram656@gmail.com" className="text-blue-600 hover:text-blue-800">dudaram656@gmail.com</a></p>
+                      <p><strong>Email:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a></p>
                       <p><strong>Subject Line:</strong> "DMCA Takedown Notice - [Your Company/Name]"</p>
                       <p><strong>Response Time:</strong> 24-48 hours</p>
                     </div>
@@ -343,8 +343,8 @@ const DMCAPolicy = () => {
                   <div>
                     <h4 className="font-medium text-gray-800 mb-2">Legal Department</h4>
                     <div className="space-y-1 text-sm">
-                      <p><strong>Email:</strong> <a href="mailto:dudsoffice656@gmail.com" className="text-blue-600 hover:text-blue-800">dudsoffice656@gmail.com</a></p>
-                      <p><strong>Phone:</strong> +91-9587449072</p>
+                      <p><strong>Email:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a></p>
+                      <p><strong>Phone:</strong> +91-9468650730</p>
                       <p><strong>Hours:</strong> Mon-Fri, 9 AM - 6 PM IST</p>
                     </div>
                   </div>
@@ -354,7 +354,7 @@ const DMCAPolicy = () => {
                   <h4 className="font-medium text-gray-800 mb-2">Mailing Address</h4>
                   <p className="text-sm text-gray-600">
                     <strong>DMCA Agent</strong><br/>
-                    VigatBahee.com<br/>
+                    vigatbahi.me<br/>
                     Baldev Nagar<br/>
                     Jodhpur, Rajasthan - 342003<br/>
                     India

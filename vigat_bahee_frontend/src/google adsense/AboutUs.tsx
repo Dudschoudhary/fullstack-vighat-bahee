@@ -19,7 +19,7 @@ const AboutUs = () => {
           {/* Welcome Section */}
           <div className="bg-gradient-to-r from-blue-600 to-purple-600 rounded-lg shadow-lg p-6 md:p-8 mb-8 text-white">
             <div className="text-center">
-              <h2 className="text-3xl font-bold mb-4">Welcome to VigatBahee.com</h2>
+              <h2 className="text-3xl font-bold mb-4">Welcome to vigatbahi.me</h2>
               <p className="text-lg leading-relaxed">
                 In Indian traditions, maintaining a Vigat Bahee (gift registry) holds significant importance. 
                 Our platform brings this centuries-old practice into the digital age. No more paper registers - 
@@ -38,7 +38,7 @@ const AboutUs = () => {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  <strong>VigatBahee.com</strong> is a website designed to help every person manage their special occasions 
+                  <strong>vigatbahi.me</strong> is a website designed to help every person manage their special occasions 
                   more effectively. Whether it's marriages, housewarming ceremonies, or any other auspicious events, 
                   people come with gifts and monetary contributions (Neg-Dheg). Traditionally, all these entries 
                   were recorded in paper-based registers.
@@ -194,7 +194,7 @@ const AboutUs = () => {
             {/* Why Choose Us */}
             <section className="mb-8">
               <h2 className="text-2xl font-semibold text-gray-800 mb-6 border-b-2 border-yellow-200 pb-2">
-                Why Choose VigatBahee.com?
+                Why Choose vigatbahi.me?
               </h2>
               <div className="bg-yellow-50 p-6 rounded-lg">
                 <p className="text-gray-700 leading-relaxed mb-4">
@@ -238,13 +238,13 @@ const AboutUs = () => {
                   <strong>Email:</strong> <a href="mailto:dudaram656@gmail.com" className="text-blue-600 hover:text-blue-800">dudaram656@gmail.com</a>
                 </p>
                 <p className="text-gray-600 mb-2">
-                  <strong>Support:</strong> <a href="mailto:support@vigatbahee.com" className="text-blue-600 hover:text-blue-800">support@vigatbahee.com</a>
+                  <strong>Support:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a>
                 </p>
                 <p className="text-gray-600 mb-2">
-                  <strong>Phone:</strong> +91-9587449072
+                  <strong>Phone:</strong> +91-9468650730
                 </p>
                 <p className="text-gray-600">
-                  <strong>Website:</strong> <a href="https://vigatbahee.com" className="text-blue-600 hover:text-blue-800">www.vigatbahee.com</a>
+                  <strong>Website:</strong> <a href="https://vigatbahi.me" className="text-blue-600 hover:text-blue-800">www.vigatbahi.me</a>
                 </p>
               </div>
             </section>

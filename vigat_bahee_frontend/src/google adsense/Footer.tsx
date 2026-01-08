@@ -17,7 +17,7 @@ const Footer = () => {
               </h2>
               <p className="text-gray-300 text-sm leading-relaxed">
               डिजिटल विगत बही , शादी-विवाह से लेकर हर शुभ अवसर की। 
-              आमजन के नेग-धेग की entries का सीधा समाधान, कागज़ी रजिस्टर से मुक्ति और समय की बचत के साथ। info@vigatbahee.com
+              आमजन के नेग-धेग की entries का सीधा समाधान, कागज़ी रजिस्टर से मुक्ति और समय की बचत के साथ। vigatbahi.me
               </p>
             </div>
             
@@ -161,7 +161,7 @@ const Footer = () => {
                   href="tel:+91XXXXXXXXXX" 
                   className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
                 >
-                  +91-9587449072
+                  +91-9468650730
                 </a>
               </div>
 
@@ -170,10 +170,10 @@ const Footer = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 4.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                 </svg>
                 <a 
-                  href="mailto:dudaram656@gmail.com" 
+                  href="mailto:vigatbahi@gmail.com" 
                   className="text-gray-300 hover:text-white transition-colors duration-200 text-sm"
                 >
-                  dudaram656@gmail.com
+                  vigatbahi@gmail.com
                 </a>
               </div>
             </div>

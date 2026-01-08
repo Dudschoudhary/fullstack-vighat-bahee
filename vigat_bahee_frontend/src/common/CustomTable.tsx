@@ -887,10 +887,10 @@ const AddNewEntriesInterface: React.FC<AddNewEntriesInterfaceProps> = ({
       {/* Delete Confirmation Modal */}
       <ConfirmModal
         open={deleteModal.open}
-        title="प्रविष्टि हटाएं"
+        title="हटाएं"
         content={
           <div className="space-y-2">
-            <p>क्या आप वाकई इस प्रविष्टि को हटाना चाहते हैं?</p>
+            <p className="text-blue-700 text-lg font-bold">क्या आप इस Entry को हटाना चाहते हैं?</p>
             {deleteModal.record && (
               <div className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
                 <p><strong>नाम:</strong> {deleteModal.record.name}</p>

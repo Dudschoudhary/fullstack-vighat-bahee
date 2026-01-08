@@ -17,6 +17,7 @@ import CustomVigatBaheeLogo from "../common/CustomVigatBaheeLogo";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import Loader from "../common/Loader";
 import personalbheeApiService from "../services/personalbheeApiService";
+import Footer from "../google adsense/Footer";
 
 
 interface DataType {
@@ -813,7 +814,7 @@ const saveEdit = async () => {
         okType="danger"
         confirmLoading={deleteLoading}
       />
-
+    <Footer/>
     </>
   );
 };

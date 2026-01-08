@@ -11,7 +11,7 @@ const PrivacyPolicy = () => {
           <div className="text-center mb-12">
             <h1 className="text-4xl font-bold text-gray-900 mb-4">Privacy Policy</h1>
             <p className="text-lg text-gray-600">
-              Effective Date: {new Date().toLocaleDateString()} | VigatBahee.com
+              Effective Date: {new Date().toLocaleDateString()} | vigatbahi.me
             </p>
           </div>
 
@@ -20,7 +20,7 @@ const PrivacyPolicy = () => {
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-3">Your Privacy Matters to Us</h2>
               <p className="text-blue-100">
-                At VigatBahee.com, we are committed to protecting your personal information and 
+                At vigatbahi.me, we are committed to protecting your personal information and 
                 maintaining transparency about how we collect, use, and safeguard your data.
               </p>
             </div>
@@ -36,13 +36,13 @@ const PrivacyPolicy = () => {
               </h2>
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
-                  This Privacy Policy describes how <strong>VigatBahee.com</strong> ("we," "our," or "us") 
+                  This Privacy Policy describes how <strong>vigatbahi.me</strong> ("we," "our," or "us") 
                   collects, uses, protects, and shares your personal information when you use our digital 
                   gift registry platform and related services. This policy applies to all users of our website 
                   and mobile applications.
                 </p>
                 <p className="text-gray-600 leading-relaxed">
-                  By accessing or using VigatBahee.com, you acknowledge that you have read, understood, and 
+                  By accessing or using vigatbahi.me, you acknowledge that you have read, understood, and 
                   agree to be bound by this Privacy Policy and our Terms of Service. If you do not agree 
                   with any part of this policy, please do not use our services.
                 </p>
@@ -257,7 +257,7 @@ const PrivacyPolicy = () => {
               <div className="space-y-4">
                 <p className="text-gray-600 leading-relaxed">
                   You have several rights regarding your personal information. To exercise any of these rights, 
-                  please contact us at <a href="mailto:dudsoffice656@gmail.com" className="text-blue-600 hover:text-blue-800">dudsoffice656@gmail.com</a>:
+                  please contact us at <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a>:
                 </p>
                 
                 <div className="grid md:grid-cols-2 gap-4">
@@ -333,13 +333,13 @@ const PrivacyPolicy = () => {
                       <strong>Email:</strong> <a href="mailto:dudaram656@gmail.com" className="text-blue-600 hover:text-blue-800">dudaram656@gmail.com</a>
                     </p>
                     <p className="text-sm text-gray-600">
-                      <strong>Phone:</strong> +91-9587449072
+                      <strong>Phone:</strong> +91-9468650730
                     </p>
                   </div>
                   <div>
                     <h3 className="font-semibold text-gray-800 mb-2">Privacy Officer</h3>
                     <p className="text-sm text-gray-600 mb-1">
-                      <strong>Email:</strong> <a href="mailto:dudsoffice656@gmail.com" className="text-blue-600 hover:text-blue-800">dudsoffice656@gmail.com</a>
+                      <strong>Email:</strong> <a href="mailto:vigatbahi@gmail.com" className="text-blue-600 hover:text-blue-800">vigatbahi@gmail.com</a>
                     </p>
                     <p className="text-sm text-gray-600">
                       <strong>Response Time:</strong> Within 48 hours
@@ -348,7 +348,7 @@ const PrivacyPolicy = () => {
                 </div>
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    <strong>Address:</strong> VigatBahee.com, Your Business Address, City, State, PIN Code, India
+                    <strong>Address:</strong> vigatbahi.me, Your Business Address, City, State, PIN Code, India
                   </p>
                 </div>
               </div>
@@ -381,7 +381,7 @@ const PrivacyPolicy = () => {
           {/* Footer Note */}
           <div className="mt-8 p-4 bg-blue-50 rounded-lg border border-blue-200 text-center">
             <p className="text-sm text-blue-800">
-              <strong>Thank you for trusting VigatBahee.com with your special occasions.</strong><br/>
+              <strong>Thank you for trusting vigatbahi.me with your special occasions.</strong><br/>
               Your privacy is important to us, and we're committed to keeping your information safe and secure.
             </p>
           </div>

@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { FaHome } from 'react-icons/fa';
-import baheeLogo from '../assets/images/vigat-bahee.png';
+import baheeLogo from '../assets/images/DF2-1.jpg';
 
 const CustomVigatBaheeLogo = () => {
   const navigate = useNavigate();
