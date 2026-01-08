@@ -8,7 +8,7 @@ export const createBaheeDetails = async (req, res) => {
   try {
     const user_id = req.user._id
     const { baheeType, baheeTypeName, name, date, tithi } = req.body;
-    
+
     if (!baheeType || !baheeTypeName || !name || !date || !tithi) {
       return res.status(400).json({
         success: false,
@@ -42,7 +42,7 @@ export const createBaheeDetails = async (req, res) => {
     const baheeData = await baheeDetails.save();
 
     await User.findByIdAndUpdate(user_id, {
-      $push: {baheeDetails_ids : baheeData._id},
+      $push: { baheeDetails_ids: baheeData._id },
     })
 
 
@@ -67,7 +67,7 @@ export const getAllBaheeDetails = async (req, res) => {
 
     console.log("dudaram user_id:", user_id);
     const baheeDetails = await User.findById(user_id).populate("baheeDetails_ids")
-    
+
     res.status(200).json({
       success: true,
       data: baheeDetails
@@ -85,7 +85,7 @@ export const getBaheeDetailsByType = async (req, res) => {
   try {
     const { baheeType } = req.params;
     const baheeDetails = await BaheeDetails.find({ baheeType }).sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
       data: baheeDetails
@@ -103,20 +103,20 @@ export const updateBaheeDetails = async (req, res) => {
   try {
     const { id } = req.params;
     const updateData = req.body;
-    
+
     const updatedDetails = await BaheeDetails.findByIdAndUpdate(
-      id, 
-      updateData, 
+      id,
+      updateData,
       { new: true, runValidators: true }
     );
-    
+
     if (!updatedDetails) {
       return res.status(404).json({
         success: false,
         message: 'Bahee details not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       message: 'बही विवरण अपडेट हो गया।',
@@ -134,16 +134,16 @@ export const updateBaheeDetails = async (req, res) => {
 export const deleteBaheeDetails = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const deletedDetails = await BaheeDetails.findByIdAndDelete(id);
-    
+
     if (!deletedDetails) {
       return res.status(404).json({
         success: false,
         message: 'Bahee details not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       message: 'बही विवरण डिलीट हो गया।'
@@ -160,6 +160,7 @@ export const deleteBaheeDetails = async (req, res) => {
 // Bahee Entries Controllers
 export const createBaheeEntry = async (req, res) => {
   try {
+    const user_id = req.user._id;
     const {
       baheeType,
       baheeTypeName,
@@ -205,6 +206,7 @@ export const createBaheeEntry = async (req, res) => {
     const baheeDetailsExist = await BaheeDetails.findOne({
       baheeType,
       name: headerName,
+      user_id
     });
 
     if (!baheeDetailsExist) {
@@ -225,6 +227,7 @@ export const createBaheeEntry = async (req, res) => {
         villageName && villageName.trim() !== '' ? villageName.trim() : '-', // ✅ default "-"
       income: safeIncome,
       amount: isAmountRequired ? safeAmount : 0,
+      user_id
     });
 
     await baheeEntry.save();
@@ -247,8 +250,9 @@ export const createBaheeEntry = async (req, res) => {
 
 export const getAllBaheeEntries = async (req, res) => {
   try {
-    const entries = await BaheeEntry.find().sort({ createdAt: -1 });
-    
+    const user_id = req.user._id;
+    const entries = await BaheeEntry.find({ user_id }).sort({ createdAt: -1 });
+
     res.status(200).json({
       success: true,
       data: entries
@@ -264,12 +268,14 @@ export const getAllBaheeEntries = async (req, res) => {
 
 export const getBaheeEntriesByHeader = async (req, res) => {
   try {
+    const user_id = req.user._id;
     const { baheeType, headerName } = req.params;
-    const entries = await BaheeEntry.find({ 
-      baheeType, 
-      headerName 
+    const entries = await BaheeEntry.find({
+      baheeType,
+      headerName,
+      user_id
     }).sort({ createdAt: -1 });
-    
+
     res.status(200).json({
       success: true,
       data: entries
@@ -340,16 +346,16 @@ export const updateBaheeEntry = async (req, res) => {
 export const deleteBaheeEntry = async (req, res) => {
   try {
     const { id } = req.params;
-    
+
     const deletedEntry = await BaheeEntry.findByIdAndDelete(id);
-    
+
     if (!deletedEntry) {
       return res.status(404).json({
         success: false,
         message: 'Entry not found'
       });
     }
-    
+
     res.status(200).json({
       success: true,
       message: 'Entry डिलीट हो गई।'

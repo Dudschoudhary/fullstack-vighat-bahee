@@ -24,11 +24,11 @@ router.put('/bahee-details/:id', updateBaheeDetails);
 router.delete('/bahee-details/:id', deleteBaheeDetails);
 
 // Bahee Entries routes
-router.post('/bahee-entries', createBaheeEntry);
-router.get('/bahee-entries', getAllBaheeEntries);
-router.get('/bahee-entries/:baheeType/:headerName', getBaheeEntriesByHeader);
-router.put('/bahee-entries/:id', updateBaheeEntry);
+router.post('/bahee-entries', authMiddleware, createBaheeEntry);
+router.get('/bahee-entries', authMiddleware, getAllBaheeEntries);
+router.get('/bahee-entries/:baheeType/:headerName', authMiddleware, getBaheeEntriesByHeader);
+router.put('/bahee-entries/:id', authMiddleware, updateBaheeEntry);
 
-router.delete('/bahee-entries/:id', deleteBaheeEntry);
+router.delete('/bahee-entries/:id', authMiddleware, deleteBaheeEntry);
 
 export default router;

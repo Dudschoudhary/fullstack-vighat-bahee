@@ -12,6 +12,11 @@ const baheeEntrySchema = new mongoose.Schema({
     required: true,
     trim: true
   },
+  user_id: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
+  },
   headerName: {
     type: String,
     required: true,
