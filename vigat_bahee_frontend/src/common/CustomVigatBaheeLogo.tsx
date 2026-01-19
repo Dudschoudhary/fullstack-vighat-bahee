@@ -9,7 +9,7 @@ const CustomVigatBaheeLogo = () => {
   const handleBack = () => {
     // Always redirect to bahee page for logged-in users
     // This prevents accidental logout
-    navigate('/bahee');
+    navigate('/');
   };
 
 
@@ -33,7 +33,7 @@ const CustomVigatBaheeLogo = () => {
 
         <div className="flex items-center gap-3">
           <Link 
-            to="/bahee" 
+            to="/" 
             className="transition-transform duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-300 rounded-full"
           >
             <img
@@ -66,7 +66,7 @@ const CustomVigatBaheeLogo = () => {
 
         <div className="flex items-center gap-6 lg:gap-8">
           <Link 
-            to="/bahee" 
+            to="/" 
             className="transition-transform duration-300 hover:scale-110 focus:outline-none focus:ring-4 focus:ring-indigo-300 rounded-full"
           >
             <img

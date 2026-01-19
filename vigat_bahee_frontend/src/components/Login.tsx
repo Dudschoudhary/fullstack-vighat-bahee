@@ -1,7 +1,7 @@
 // src/components/Login.tsx - Complete with Reset Password Flow
 import React, { useState, useCallback, useEffect } from 'react';
 import type { ChangeEvent, FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import vigatBaheeLogo from '../assets/images/vigat-bahee.png';
 import { FaRegEye, FaEyeSlash, FaSignInAlt, FaCheckCircle } from 'react-icons/fa';
 import * as yup from 'yup';
@@ -93,6 +93,19 @@ const Login: React.FC = () => {
       navigate('/bahee', { replace: true });
     }
   }, [navigate]);
+
+  // Initialize mode from route state (e.g., Home -> Sign Up passes { initMode: 'register' })
+  useEffect(() => {
+    try {
+      const stateAny = location.state as any;
+      const initMode: Mode | undefined = stateAny?.initMode;
+      if (initMode === 'register' || initMode === 'login') {
+        setMode(initMode);
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, [location.state]);
 
   // Clear messages function
   const clearMessages = useCallback(() => {
@@ -430,7 +443,9 @@ const Login: React.FC = () => {
       )}
 
       <div className="w-full max-w-md space-y-8">
+        <Link to="/" >
         <img src={vigatBaheeLogo} alt="Vigat Bahee" className="h-20 rounded-full mx-auto" />
+        </Link>
 
         <header className="text-center">
           <h2 className="text-3xl font-bold text-gray-900">

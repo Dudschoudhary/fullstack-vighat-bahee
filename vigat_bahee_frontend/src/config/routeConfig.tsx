@@ -11,6 +11,7 @@ import DMCAPolicy from "../google adsense/DMCAPolicy";
 import PrivacyPolicy from "../google adsense/ PrivacyPolicy";
 import PersonalEntryForm from "../components/PersonalEntryForm";
 import ViewEntriesByType from "../components/ViewEntriesByType";
+import Home from "../google adsense/Home";
 
 interface RouteProps {
   element: React.ReactElement;
@@ -34,7 +35,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <Navigate to="/login" replace />,
+        element: <PublicRoute element={<Home />} />,
       },
       {
         path: "bahee",
@@ -62,19 +63,19 @@ const router = createBrowserRouter([
       },
       {
         path: "about-us",
-        element: <ProtectedRoute element={<AboutUs />} />,
+        element: <PublicRoute element={<AboutUs />} />,
       },
       {
         path: "privacy-policy",
-        element: <ProtectedRoute element={<PrivacyPolicy />} />,
+        element: <PublicRoute element={<PrivacyPolicy />} />,
       },
       {
         path: "terms-and-conditions",
-        element: <ProtectedRoute element={<TermsAndConditions />} />,
+        element: <PublicRoute element={<TermsAndConditions />} />,
       },
       {
         path: "contact",
-        element: <ProtectedRoute element={<ContactUs />} />,
+        element: <PublicRoute element={<ContactUs />} />,
       },
       {
         path: "footer",
@@ -82,7 +83,7 @@ const router = createBrowserRouter([
       },
       {
         path: "dmca-policy",
-        element: <ProtectedRoute element={<DMCAPolicy />} />,
+        element: <PublicRoute element={<DMCAPolicy />} />,
       },
     ],
   },

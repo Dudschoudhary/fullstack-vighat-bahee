@@ -53,7 +53,7 @@ const UserProfile: React.FC = () => {
       localStorage.removeItem('isTemporaryPassword');
       
       // Redirect to login
-      window.location.href = '/login';
+      window.location.href = '/';
     } catch (error) {
       console.error('Logout error:', error);
       // Force logout even if API call fails
