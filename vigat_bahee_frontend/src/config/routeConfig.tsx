@@ -1,8 +1,7 @@
-import { createBrowserRouter, Navigate } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 import VigatBahee from "../components/VigatBahee";
 import VigatBaheeLayout from "../components/VigatBaheeLayout";
 import AddNewEntries from "../common/AddNewEntries";
-import Login from "../components/Login";
 import AboutUs from "../google adsense/AboutUs";
 import TermsAndConditions from "../google adsense/TermsAndConditions";
 import ContactUs from "../google adsense/ContactUs";
@@ -13,77 +12,57 @@ import PersonalEntryForm from "../components/PersonalEntryForm";
 import ViewEntriesByType from "../components/ViewEntriesByType";
 import Home from "../google adsense/Home";
 
-interface RouteProps {
-  element: React.ReactElement;
-}
-
-const isAuthenticated = () => {
-  return !!localStorage.getItem("token");
-};
-
-const ProtectedRoute: React.FC<RouteProps> = ({ element }) => {
-  return isAuthenticated() ? element : <Navigate to="/login" replace />;
-};
-
-const PublicRoute: React.FC<RouteProps> = ({ element }) => {
-  return isAuthenticated() ? <Navigate to="/bahee" replace /> : element;
-};
-
 const router = createBrowserRouter([
   {
     path: "/",
     children: [
       {
         index: true,
-        element: <PublicRoute element={<Home />} />,
+        element: <Home />,
       },
       {
         path: "bahee",
-        element: <ProtectedRoute element={<VigatBahee />} />,
+        element: <VigatBahee />,
       },
       {
         path: "bahee-layout",
-        element: <ProtectedRoute element={<VigatBaheeLayout />} />,
+        element: <VigatBaheeLayout />,
       },
       {
         path: "new-bahee",
-        element: <ProtectedRoute element={<AddNewEntries />} />,
+        element: <AddNewEntries />,
       },
       {
         path: "personal-bahee",
-        element: <ProtectedRoute element={<PersonalEntryForm />} />,
+        element: <PersonalEntryForm />,
       },
       {
         path: "view-entries",
-        element: <ProtectedRoute element={<ViewEntriesByType />} />,
-      },
-      {
-        path: "login",
-        element: <PublicRoute element={<Login />} />,
+        element: <ViewEntriesByType />,
       },
       {
         path: "about-us",
-        element: <PublicRoute element={<AboutUs />} />,
+        element: <AboutUs />,
       },
       {
         path: "privacy-policy",
-        element: <PublicRoute element={<PrivacyPolicy />} />,
+        element: <PrivacyPolicy />,
       },
       {
         path: "terms-and-conditions",
-        element: <PublicRoute element={<TermsAndConditions />} />,
+        element: <TermsAndConditions />,
       },
       {
         path: "contact",
-        element: <PublicRoute element={<ContactUs />} />,
+        element: <ContactUs />,
       },
       {
         path: "footer",
-        element: <ProtectedRoute element={<Footer />} />,
+        element: <Footer />,
       },
       {
         path: "dmca-policy",
-        element: <PublicRoute element={<DMCAPolicy />} />,
+        element: <DMCAPolicy />,
       },
     ],
   },

@@ -6,7 +6,7 @@ import { User } from '../models/user.model.js';
 // Bahee Details Controllers
 export const createBaheeDetails = async (req, res) => {
   try {
-    const user_id = req.user._id
+    const user_id = req.user?._id || null;
     const { baheeType, baheeTypeName, name, date, tithi } = req.body;
 
     if (!baheeType || !baheeTypeName || !name || !date || !tithi) {
@@ -16,11 +16,14 @@ export const createBaheeDetails = async (req, res) => {
       });
     }
 
-    const existingDetails = await BaheeDetails.findOne({
+    // If user_id present, check duplicates for that user; otherwise check global duplicates
+    const existingQuery = {
       baheeType: baheeType.trim(),
       name: name.trim().toLowerCase(),
-      user_id
-    });
+    };
+    if (user_id) existingQuery.user_id = user_id;
+
+    const existingDetails = await BaheeDetails.findOne(existingQuery);
 
     if (existingDetails) {
       return res.status(400).json({
@@ -36,14 +39,16 @@ export const createBaheeDetails = async (req, res) => {
       name: name.trim(),
       date,
       tithi: tithi.trim(),
-      user_id
+      ...(user_id ? { user_id } : {})
     });
 
     const baheeData = await baheeDetails.save();
 
-    await User.findByIdAndUpdate(user_id, {
-      $push: { baheeDetails_ids: baheeData._id },
-    })
+    if (user_id) {
+      await User.findByIdAndUpdate(user_id, {
+        $push: { baheeDetails_ids: baheeData._id },
+      })
+    }
 
 
     res.status(201).json({
@@ -63,14 +68,22 @@ export const createBaheeDetails = async (req, res) => {
 
 export const getAllBaheeDetails = async (req, res) => {
   try {
-    const user_id = req.user._id
+    const user_id = req.user?._id || null;
 
-    console.log("dudaram user_id:", user_id);
-    const baheeDetails = await User.findById(user_id).populate("baheeDetails_ids")
+    if (user_id) {
+      const baheeDetails = await User.findById(user_id).populate("baheeDetails_ids");
+      return res.status(200).json({
+        success: true,
+        data: baheeDetails
+      });
+    }
 
-    res.status(200).json({
+    // If no user, return global list of bahee details in a compatible shape
+    const allDetails = await BaheeDetails.find().sort({ createdAt: -1 });
+
+    return res.status(200).json({
       success: true,
-      data: baheeDetails
+      data: { baheeDetails_ids: allDetails }
     });
   } catch (error) {
     res.status(500).json({
@@ -160,7 +173,7 @@ export const deleteBaheeDetails = async (req, res) => {
 // Bahee Entries Controllers
 export const createBaheeEntry = async (req, res) => {
   try {
-    const user_id = req.user._id;
+    const user_id = req.user?._id || null;
     const {
       baheeType,
       baheeTypeName,
@@ -203,11 +216,16 @@ export const createBaheeEntry = async (req, res) => {
       });
     }
 
-    const baheeDetailsExist = await BaheeDetails.findOne({
-      baheeType,
-      name: headerName,
-      user_id
-    });
+    // Find bahee details — prefer user-specific, but fallback to global
+    const detailsQuery = { baheeType, name: headerName };
+    if (user_id) detailsQuery.user_id = user_id;
+
+    let baheeDetailsExist = await BaheeDetails.findOne(detailsQuery);
+
+    if (!baheeDetailsExist && !user_id) {
+      // For unauthenticated users, try without user_id if not found
+      baheeDetailsExist = await BaheeDetails.findOne({ baheeType, name: headerName });
+    }
 
     if (!baheeDetailsExist) {
       return res.status(400).json({
@@ -227,7 +245,7 @@ export const createBaheeEntry = async (req, res) => {
         villageName && villageName.trim() !== '' ? villageName.trim() : '-', // ✅ default "-"
       income: safeIncome,
       amount: isAmountRequired ? safeAmount : 0,
-      user_id
+      ...(user_id ? { user_id } : {})
     });
 
     await baheeEntry.save();
@@ -250,8 +268,14 @@ export const createBaheeEntry = async (req, res) => {
 
 export const getAllBaheeEntries = async (req, res) => {
   try {
-    const user_id = req.user._id;
-    const entries = await BaheeEntry.find({ user_id }).sort({ createdAt: -1 });
+    const user_id = req.user?._id || null;
+    let entries;
+
+    if (user_id) {
+      entries = await BaheeEntry.find({ user_id }).sort({ createdAt: -1 });
+    } else {
+      entries = await BaheeEntry.find().sort({ createdAt: -1 });
+    }
 
     res.status(200).json({
       success: true,
@@ -268,13 +292,18 @@ export const getAllBaheeEntries = async (req, res) => {
 
 export const getBaheeEntriesByHeader = async (req, res) => {
   try {
-    const user_id = req.user._id;
+    const user_id = req.user?._id || null;
     const { baheeType, headerName } = req.params;
-    const entries = await BaheeEntry.find({
-      baheeType,
-      headerName,
-      user_id
-    }).sort({ createdAt: -1 });
+
+    const query = { baheeType, headerName };
+    if (user_id) query.user_id = user_id;
+
+    let entries = await BaheeEntry.find(query).sort({ createdAt: -1 });
+
+    if (!user_id && (!entries || entries.length === 0)) {
+      // fallback: try without user filter
+      entries = await BaheeEntry.find({ baheeType, headerName }).sort({ createdAt: -1 });
+    }
 
     res.status(200).json({
       success: true,

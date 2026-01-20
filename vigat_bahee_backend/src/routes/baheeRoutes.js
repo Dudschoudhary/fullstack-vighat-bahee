@@ -17,18 +17,20 @@ import { authMiddleware } from '../middleware/auth.middleware.js';
 const router = express.Router();
 
 // Bahee Details routes
-router.post('/bahee-details', authMiddleware, createBaheeDetails);
-router.get('/bahee-details', authMiddleware, getAllBaheeDetails);
+// Allow public create/read so entries can be added/checked without login
+router.post('/bahee-details', createBaheeDetails);
+router.get('/bahee-details', getAllBaheeDetails);
 router.get('/bahee-details/:baheeType', getBaheeDetailsByType);
 router.put('/bahee-details/:id', updateBaheeDetails);
 router.delete('/bahee-details/:id', deleteBaheeDetails);
 
 // Bahee Entries routes
-router.post('/bahee-entries', authMiddleware, createBaheeEntry);
-router.get('/bahee-entries', authMiddleware, getAllBaheeEntries);
-router.get('/bahee-entries/:baheeType/:headerName', authMiddleware, getBaheeEntriesByHeader);
+// Allow public create/read of entries for easy testing/checking
+router.post('/bahee-entries', createBaheeEntry);
+router.get('/bahee-entries', getAllBaheeEntries);
+router.get('/bahee-entries/:baheeType/:headerName', getBaheeEntriesByHeader);
+// Keep update/delete protected
 router.put('/bahee-entries/:id', authMiddleware, updateBaheeEntry);
-
 router.delete('/bahee-entries/:id', authMiddleware, deleteBaheeEntry);
 
 export default router;

@@ -121,21 +121,19 @@ const VigatBahee = () => {
     const token = localStorage.getItem('token');
     const user = localStorage.getItem('user');
 
-    if (!token || !user) {
-      navigate('/login');
-      return;
-    }
-
+    // Do not force-redirect unauthenticated users to /login.
+    // If token/user exist then handle temporary-password flow.
     const isTemporaryPassword = localStorage.getItem('isTemporaryPassword') === 'true';
     const urlParams = new URLSearchParams(window.location.search);
     const changePasswordParam = urlParams.get('changePassword') === 'true';
 
-    if (isTemporaryPassword || changePasswordParam) {
+    if (token && user && (isTemporaryPassword || changePasswordParam)) {
       setShowPasswordModal(true);
     }
 
+    // Always attempt to load bahee details (will use fallback from localStorage on error).
     loadBaheeDetails();
-  }, [navigate]);
+  }, []);
 
   useEffect(() => {
     const handleVisibilityChange = () => {

@@ -7,9 +7,6 @@ import ganeshImg from '../assets/images/ganeshji1.png';
 const Home: React.FC = () => {
   const navigate = useNavigate();
 
-  const goToLogin = () => navigate('/login');
-  const goToSignup = () => navigate('/login', { state: { initMode: 'register' } });
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col">
       <div className="max-w-6xl mx-auto w-full p-6 flex-1">
@@ -18,23 +15,7 @@ const Home: React.FC = () => {
         </div>
 
         <main className="mt-6 bg-white rounded-2xl shadow-xl p-8 sm:p-12">
-          <div className="flex justify-end items-center gap-4 mb-6">
-            <button
-              onClick={goToLogin}
-              aria-label="Login to your account"
-              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            >
-              Login
-            </button>
-
-            <button
-              onClick={goToSignup}
-              aria-label="Create a new account"
-              className="px-5 py-2 bg-pink-600 text-white rounded-md font-semibold hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-300"
-            >
-              Sign Up
-            </button>
-          </div>
+          <div className="mb-6" />
 
           {/* Polished hero: two-column */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center text-center md:text-left mb-10">
@@ -56,6 +37,16 @@ const Home: React.FC = () => {
                 डिजिटल विगत बही — शादी-विवाह और सभी सामाजिक कार्यक्रमों के रिकॉर्ड को
                 आधुनिक, सुरक्षित और सहज रूप में रखें। कभी भी, कहीं से भी जानकारी देखें।
               </p>
+
+              <div className="flex justify-center md:justify-start">
+                <button
+                  onClick={() => navigate('/bahee')}
+                  aria-label="Get started with Vigat Bahee"
+                  className="px-6 py-3 bg-blue-600 text-white rounded-md font-semibold hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-300"
+                >
+                  Get Started
+                </button>
+              </div>
 
               {/* Buttons removed as requested */}
             </div>

@@ -9,11 +9,9 @@ export const redirectIfAuthenticated = (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       if (decoded) {
-        return res.status(302).json({ 
-          success: false, 
-          message: 'Already logged in',
-          redirect: '/dashboard' 
-        });
+        // Previously redirected authenticated API clients to /dashboard.
+        // No redirect anymore — just continue the request flow.
+        return next();
       }
     }
     
@@ -31,7 +29,9 @@ export const redirectIfAuthenticatedHTML = (req, res, next) => {
     if (token) {
       const decoded = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
       if (decoded) {
-        return res.redirect('/bahee');
+        // Previously redirected HTML requests to /bahee.
+        // No redirect — allow rendering to continue (no forced navigation).
+        return next();
       }
     }
     

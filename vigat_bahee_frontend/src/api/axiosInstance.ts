@@ -27,8 +27,14 @@ axiosInstance.interceptors.response.use(
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user"); // अगर user data save है
-      // React Router use कर रहे हो तो:
-      window.location.href = "/login"; // या useNavigate()
+      // Do not force navigation to /login (route may be removed).
+      // Instead emit a custom event so the app can decide what to do (optional)
+      try {
+        window.dispatchEvent(new CustomEvent('auth:unauthorized'));
+      } catch (e) {
+        // ignore
+      }
+      // NOTE: No window.location change here to avoid navigation to an undefined route.
     }
     return Promise.reject(error);
   }
