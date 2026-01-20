@@ -22,7 +22,7 @@ const Home: React.FC = () => {
             <button
               onClick={goToLogin}
               aria-label="Login to your account"
-              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-200"
+              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
             >
               Login
             </button>
