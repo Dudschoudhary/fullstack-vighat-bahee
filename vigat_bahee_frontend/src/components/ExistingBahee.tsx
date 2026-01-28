@@ -26,6 +26,21 @@ const getBaheeTypeName = (value: string) => {
   return baheeTypes[value?.toLowerCase()] || value || '';
 };
 
+// Format date to DD.MM.YYYY format
+const formatDate = (dateString: string): string => {
+  if (!dateString) return '';
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    const day = date.getDate().toString().padStart(2, '0');
+    const month = (date.getMonth() + 1).toString().padStart(2, '0');
+    const year = date.getFullYear();
+    return `${day}.${month}.${year}`;
+  } catch {
+    return dateString;
+  }
+};
+
 const ExistingBahee: React.FC = () => {
   const [savedHeaders, setSavedHeaders] = useState<BaheeDetails[]>([]);
   const [loading, setLoading] = useState(true);
@@ -204,7 +219,7 @@ const ExistingBahee: React.FC = () => {
                                 {bahee.name}
                               </h4>
                               <p className="text-sm text-gray-500">
-                                {bahee.date && `तारीख: ${bahee.date}`}
+                                {bahee.date && `तारीख: ${formatDate(bahee.date)}`}
                                 {bahee.tithi && ` | तिथि: ${bahee.tithi}`}
                               </p>
                             </div>

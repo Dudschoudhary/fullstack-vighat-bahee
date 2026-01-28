@@ -24,11 +24,21 @@ axiosInstance.interceptors.response.use(
   (response) => response,
   (error) => {
     // ✅ Token expired/invalid पर auto-logout
+    // लेकिन login/register/forgot-password requests के लिए redirect नहीं करना
     if (error.response?.status === 401) {
-      localStorage.removeItem("token");
-      localStorage.removeItem("user"); // अगर user data save है
-      // React Router use कर रहे हो तो:
-      window.location.href = "/login"; // या useNavigate()
+      const requestUrl = error.config?.url || '';
+      const isAuthRequest = ['/login', '/register', '/forgot-password', '/reset-password'].some(
+        path => requestUrl.includes(path)
+      );
+      
+      // Only redirect if it's NOT an auth request and user is logged in
+      // This prevents flickering on login page when credentials are wrong
+      if (!isAuthRequest && localStorage.getItem("token")) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+        localStorage.removeItem("tokenExpiry");
+        window.location.href = "/login";
+      }
     }
     return Promise.reject(error);
   }
