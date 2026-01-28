@@ -90,7 +90,7 @@ const Login: React.FC = () => {
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      navigate('/bahee', { replace: true });
+      navigate('/', { replace: true });
     }
   }, [navigate]);
 
@@ -257,7 +257,7 @@ const Login: React.FC = () => {
         setLoginSuccess(true);
         
         setTimeout(() => {
-          const from = location.state?.from || '/bahee';
+          const from = location.state?.from || '/';
           const redirectUrl = response.isTemporaryPassword 
             ? `${from}?changePassword=true` 
             : from;

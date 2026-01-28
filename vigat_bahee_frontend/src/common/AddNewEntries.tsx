@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo, type FormEvent } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import CustomVigatBaheeLogo from './CustomVigatBaheeLogo';
+import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import Header from '../components/Header';
 import { IoMdArrowRoundBack } from "react-icons/io";
 import { ReactTransliterate } from 'react-transliterate';
 import 'react-transliterate/dist/index.css';
@@ -19,16 +19,69 @@ import type {
 } from '../types/bahee.types';
 import Footer from '../google adsense/Footer';
 
+interface BaheeSummary {
+  vivah: number;
+  muklawa: number;
+  odhawani: number;
+  mahera: number;
+  anya: number;
+}
+
+// Helper function to get bahee type name from type key
+const getBaheeTypeNameFromKey = (typeKey: string): string => {
+  const typeNames: { [key: string]: string } = {
+    vivah: 'विवाह की विगत',
+    muklawa: 'मुकलावा की विगत',
+    odhawani: 'ओढावणी की विगत',
+    mahera: 'माहेरा की विगत',
+    anya: 'अन्य विगत'
+  };
+  return typeNames[typeKey?.toLowerCase()] || 'बही';
+};
+
 const AddNewEntries: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const [searchParams] = useSearchParams();
   const state = location.state as LocationState;
 
-  const selectedBaheeType = state?.baheeType || '';
-  const selectedBaheeTypeName = state?.baheeTypeName || '';
-  const passedExisting = state?.existingBaheeData;
+  // Get type from URL params
+  const urlBaheeType = searchParams.get('type') || '';
 
-  const initialToggleFromVigatBahee = state?.initialUparnetToggle || false;
+  // Check sessionStorage for state (used when navigating via window.location.href)
+  const getStateFromSessionStorage = () => {
+    try {
+      const stored = sessionStorage.getItem('newBaheeState');
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Don't remove immediately - keep for re-renders
+        return parsed;
+      }
+    } catch (e) {
+      console.error('Error reading sessionStorage:', e);
+    }
+    return null;
+  };
+
+  const sessionState = getStateFromSessionStorage();
+  const effectiveState = sessionState || state;
+
+  // Use URL param as primary, then sessionStorage, then state
+  const selectedBaheeType = urlBaheeType || effectiveState?.baheeType || '';
+  
+  // Get bahee type name - prioritize sessionStorage, then derive from type key
+  const selectedBaheeTypeName = effectiveState?.baheeTypeName || getBaheeTypeNameFromKey(selectedBaheeType);
+  
+  const passedExisting = effectiveState?.existingBaheeData;
+  const initialToggleFromVigatBahee = effectiveState?.initialUparnetToggle || false;
+
+  // Clear sessionStorage after component mounts and values are captured
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      sessionStorage.removeItem('newBaheeState');
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const [allSavedBaheeDetails, setAllSavedBaheeDetails] = useState<BaheeDetails[]>([]); 
   const [thisTypeBaheeDetails, setThisTypeBaheeDetails] = useState<BaheeDetails | undefined>(undefined);
@@ -38,7 +91,10 @@ const AddNewEntries: React.FC = () => {
   
   const [uparnetToggle, setUparnetToggle] = useState<boolean>(initialToggleFromVigatBahee);
   
-  console.log(allSavedBaheeDetails)
+  // Bahee Summary State
+  const [baheeSummary, setBaheeSummary] = useState<BaheeSummary>({
+    vivah: 0, muklawa: 0, odhawani: 0, mahera: 0, anya: 0
+  });
 
   const [localDetailsForm, setLocalDetailsForm] = useState({ 
     name: '', 
@@ -56,12 +112,17 @@ const AddNewEntries: React.FC = () => {
   const [successMessage, setSuccessMessage] = useState<string>('');
   const [isAmountDisabled, setIsAmountDisabled] = useState<boolean>(false);
 
-  // ✅ Get max date (today) for date input
-
-  // ✅ Check if current bahee is "anya" type
   const isAnyaBahee = selectedBaheeType === 'anya';
 
-  // Debounced handlers
+  // Bahee types for summary display
+  const baheeTypes = [
+    { key: 'vivah', label: 'विवाह की विगत' },
+    { key: 'muklawa', label: 'मुकलावा की विगत' },
+    { key: 'odhawani', label: 'ओढावणी की विगत' },
+    { key: 'mahera', label: 'माहेरा की विगत' },
+    { key: 'anya', label: 'अन्य विगत' },
+  ];
+
   const debouncedUpdateDetailsForm = useMemo(
     () => debounce((field: string, value: string) => {
       setDetailsForm(prev => ({ ...prev, [field]: value }));
@@ -78,7 +139,6 @@ const AddNewEntries: React.FC = () => {
     []
   );
 
-  // Load data on component mount
   useEffect(() => {
     const loadBaheeDetails = async () => {
       try {
@@ -86,7 +146,22 @@ const AddNewEntries: React.FC = () => {
         const response = await baheeApiService.getAllBaheeDetails();
 
         if (response.success && response.data) {
-          setAllSavedBaheeDetails(response.data);
+          const rawData = (response.data as any).baheeDetails_ids || response.data || [];
+          setAllSavedBaheeDetails(rawData);
+          
+          // Calculate summary
+          const summary: BaheeSummary = {
+            vivah: 0, muklawa: 0, odhawani: 0, mahera: 0, anya: 0
+          };
+          
+          rawData.forEach((item: any) => {
+            const type = (item.baheeType || '').toLowerCase().trim();
+            if (type in summary) {
+              summary[type as keyof BaheeSummary]++;
+            }
+          });
+          
+          setBaheeSummary(summary);
         }
       } catch (error) {
         console.error('❌ Error loading bahee details:', error);
@@ -112,17 +187,14 @@ const AddNewEntries: React.FC = () => {
       setDetailsForm(prev => ({ ...prev, tithi: todayTithi }));
     }
 
-    // ✅ FIXED: Remove 'anya' from hardcoded disabled types
     const disableAmountTypes = ['odhawani', 'mahera'];
     setIsAmountDisabled(disableAmountTypes.includes(selectedBaheeType));
     
-    // ✅ Set toggle state from route params for "anya" bahee
     if (selectedBaheeType === 'anya') {
       setUparnetToggle(initialToggleFromVigatBahee);
     }
   }, [selectedBaheeType, passedExisting, initialToggleFromVigatBahee]);
 
-  // Handle bahee details form changes with debouncing
   const handleChangeBaheeDetails = useCallback((field: string, value: string) => {
     setLocalDetailsForm(prev => ({ ...prev, [field]: value }));
     setDetailsError('');
@@ -140,17 +212,15 @@ const AddNewEntries: React.FC = () => {
     debouncedUpdateDetailsForm(field, value);
   }, [debouncedUpdateDetailsForm]);
 
-  // ✅ Handle toggle change - यह function रखा गया है par EntryForm में toggle show नहीं होता
   const handleToggleChange = (enabled: boolean) => {
     setUparnetToggle(enabled);
   };
 
-  // Bahee details save handler
   const handleBaheeDetailsSave = async (e: FormEvent) => {
     e.preventDefault();
     const nameTrim = detailsForm.name.trim();
 
-    if (!nameTrim || !detailsForm.date[0].trim() || !detailsForm.tithi.trim()) {
+    if (!nameTrim || !detailsForm.date[0]?.trim() || !detailsForm.tithi.trim()) {
       setDetailsError('सभी विवरण अनिवार्य हैं।');
       return;
     }
@@ -245,170 +315,195 @@ const AddNewEntries: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans">
-      <div className="max-w-4xl mx-auto">
-        <CustomVigatBaheeLogo />
+    <>
+      <Header />
+      <div className="min-h-screen bg-gray-50 py-8 px-4 font-sans">
+        <div className="max-w-4xl mx-auto">
 
-        {successMessage && (
-          <div className="success-message-container">
-            <div className="success-message">
-              <span className="success-text">{successMessage}</span>
-            </div>
-          </div>
-        )}
-
-        {!thisTypeBaheeDetails && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="text-2xl">🕉️</span>
-                <h2 className="text-lg font-bold text-red-800 Hind-Regular">
-                  {selectedBaheeTypeName} का विवरण जोड़ें
-                </h2>
+          {successMessage && (
+            <div className="success-message-container">
+              <div className="success-message">
+                <span className="success-text">{successMessage}</span>
               </div>
             </div>
+          )}
 
-            {detailsLoading && (
-              <div className="mb-4">
-                <Loader
-                  size="medium"
-                  text="बही विवरण सेव हो रहा है..."
-                  colors={["#32cd32", "#327fcd"]}
-                />
+          {!thisTypeBaheeDetails && (
+            <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-2xl">🕉️</span>
+                  <h2 className="text-lg font-bold text-red-800 Hind-Regular">
+                    {selectedBaheeTypeName || 'बही'} का विवरण जोड़ें
+                  </h2>
+                </div>
               </div>
-            )}
 
-            <form onSubmit={handleBaheeDetailsSave} className="space-y-4">
-              <div className="bg-white/90 backdrop-blur rounded-2xl shadow-md p-4 sm:p-6 max-w-sm mx-auto sm:max-w-none">
-                <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      नाम
-                    </label>
-                    <ReactTransliterate
-                      value={localDetailsForm.name}
-                      onChangeText={(text) => handleChangeBaheeDetails('name', text)}
-                      lang="hi"
-                      placeholder="जैसे: दुदाराम"
-                      className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base placeholder-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
-                      disabled={detailsLoading}
-                      maxOptions={3}
-                      showCurrentWordAsLastSuggestion={false}
-                    />
+              {detailsLoading && (
+                <div className="mb-4">
+                  <Loader
+                    size="medium"
+                    text="बही विवरण सेव हो रहा है..."
+                    colors={["#32cd32", "#327fcd"]}
+                  />
+                </div>
+              )}
+
+              <form onSubmit={handleBaheeDetailsSave} className="space-y-4">
+                <div className="bg-white/90 backdrop-blur rounded-2xl shadow-md p-4 sm:p-6 max-w-sm mx-auto sm:max-w-none">
+                  <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+                    <div className="sm:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        नाम
+                      </label>
+                      <ReactTransliterate
+                        value={localDetailsForm.name}
+                        onChangeText={(text) => handleChangeBaheeDetails('name', text)}
+                        lang="hi"
+                        placeholder="जैसे: दुदाराम"
+                        className="w-full h-12 px-3 rounded-xl border border-gray-300 bg-white text-base placeholder-gray-400 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition"
+                        disabled={detailsLoading}
+                        maxOptions={3}
+                        showCurrentWordAsLastSuggestion={false}
+                      />
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        तारीख
+                      </label>
+                      <input
+                        type="date"
+                        value={localDetailsForm.date}
+                        onChange={(e) => handleChangeBaheeDetails('date', e.target.value)}
+                        className={`w-full h-12 px-3 rounded-xl border bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition ${
+                          dateError ? 'border-red-500 focus-visible:ring-red-600' : 'border-gray-300 focus-visible:ring-blue-600'
+                        }`}
+                        disabled={detailsLoading}
+                      />
+                      {dateError && (
+                        <p className="text-xs text-red-600 mt-1">{dateError}</p>
+                      )}
+                    </div>
+
+                    <div className="sm:col-span-1">
+                      <label className="block text-xs font-medium text-gray-700 mb-1">
+                        तिथि
+                      </label>
+                      <input
+                        type="text"
+                        value={localDetailsForm.tithi}
+                        placeholder="हिंदू तिथि यहाँ दिखेगी"
+                        className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-blue-50 text-base text-blue-800 cursor-not-allowed font-medium"
+                        disabled
+                        readOnly
+                      />
+                    </div>
                   </div>
 
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      तारीख
-                    </label>
-                    <input
-                      type="date"
-                      value={localDetailsForm.date}
-                      onChange={(e) => handleChangeBaheeDetails('date', e.target.value)}
-                      // max={maxDate}
-                      className={`w-full h-12 px-3 rounded-xl border bg-white text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-white transition ${
-                        dateError ? 'border-red-500 focus-visible:ring-red-600' : 'border-gray-300 focus-visible:ring-blue-600'
-                      }`}
-                      disabled={detailsLoading}
-                    />
-                    {dateError && (
-                      <p className="text-xs text-red-600 mt-1">{dateError}</p>
+                  {/* Actions */}
+                  <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
+                    <button
+                      type="submit"
+                      disabled={detailsLoading || !!dateError}
+                      className="h-12 w-full sm:w-auto px-5 rounded-xl text-white font-semibold shadow-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
+                    >
+                      {detailsLoading ? 'Saving...' : 'Save'}
+                    </button>
+
+                    {(detailsError || dateError) && (
+                      <span role="alert" className="text-sm text-red-600">
+                        {detailsError || dateError}
+                      </span>
                     )}
                   </div>
-
-                  <div className="sm:col-span-1">
-                    <label className="block text-xs font-medium text-gray-700 mb-1">
-                      तिथि
-                    </label>
-                    <input
-                      type="text"
-                      value={localDetailsForm.tithi}
-                      placeholder="हिंदू तिथि यहाँ दिखेगी"
-                      className="w-full h-12 px-3 rounded-xl border border-gray-200 bg-blue-50 text-base text-blue-800 cursor-not-allowed font-medium"
-                      disabled
-                      readOnly
-                    />
-                    
-                  </div>
                 </div>
-
-                {/* Actions */}
-                <div className="mt-4 flex flex-col sm:flex-row gap-3 sm:items-center">
-                  <button
-                    type="submit"
-                    disabled={detailsLoading || !!dateError}
-                    className="h-12 w-full sm:w-auto px-5 rounded-xl text-white font-semibold shadow-sm bg-blue-600 hover:bg-blue-700 active:bg-blue-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-600 disabled:opacity-60 disabled:cursor-not-allowed"
-                  >
-                    {detailsLoading ? 'Saving...' : 'Save'}
-                  </button>
-
-                  {(detailsError || dateError) && (
-                    <span role="alert" className="text-sm text-red-600">
-                      {detailsError || dateError}
-                    </span>
-                  )}
-                </div>
-              </div>
-            </form>
-          </div>
-        )}
-
-        {thisTypeBaheeDetails && (
-          <>
-            <div className="flex justify-end mb-6 md:mt-10">
-              <button
-                onClick={handleGoBack}
-                disabled={entryLoading}
-                className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md group disabled:opacity-50"
-              >
-                <span className="font-medium flex justify-center items-center gap-2">
-                  <IoMdArrowRoundBack /> Back
-                </span>
-              </button>
+              </form>
             </div>
+          )}
 
-            <div className="bg-pink-700 rounded-lg shadow-md p-6 mb-6">
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-                  <h1 className="text-lg font-bold text-blue-700 text-center sm:text-left">
-                    नई Entries जोड़ें
-                  </h1>
-                </div>
+          {thisTypeBaheeDetails && (
+            <>
+              <div className="flex justify-end mb-6 md:mt-10">
+                <button
+                  onClick={handleGoBack}
+                  disabled={entryLoading}
+                  className="flex items-center gap-2 px-4 py-2 text-gray-600 hover:text-gray-800 hover:bg-white rounded-lg shadow-sm border border-gray-200 transition-all duration-200 hover:shadow-md group disabled:opacity-50"
+                >
+                  <span className="font-medium flex justify-center items-center gap-2">
+                    <IoMdArrowRoundBack /> Back
+                  </span>
+                </button>
+              </div>
 
-                <div className="flex items-center gap-4">
+              <div className="bg-pink-700 rounded-lg shadow-md p-6 mb-6">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
-                    <h2 className="text-lg font-semibold text-blue-800">
-                      {thisTypeBaheeDetails.baheeTypeName} — {thisTypeBaheeDetails.name}
-                    </h2>
+                    <h1 className="text-lg font-bold text-blue-700 text-center sm:text-left">
+                      नई Entries जोड़ें
+                    </h1>
                   </div>
-                  
-                  <button
-                    onClick={handleNavigateToTable}
-                    disabled={entryLoading}
-                    className="bg-white text-lg hover:bg-gray-200 text-blue-700 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
-                  >
-                    बही विवरण
-                  </button>
+
+                  <div className="flex items-center gap-4">
+                    <div className="bg-blue-50 border border-blue-200 rounded-lg px-4 py-2">
+                      <h2 className="text-lg font-semibold text-blue-800">
+                        {thisTypeBaheeDetails.baheeTypeName} — {thisTypeBaheeDetails.name}
+                      </h2>
+                    </div>
+                    
+                    <button
+                      onClick={handleNavigateToTable}
+                      disabled={entryLoading}
+                      className="bg-white text-lg hover:bg-gray-200 text-blue-700 font-semibold px-4 py-2 rounded-lg transition-colors duration-200 shadow-md hover:shadow-lg transform hover:scale-105 disabled:opacity-50 disabled:transform-none"
+                    >
+                      बही विवरण
+                    </button>
+                  </div>
                 </div>
               </div>
+
+              <EntryForm
+                thisTypeBaheeDetails={thisTypeBaheeDetails}
+                isAmountDisabled={isAmountDisabled}
+                entryLoading={entryLoading}
+                onSubmit={handleEntrySubmit}
+                isAnyaBahee={isAnyaBahee}
+                uparnetToggle={uparnetToggle}
+                onToggleChange={handleToggleChange}
+              />
+            </>
+          )}
+
+          {/* बही विवरण सारांश Section - Moved to Bottom */}
+          <div className="bg-blue-50 rounded-2xl shadow-md p-6 mt-8">
+            <h3 className="text-xl font-bold text-blue-800 text-center mb-4">
+              बही विवरण सारांश
+            </h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {baheeTypes.map((type) => (
+                <div 
+                  key={type.key} 
+                  className={`bg-white rounded-xl p-4 text-center shadow-sm border-2 transition-all ${
+                    selectedBaheeType === type.key 
+                      ? 'border-blue-500 ring-2 ring-blue-200' 
+                      : 'border-transparent hover:border-blue-200'
+                  }`}
+                >
+                  <div className="text-2xl sm:text-3xl font-bold text-blue-600 mb-1">
+                    {baheeSummary[type.key as keyof BaheeSummary]}
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600 font-medium">
+                    {type.label}
+                  </div>
+                </div>
+              ))}
             </div>
+          </div>
 
-            {/* ✅ EntryForm - WITHOUT toggle UI (केवल state pass करते हैं) */}
-            <EntryForm
-              thisTypeBaheeDetails={thisTypeBaheeDetails}
-              isAmountDisabled={isAmountDisabled}
-              entryLoading={entryLoading}
-              onSubmit={handleEntrySubmit}
-              isAnyaBahee={isAnyaBahee}
-              uparnetToggle={uparnetToggle}
-              onToggleChange={handleToggleChange}
-            />
-          </>
-        )}
+        </div>
       </div>
-      <Footer/>
+      <Footer />
 
-      {/* Mobile-First Responsive CSS */}
       <style>{`
         .success-message-container {
           position: fixed;
@@ -489,7 +584,7 @@ const AddNewEntries: React.FC = () => {
           }
         }
       `}</style>
-    </div>
+    </>
   );
 };
 

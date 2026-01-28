@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaEye, FaEyeSlash, FaLock } from 'react-icons/fa';
+import { FaEye, FaEyeSlash, FaLock, FaSpinner } from 'react-icons/fa';
 import * as yup from 'yup';
 import apiService from '../api/apiService';
 
@@ -232,8 +232,9 @@ const PasswordChangeModal: React.FC<PasswordChangeModalProps> = ({
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 bg-indigo-600 text-white py-2 px-4 rounded-md hover:bg-indigo-700 focus:ring-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
+                {loading && <FaSpinner className="animate-spin" />}
                 {loading ? 'Changing...' : 'Change Password'}
               </button>
               

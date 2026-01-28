@@ -13,7 +13,7 @@ import { useNavigate, useLocation } from "react-router-dom";
 import CommonModal from "../common/CommonModal";
 import ConfirmModal from "../common/ConfirmModal";
 import TransliterateSearch from "./TransliterateSearch";
-import CustomVigatBaheeLogo from "../common/CustomVigatBaheeLogo";
+import Header from "./Header";
 import { IoMdArrowRoundBack } from "react-icons/io";
 import Loader from "../common/Loader";
 import personalbheeApiService from "../services/personalbheeApiService";
@@ -491,7 +491,7 @@ const saveEdit = async () => {
         <div className="max-w-7xl mx-auto p-4">
           {/* Header */}
           <div className="mb-6">
-            <CustomVigatBaheeLogo />
+            <Header />
           </div>
 
           {/* Back Button */}

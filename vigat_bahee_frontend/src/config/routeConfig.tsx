@@ -12,6 +12,8 @@ import PrivacyPolicy from "../google adsense/ PrivacyPolicy";
 import PersonalEntryForm from "../components/PersonalEntryForm";
 import ViewEntriesByType from "../components/ViewEntriesByType";
 import Home from "../google adsense/Home";
+import ExistingBahee from "../components/ExistingBahee";
+import MyEntries from "../components/MyEntries";
 
 interface RouteProps {
   element: React.ReactElement;
@@ -35,7 +37,7 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: <PublicRoute element={<Home />} />,
+        element: <Home />,
       },
       {
         path: "bahee",
@@ -48,6 +50,14 @@ const router = createBrowserRouter([
       {
         path: "new-bahee",
         element: <ProtectedRoute element={<AddNewEntries />} />,
+      },
+      {
+        path: "existing-bahee",
+        element: <ProtectedRoute element={<ExistingBahee />} />,
+      },
+      {
+        path: "my-entries",
+        element: <ProtectedRoute element={<MyEntries />} />,
       },
       {
         path: "personal-bahee",
@@ -63,19 +73,19 @@ const router = createBrowserRouter([
       },
       {
         path: "about-us",
-        element: <PublicRoute element={<AboutUs />} />,
+        element: <AboutUs />,
       },
       {
         path: "privacy-policy",
-        element: <PublicRoute element={<PrivacyPolicy />} />,
+        element: <PrivacyPolicy />,
       },
       {
         path: "terms-and-conditions",
-        element: <PublicRoute element={<TermsAndConditions />} />,
+        element: <TermsAndConditions />,
       },
       {
         path: "contact",
-        element: <PublicRoute element={<ContactUs />} />,
+        element: <ContactUs />,
       },
       {
         path: "footer",
@@ -83,7 +93,7 @@ const router = createBrowserRouter([
       },
       {
         path: "dmca-policy",
-        element: <PublicRoute element={<DMCAPolicy />} />,
+        element: <DMCAPolicy />,
       },
     ],
   },

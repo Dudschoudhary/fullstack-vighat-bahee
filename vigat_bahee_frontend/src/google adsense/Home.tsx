@@ -1,41 +1,14 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import CustomVigatBaheeLogo from '../common/CustomVigatBaheeLogo';
+import Header from '../components/Header';
 import Footer from './Footer';
 import ganeshImg from '../assets/images/ganeshji1.png';
 
 const Home: React.FC = () => {
-  const navigate = useNavigate();
-
-  const goToLogin = () => navigate('/login');
-  const goToSignup = () => navigate('/login', { state: { initMode: 'register' } });
-
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-green-50 flex flex-col">
+      <Header />
       <div className="max-w-6xl mx-auto w-full p-6 flex-1">
-        <div className="flex justify-center mb-6">
-          <CustomVigatBaheeLogo />
-        </div>
-
         <main className="mt-6 bg-white rounded-2xl shadow-xl p-8 sm:p-12">
-          <div className="flex justify-end items-center gap-4 mb-6">
-            <button
-              onClick={goToLogin}
-              aria-label="Login to your account"
-              className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-200"
-            >
-              Login
-            </button>
-
-            <button
-              onClick={goToSignup}
-              aria-label="Create a new account"
-              className="px-5 py-2 bg-pink-600 text-white rounded-md font-semibold hover:bg-pink-500 focus:outline-none focus:ring-2 focus:ring-pink-300"
-            >
-              Sign Up
-            </button>
-          </div>
-
           {/* Polished hero: two-column */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-20 items-center text-center md:text-left mb-10">
 
@@ -56,8 +29,6 @@ const Home: React.FC = () => {
                 डिजिटल विगत बही — शादी-विवाह और सभी सामाजिक कार्यक्रमों के रिकॉर्ड को
                 आधुनिक, सुरक्षित और सहज रूप में रखें। कभी भी, कहीं से भी जानकारी देखें।
               </p>
-
-              {/* Buttons removed as requested */}
             </div>
           </div>
 
@@ -99,7 +70,7 @@ const Home: React.FC = () => {
           {/* Testimonial */}
           <section className="max-w-4xl mx-auto mt-8">
             <div className="bg-gradient-to-r from-white to-gray-50 p-6 rounded-lg shadow-sm">
-              <blockquote className="text-gray-800 italic">“विगत बही ने हमारे काम को आसान किया है और यह एक बहुत अच्छी सुविधा है। इसका एक बार अवश्य प्रयोग करें।”</blockquote>
+              <blockquote className="text-gray-800 italic">"विगत बही ने हमारे काम को आसान किया है और यह एक बहुत अच्छी सुविधा है। इसका एक बार अवश्य प्रयोग करें।"</blockquote>
               <cite className="block mt-3 text-sm text-gray-600">— सुनील जी गोदारा, (आरणियाली)</cite>
             </div>
           </section>
